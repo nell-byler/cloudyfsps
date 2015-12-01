@@ -1,5 +1,5 @@
 import numpy as np
-from .astrotools import sym_to_name
+from astrotools import sym_to_name
 from scipy.interpolate import InterpolatedUnivariateSpline as InterpUS
 
 def get_abunds(set_name, logZ, dust=True, re_z=False):

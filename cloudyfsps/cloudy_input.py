@@ -1,9 +1,9 @@
 import os
 import numpy as np
 import subprocess
-import .cloudytools as ct
+import cloudytools as ct
 from scipy.interpolate import InterpolatedUnivariateSpline 
-import .neb_abund
+import neb_abund
 
 def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     '''

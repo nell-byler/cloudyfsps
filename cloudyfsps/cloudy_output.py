@@ -6,7 +6,6 @@ import subprocess
 from scipy.interpolate import InterpolatedUnivariateSpline
 from astropy.convolution import Gaussian1DKernel
 from astropy.convolution import convolve
-import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
 def format_lines(dir_, model_prefix, **kwargs):
@@ -81,7 +80,7 @@ def format_all(dir_, model_prefix, **kwargs):
     [format_output(dir_, model_prefix, num, data[num-1]) for num in modnums]
     return
 
-def spec(dir_, model_prefix, modnum, make_plot=False, print_line=False, conv=False, **kwargs):
+def spec(dir_, model_prefix, modnum, print_line=False, conv=False, **kwargs):
     '''
     numpts = number of pts in output spectrum
     contrast = multiplier for emission lines to account for covering factor
@@ -127,8 +126,6 @@ def spec(dir_, model_prefix, modnum, make_plot=False, print_line=False, conv=Fal
         observed = convolve_spec(numpts, wav, flux, FWHM)
     else:
         observed = flux/c*wav
-    if make_plot:
-        plt.plot(wav, observed)
     
     return (wav, observed)
 
