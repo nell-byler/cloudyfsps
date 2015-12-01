@@ -1,3 +1,5 @@
+import numpy as np
+
 def name_to_sym(val=None):
     elem_keys = dict(helium='He',
                      carbon='C',
@@ -46,3 +48,18 @@ def sym_to_name(val=None):
         except KeyError:
             print 'element not in ', elem_keys.keys()
         
+def air_to_vac(inpt, no_uv_conv=True):
+    '''
+    from morton 1991
+    preserves order of input array
+    '''
+    if type(inpt) is float:
+        wl = np.array([inpt])
+    else:
+        wl = np.asarray(inpt)
+    to_vac = lambda lam: (6.4328e-5 + (2.94981e-2/(146.0-(1.0e4/lam)**2.0)) + (2.554e-4/(41.0-(1.0e4/lam)**2.0)))*lam + lam
+    if no_uv_conv:
+        outpt = np.array([to_vac(lam) if lam > 2000.0 else lam for lam in wl])
+    else:
+        outpt = to_vac(wl)
+    return outpt
