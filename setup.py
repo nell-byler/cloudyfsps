@@ -8,5 +8,5 @@ setup(name='cloudy-fsps',
       author_email='nell.byler@gmail.com',
       license='BSD new',
       packages=['cloudy-fsps'],
-      install_requires=['fsps'],
+      install_requires=['fsps', 'numpy', 'scipy'],
       zip_safe=False)

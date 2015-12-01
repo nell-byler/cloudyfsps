@@ -3,21 +3,42 @@ from abund_sets import load_abund, load_depl
 from .astrotools import sym_to_name
 from scipy.interpolate import InterpolatedUnivariateSpline as InterpUS
 
-def get_abunds(set_name, logZ, dust=True, re_z=False):
+def _get_abunds(set_name, logZ, dust=True, re_z=False):
     allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh']
     if set_name in allowed_names:
         return eval('{}({}, dust={}, re_z={})'.format(set_name, logZ, dust, re_z))
     else:
         raise IOError(allowed_names)
 
+class Element:
+    def __init__(self, name, val):
+        self.name=name.title()
+        self.fullname = sym_to_name(name)
+        self.val=val
+    def __str__(self):
+        return 'element abundance {0} {1:.1f}'.format(self.name, self.val)
+    #def __repr__(self):
+    #    return 'element abundance {0} {1:.1f}'.format(self.name, self.val)
+
+
+
 class abundSet(object):
+    abunds = {}
     def __init__(self, set_name, logZ):
         self.logZ = logZ
-        self.abund_0 = load_abund(set_name)
-        self.depl = load_depl(set_name)
-        self.calcSpecial()
-        self.calcFinal()
-        self.inputStrings()
+        self._abund_dict = load_abund(set_name)
+    
+    def deplete(self, val):
+        return self._abunds
+    @property
+    def abunds(self):
+        return self._abunds
+    @abunds.setter
+    def abunds(self):
+        self._abunds = {}
+        [self._abunds.__setitem__(k, Element(k,v)) for k,v in self._abund_dict]
+        
+        return     
         
     def calcSpecial(self):
         return
@@ -39,8 +60,8 @@ class abundSet(object):
         return
 
 class dopita(abundSet):
-    solar = 'old solar 84'
     def __init__(self, logZ, dust=True, re_z=False):
+        self.solar = 'old solar 84'
         if dust:
             self.grains = 'no grains\ngrains ISM'
         else:
@@ -76,8 +97,8 @@ class dopita(abundSet):
         return
 
 class newdopita(abundSet):
-    solar = 'GASS10'
     def __init__(self, logZ, dust=True, re_z=False):
+        self.solar = 'GASS10'
         if dust:
             self.grains = 'no grains\ngrains ISM'
         else:
@@ -108,4 +129,65 @@ class newdopita(abundSet):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+
+#dicto={'c':13}
+#my_abunds = abundSet(logZ=0.0, **dicto)
+
+class abundSet(object):
+    
+    abunds = ['He', 'N']
+    
+    def __init__(self, logZ):
+        self._abunds = kwargs
+        self.iteritems = self._abunds.iteritems
+    
+    def do_depletion(self):
+        return self.abunds + 40.0
+    
+    @property
+    def abunds(self):
+        return self._abunds
+    
+    @abunds.setter
+    def abunds(self, value):
+        self._abunds = value
+
+
+class Element:
+    def __init__(self, name, val):
+        self.name=name.title()
+        self.fullname = sym_to_name(name)
+        self.val=val
+    def __str__(self):
+        return 'element abundance {0} {1:.1f}'.format(self.name, self.val)
+    def __repr__(self):
+        return 'element abundance {0} {1:.1f}'.format(self.name, self.val)
+
+
+from abund_sets import load_set
+
+def _get_abunds(set_name):
+    allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh']
+    if set_name in allowed_names:
+        return load_set(set_name)
+    else:
+        raise IOError('Set name must be in ', allowed_names)
+
+
 
