@@ -8,12 +8,14 @@ from astropy.convolution import Gaussian1DKernel
 from astropy.convolution import convolve
 from scipy.interpolate import interp1d
 
+this_dir = os.getcwd()
+
 def format_lines(dir_, model_prefix, **kwargs):
     filelist = [f.split('.')[0] for f in listdir(dir_) if (isfile(join(dir_, f)) and f.split('.')[-1] == 'out')]
     modnums = np.array([int(f.strip(model_prefix)) for f in filelist])
     startnum = modnums.min()
     endnum = modnums.max()
-    to_run = 'cd {} ; ./mk_linefile.sh {} {}'.format(dir_, startnum, endnum)
+    to_run = './mk_linefile.sh {} {} {} {}'.format(this_dir, dir_, startnum, endnum)
     stdout = subprocess.PIPE
     proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
     proc.communicate()
