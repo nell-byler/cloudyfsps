@@ -5,6 +5,8 @@ import itertools
 import fsps
 import subprocess
 
+dat_dir = os.getcwd()+'/cloudyfsps/data/'
+
 def grouper(n, iterable):
     '''
     Iterate through array in groups of n
@@ -101,7 +103,7 @@ def main(fileout = 'FSPS_IMF2a.ascii', **kwargs):
     sp = fsps.StellarPopulation(imf_type=2)
     ages = 10.0**sp.log_age
     zmets = np.arange(1,23,1)
-    dat = np.genfromtxt('fsps_znum.txt', names='ind, znum, zrats')
+    dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
     logZs = dat['zrats'][zmets-1]
     #modpars = [(age, zmet) for age in ages for zmet in zmets]
     modpars = [(age, logZ) for age in ages for logZ in logZs]
@@ -122,7 +124,7 @@ def pagb_main(fileout = 'FSPS_pagb.ascii', **kwargs):
     sp = fsps.StellarPopulation(pagb=1.5)
     ages = 10.0**sp.log_age
     zmets = np.arange(1,23,1)
-    dat = np.genfromtxt('fsps_znum.txt', names='ind, znum, zrats')
+    dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
     logZs = dat['zrats'][zmets-1]
     modpars = [(age, logZ) for age in ages for logZ in logZs]
     
@@ -140,7 +142,7 @@ def fbhb_main(fileout = 'FSPS_fbhb.ascii', **kwargs):
     sp = fsps.StellarPopulation(fbhb=0.1)
     ages = 10.0**sp.log_age
     zmets = np.arange(1,23,1)
-    dat = np.genfromtxt('fsps_znum.txt', names='ind, znum, zrats')
+    dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
     logZs = dat['zrats'][zmets-1]
     modpars = [(age, logZ) for age in ages for logZ in logZs]
     
@@ -167,7 +169,7 @@ def csfh_main(fileout='FSPS_csfh.ascii'):
                                 tburst=0.0)
     ages = np.array([4.0e6])
     zmets = np.arange(1,23,1)
-    dat = np.genfromtxt('fsps_znum.txt', names='ind, znum, zrats')
+    dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
     logZs = dat['zrats'][zmets-1]
     modpars = [(age, logZ) for age in ages for logZ in logZs]
     all_sp = [fsps.StellarPopulation(imf_type=2, zmet=zmet) for zmet in zmets]
