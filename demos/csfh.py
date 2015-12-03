@@ -1,9 +1,11 @@
 import os
-import cloudy_input
-import cloudy_output
-import cloudytools as ct
-from write_ascii import FileOps, compile_mod
+from cloudyfsps import cloudy_input
+from cloudyfsps import cloudy_output
+from cloudyfsps import cloudytools as ct
+from cloudyfsps import write_ascii
+from cloudyfsps import write_ascii
 import numpy as np
+import fsps
 
 zsun = 0.019
 
@@ -29,21 +31,24 @@ def csfh_ascii(fileout='FSPS_csfh.ascii', **kwargs):
     flat_flux = np.array([all_fluxs[j][i]
                           for i in range(len(ages))
                           for j in range(len(logZs))])
-    FileOps(fileout, lam, flat_flux, modpars, ndim=2, npar=2, nmod=nmod)
+    write_ascii.FileOps(fileout, lam, flat_flux,
+                        modpars, ndim=2, npar=2, nmod=nmod)
     return
 
 ascii_file = 'FSPS_csfh.ascii'
 ascii_dir = '/astro/users/ebyler/pro/cloudy/data/'
-# write ascii file
-csfh_ascii(fileout=ascii_dir+ascii_file)
-# compile ascii file with cloudy
-write_ascii.compile_mod(ascii_dir, ascii_file)
-if not write_ascii.check_compile(ascii_dir, ascii_file):
-    print 'bad model compilation, try again'
+compiled_ascii = '{}.mod'.format(ascii_file.split('.')[0])
+if not os.path.exists(ascii_dir+compiled_ascii):
+    # write ascii file
+    csfh_ascii(fileout=ascii_dir+ascii_file)
+    # compile ascii file with cloudy
+    write_ascii.compile_mod(ascii_dir, ascii_file)
+    if not write_ascii.check_compile(ascii_dir, ascii_file):
+        print 'bad model compilation, try again'
 
 # write grid of input files, run cloudy
 mod_dir = './output_csfh/'
-mod_prefix = 'ZU'
+mod_prefix = 'ZAU'
 
 ages = np.array([1.0e6, 2.0e6, 3.0e6, 5.0e6, 10.0e6])
 nhs = np.array([10.0])
@@ -58,18 +63,19 @@ pars = np.array([(Z, a, U, R, ct.calc_4_logQ(logU=U, Rinner=10.0**R, nh=n), n)
                  for R in Rinners
                  for n in nhs])
 
-write_input.param_files(dir_=mod_dir, model_prefix=mod_prefix,
-                        run_cloudy=False,
-                        ages=ages,
-                        logZs=logZs,
-                        logUs=logUs,
-                        r_inners=Rinners,
-                        nhs=nhs,
-                        use_Q=True,
-                        set_name='dopita')
+cloudy_input.param_files(dir_=mod_dir, model_prefix=mod_prefix,
+                         cloudy_mod=compiled_ascii,
+                         run_cloudy=False,
+                         ages=ages,
+                         logZs=logZs,
+                         logUs=logUs,
+                         r_inners=Rinners,
+                         nhs=nhs,
+                         use_Q=True,
+                         set_name='dopita')
 print 'wrote {} param files'.format(len(pars))
 print 'running cloudy....'
-write_input.run_make(dir_=mod_dir, n_proc=4, model_name=mod_prefix)
+cloudy_input.run_make(dir_=mod_dir, n_proc=4, model_name=mod_prefix)
 
 print 'running finished, starting shell script'
 
