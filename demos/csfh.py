@@ -1,26 +1,53 @@
 import os
-import write_input
+import cloudy_input
 import cloudy_output
-from mytools import cloudytools as ct
+import cloudytools as ct
+from write_ascii import FileOps, compile_mod
 import numpy as np
-import pdb
 
-# ascii_file = 'FSPS_csfh.ascii'
-# ascii_dir = '/astro/users/ebyler/pro/cloudy/data/'
-# #write ascii file with default pars
-# write_ascii.csfh_main(fileout=ascii_dir+ascii_file)
-# #compile ascii file with cloudy
-# write_ascii.compile_mod(ascii_dir, ascii_file)
-# if not write_ascii.check_compile(ascii_dir, ascii_file):
-#     print 'bad model compilation, try again'
+zsun = 0.019
 
-#write grid of input files, run cloudy
+def csfh_ascii(fileout='FSPS_csfh.ascii', **kwargs):
+    sp_dict = dict(zcontinuous=1,
+                   imf_type=2,
+                   sfh=1, #constant sfh
+                   tau=1.0, #efolding time for exp SFH in Gyr
+                   const=1.0, #mass formed in const SFH
+                   sf_start=0.0, #start time of SFH in Gyr
+                   fburst=0.0, #fraction mass formed in inst burst
+                   tburst=0.0) #time burst occured
+    sp = fsps.StellarPopulation(**sp_dict)
+    ages = 10.**sp.log_age
+    lam = sp.wavelengths
+    logZs = np.log10(sp.zlegend/zsun)
+    modpars = [(age, logZ) for age in ages for logZ in logZs]
+    all_fluxs = []
+    for logZ in logZs:
+        sp.params['logzsol'] = logZ
+        all_fluxs.append(sp.get_spectrum()[1]) #lsun per hz
+    nmod = len(modpars)
+    flat_flux = np.array([all_fluxs[j][i]
+                          for i in range(len(ages))
+                          for j in range(len(logZs))])
+    FileOps(fileout, lam, flat_flux, modpars, ndim=2, npar=2, nmod=nmod)
+    return
+
+ascii_file = 'FSPS_csfh.ascii'
+ascii_dir = '/astro/users/ebyler/pro/cloudy/data/'
+# write ascii file
+csfh_ascii(fileout=ascii_dir+ascii_file)
+# compile ascii file with cloudy
+write_ascii.compile_mod(ascii_dir, ascii_file)
+if not write_ascii.check_compile(ascii_dir, ascii_file):
+    print 'bad model compilation, try again'
+
+# write grid of input files, run cloudy
 mod_dir = './output_csfh/'
 mod_prefix = 'ZU'
 
-ages = np.array([4.0e6])
+ages = np.array([1.0e6, 2.0e6, 3.0e6, 5.0e6, 10.0e6])
 nhs = np.array([10.0])
-logUs =  np.array([-3.5, -3.0, -2.5, -2.0, -1.5, -1.0])
+logUs =  np.array([-4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.0])
 Rinners =  np.array([19.])
 logZs =  np.array([-2.0, -1.5, -1.0, -0.5, 0.0, 0.2])
 
