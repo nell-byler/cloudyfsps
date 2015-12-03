@@ -1,10 +1,10 @@
 #!/bin/csh
 # $1: $2:savedir $3:start $4:end
 if ($# != 4) then
-    echo "Usage: mk_linefile [current/dir/path] [save/dir/path] [start] [end]"
+    echo "Usage: mk_linefile [full/path/wavfile] [save/dir/path] [start] [end]"
     exit
 endif
-set wavfile = $1'data/shell_lambda.dat'
+set wavfile = $1
 @ i = $3
 while ($i <= $4)
     echo '****ZAU model '$i'****'

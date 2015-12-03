@@ -1,18 +1,19 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import cubehelix
 import matplotlib.colors as mpl_colors
 import matplotlib.cm as cmx
+import pkg_resources
 
-this_dir = '/astro/users/ebyler/python/pro/astrodata/'
 c = 2.9979e10
+
 def plot_bpt(logq_val=8.5, z_val=1.0, label='Dopita (2013)', 
              ax=None, color='k', **kwargs):
     '''
     dopita.plot_bpt(logq_val='all', color='blue', auto_corr=True)
     '''
     auto_corr = kwargs.get('auto_corr', False)
-    data = np.genfromtxt(this_dir+'dopita_lines.dat',
+    linefile = pkg_resources.resource_string(__name__, "data/dopita_lines.dat")
+    data = np.genfromtxt(linefile,
                          comments='#', delimiter='\t',
                          names='z,k,logq,o3a,o3b,o1,n2a,ha,n2b,s2a,s2b')
     if auto_corr:

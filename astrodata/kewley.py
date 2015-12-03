@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import cubehelix
 import matplotlib.colors as mpl_colors
 import matplotlib.cm as cmx
 

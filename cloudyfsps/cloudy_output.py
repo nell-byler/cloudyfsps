@@ -7,16 +7,16 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from astropy.convolution import Gaussian1DKernel
 from astropy.convolution import convolve
 from scipy.interpolate import interp1d
-
-this_dir = os.getcwd()
-this_dir = '/Users/Nell/python/cloudyfsps/cloudyfsps/'
+import pkg_resources
 
 def format_lines(dir_, model_prefix, **kwargs):
     filelist = [f.split('.')[0] for f in listdir(dir_) if (isfile(join(dir_, f)) and f.split('.')[-1] == 'out')]
     modnums = np.array([int(f.strip(model_prefix)) for f in filelist])
     startnum = modnums.min()
     endnum = modnums.max()
-    to_run = '{0}/mk_linefile.sh {0} {1} {2} {3}'.format(this_dir, dir_, startnum, endnum)
+    wavfile = pkg_resources.resource_filename(__name__, "data/shell_lambda.dat")
+    shscript = pkg_resources.resource_filename(__name__, "mk_linefile.sh")
+    to_run = '{0} {1} {2} {3} {4}'.format(shscript, wavfile, dir_, startnum, endnum)
     stdout = subprocess.PIPE
     proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
     proc.communicate()

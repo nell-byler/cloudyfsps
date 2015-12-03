@@ -1,13 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import cubehelix
 import matplotlib.colors as mpl_colors
 import matplotlib.cm as cmx
 from astroML.datasets import fetch_sdss_corrected_spectra
 from astroML.datasets.tools.sdss_fits import log_OIII_Hb_NII
 from astrodata.kewley import *
-
-this_dir = '/astro/users/ebyler/python/pro/astrodata/'
 
 def plot_bpt(var_label, ax=None, color_code=False, **kwargs):
     '''

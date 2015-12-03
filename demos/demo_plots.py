@@ -1,8 +1,8 @@
-import outobj as ob
+from cloudyfsps import outobj as ob
 
-dir_ = './output_nh/' #r18, n100...lots of U and Z
+dir_ = './output_csfh/' #r18, n100...lots of U and Z
 mod_prefix='ZAU'
-nh = ob.allmods(dir_, mod_prefix, read_out=True)
+csf = ob.allmods(dir_, mod_prefix, read_out=True)
 
 Dir_ = './output3ND/' #r18, n100...lots of U and Z
 mod_prefix='ZAU'

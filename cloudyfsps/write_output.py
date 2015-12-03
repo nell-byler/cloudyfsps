@@ -5,7 +5,7 @@ import numpy as np
 import subprocess
 from .astrotools import air_to_vac
 from scipy.interpolate import interp1d
-
+import pkg_resources
 
 #grid: 2 files: line, cont
 
@@ -55,9 +55,8 @@ class PrepOutput(object):
         line in the output file. converts all wavelengths to vacuum.
         '''
         #read in file containing wavelength info
-        stepdir = '/'.join(self.dir_.split('/')[0:-2])+'/'
-        flname = stepdir+'ordered_lambda.dat'
-        data = np.genfromtxt(flname)
+        linefile = pkg_resources.resource_string(__name__, "data/ordered_lambda.dat")
+        data = np.genfromtxt(linefile)
         data_vac = air_to_vac(data)
         nlines = len(data)
         nmods = np.max(self.mod_num)
@@ -119,7 +118,8 @@ class PrepOutput(object):
         line in the output file. converts all wavelengths to vacuum.
         '''
         #read in file containing wavelength info
-        data = np.genfromtxt(self.dir_+'fsps_lam.dat')
+        linefile = pkg_resources.resource_string(__name__, "data/fsps_lam.dat")
+        data = np.genfromtxt(linefile)
         self.__setattr__('fsps_lam', data)
         nlines = len(data)
         nmods = np.max(self.mod_num)

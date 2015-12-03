@@ -4,9 +4,7 @@ import subprocess
 import cloudytools as ct
 from scipy.interpolate import InterpolatedUnivariateSpline 
 import neb_abund
-
-this_dir = os.getcwd()
-this_dir = '/Users/Nell/python/cloudyfsps/cloudyfsps/'
+import pkg_resources
 
 def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     '''
@@ -72,7 +70,7 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
         r_out = np.log10(pars['r_inner']*pc_to_cm)
     else:
         r_out = pars['r_inner']
-    
+    linefile = pkg_resources.resource_filename(__name__, "data/cloudy_lines.dat")
     this_print('radius {0:.3f} log'.format(r_out))
     this_print('hden {0:.3f} log'.format(np.log10(pars['dens'])))
     this_print('sphere')
@@ -80,7 +78,7 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     this_print('iterate to convergence max=5')
     this_print('stop temperature 100.0')
     this_print('stop efrac -1.0')
-    this_print('save last linelist ".lin" "{}data/cloudy_lines.dat" absolute column'.format(this_dir))
+    this_print('save last linelist ".lin" "{}" absolute column'.format(linefile))
     this_print('save last outward continuum ".outwcont" units Angstrom no title')
     this_print('save last incident continuum ".inicont" units Angstrom no title')
     if to_file:

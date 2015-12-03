@@ -5,8 +5,6 @@ import itertools
 import fsps
 import subprocess
 
-dat_dir = os.getcwd()+'/cloudyfsps/data/'
-
 def grouper(n, iterable):
     '''
     Iterate through array in groups of n
@@ -97,101 +95,80 @@ def check_compile(dir_, ascii_file, **kwargs):
     return check
     
         
-
+zsun=0.019
 #-----------------------------------------------------------------------------
 def main(fileout = 'FSPS_IMF2a.ascii', **kwargs):
-    sp = fsps.StellarPopulation(imf_type=2)
-    ages = 10.0**sp.log_age
-    zmets = np.arange(1,23,1)
-    dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
-    logZs = dat['zrats'][zmets-1]
-    #modpars = [(age, zmet) for age in ages for zmet in zmets]
+    sp_dict = dict(zcontinuous=1,
+                   imf_type=2)
+    sp = fsps.StellarPopulation(**sp_dict)
+    ages = 10.**sp.log_age
+    lam = sp.wavelengths
+    logZs = np.log10(sp.zlegend/zsun)
     modpars = [(age, logZ) for age in ages for logZ in logZs]
-    
-    all_sp = [fsps.StellarPopulation(imf_type=2, zmet=zmet) for zmet in zmets]
-    all_specs = np.array([sp.get_spectrum() for sp in all_sp]) #lsun per hz
-    lam = all_specs[0][0] #angstroms
-    fluxs = np.array([all_spec[1][i] for i in range(len(ages))
-                      for all_spec in all_specs])
+    all_fluxs = []
+    for logZ in logZs:
+        sp.params['logzsol'] = logZ
+        all_fluxs.append(sp.get_spectrum()[1]) #lsun per hz
     nmod = len(modpars)
-    FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod)
+    flat_flux = np.array([all_fluxs[j][i]
+                          for i in range(len(ages))
+                          for j in range(len(logZs))])
+    write_ascii.FileOps(fileout, lam, flat_flux,
+                        modpars, ndim=2, npar=2, nmod=nmod)
     return
 
 if __name__ == "__main__":
     main()
 
-def pagb_main(fileout = 'FSPS_pagb.ascii', **kwargs):
-    sp = fsps.StellarPopulation(pagb=1.5)
-    ages = 10.0**sp.log_age
-    zmets = np.arange(1,23,1)
-    dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
-    logZs = dat['zrats'][zmets-1]
-    modpars = [(age, logZ) for age in ages for logZ in logZs]
-    
-    all_sp = [fsps.StellarPopulation(pagb=1.5, zmet=zmet) for zmet in zmets]
-    all_specs = np.array([sp.get_spectrum() for sp in all_sp]) #lsun per hz
-    lam = all_specs[0][0] #angstroms
-    fluxs = np.array([all_spec[1][i] for i in range(len(ages))
-                      for all_spec in all_specs])
-    fluxs[fluxs<0.0]=0.0
-    nmod = len(modpars)
-    FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod)
-    return
-
-def fbhb_main(fileout = 'FSPS_fbhb.ascii', **kwargs):
-    sp = fsps.StellarPopulation(fbhb=0.1)
-    ages = 10.0**sp.log_age
-    zmets = np.arange(1,23,1)
-    dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
-    logZs = dat['zrats'][zmets-1]
-    modpars = [(age, logZ) for age in ages for logZ in logZs]
-    
-    all_sp = [fsps.StellarPopulation(fbhb=0.1, zmet=zmet) for zmet in zmets]
-    all_specs = np.array([sp.get_spectrum() for sp in all_sp]) #lsun per hz
-    lam = all_specs[0][0] #angstroms
-    fluxs = np.array([all_spec[1][i] for i in range(len(ages))
-                      for all_spec in all_specs])
-    fluxs[fluxs<0.0]=0.0
-    nmod = len(modpars)
-    FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod)
-    return
-
-
-
-
-def csfh_main(fileout='FSPS_csfh.ascii'):
-    sp = fsps.StellarPopulation(sfh=1,
-                                tau=1.0, #efolding time for SFH in Gyr
-                                const=1.0, #mass frac formed in const SFH
-                                sf_start=0.0, #start time of SFH in Gyr
-                                tage=0.0, # output age
-                                fburst=0.0, #fraction in instantaneous SF
-                                tburst=0.0)
-    ages = np.array([4.0e6])
-    zmets = np.arange(1,23,1)
-    dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
-    logZs = dat['zrats'][zmets-1]
-    modpars = [(age, logZ) for age in ages for logZ in logZs]
-    all_sp = [fsps.StellarPopulation(imf_type=2, zmet=zmet) for zmet in zmets]
-    all_specs = np.array([sp.get_spectrum() for sp in all_sp]) #lsun per hz
-    lam = all_specs[0][0] #angstroms
-    fluxs = np.array([all_spec[1][22] for all_spec in all_specs])
-    nmod = len(modpars)
-    FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod)
-    return
-def dust_main(fileout='FSPS_dust.ascii'):
-    sp = fsps.StellarPopulation(imf_type=2, dust_type=1)
-    ages = 10.0**sp.log_age
-    dusts = [2.1, 2.5, 3.1, 4.0, 5.5]
-    zmet = kwargs.get('zmet', 10)
-    logZ = -0.98
-    modpars = [(age, dust) for age in ages for dust in dusts]
-    all_sp = [fsps.StellarPopulation(imf_type=2, zmet=zmet, dust_type=1,
-                                     mwr=dust) for dust in dusts]
-    all_specs = np.array([sp.get_spectrum() for sp in all_sp])
-    lam = all_specs[0][0]
-    fluxs = np.array([all_spec[1][i] for i in range(len(ages))
-                      for all_spec in all_specs])
-    nmod = len(modpars)
-    FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod, par2='mwr')
-    return
+# def pagb_main(fileout = 'FSPS_pagb.ascii', **kwargs):
+#     sp = fsps.StellarPopulation(pagb=1.5)
+#     ages = 10.0**sp.log_age
+#     zmets = np.arange(1,23,1)
+#     dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
+#     logZs = dat['zrats'][zmets-1]
+#     modpars = [(age, logZ) for age in ages for logZ in logZs]
+#     
+#     all_sp = [fsps.StellarPopulation(pagb=1.5, zmet=zmet) for zmet in zmets]
+#     all_specs = np.array([sp.get_spectrum() for sp in all_sp]) #lsun per hz
+#     lam = all_specs[0][0] #angstroms
+#     fluxs = np.array([all_spec[1][i] for i in range(len(ages))
+#                       for all_spec in all_specs])
+#     fluxs[fluxs<0.0]=0.0
+#     nmod = len(modpars)
+#     FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod)
+#     return
+# 
+# def fbhb_main(fileout = 'FSPS_fbhb.ascii', **kwargs):
+#     sp = fsps.StellarPopulation(fbhb=0.1)
+#     ages = 10.0**sp.log_age
+#     zmets = np.arange(1,23,1)
+#     dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
+#     logZs = dat['zrats'][zmets-1]
+#     modpars = [(age, logZ) for age in ages for logZ in logZs]
+#     
+#     all_sp = [fsps.StellarPopulation(fbhb=0.1, zmet=zmet) for zmet in zmets]
+#     all_specs = np.array([sp.get_spectrum() for sp in all_sp]) #lsun per hz
+#     lam = all_specs[0][0] #angstroms
+#     fluxs = np.array([all_spec[1][i] for i in range(len(ages))
+#                       for all_spec in all_specs])
+#     fluxs[fluxs<0.0]=0.0
+#     nmod = len(modpars)
+#     FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod)
+#     return
+# 
+# def dust_main(fileout='FSPS_dust.ascii'):
+#     sp = fsps.StellarPopulation(imf_type=2, dust_type=1)
+#     ages = 10.0**sp.log_age
+#     dusts = [2.1, 2.5, 3.1, 4.0, 5.5]
+#     zmet = kwargs.get('zmet', 10)
+#     logZ = -0.98
+#     modpars = [(age, dust) for age in ages for dust in dusts]
+#     all_sp = [fsps.StellarPopulation(imf_type=2, zmet=zmet, dust_type=1,
+#                                      mwr=dust) for dust in dusts]
+#     all_specs = np.array([sp.get_spectrum() for sp in all_sp])
+#     lam = all_specs[0][0]
+#     fluxs = np.array([all_spec[1][i] for i in range(len(ages))
+#                       for all_spec in all_specs])
+#     nmod = len(modpars)
+#     FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod, par2='mwr')
+#     return

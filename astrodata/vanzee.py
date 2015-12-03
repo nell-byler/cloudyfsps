@@ -1,10 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import cubehelix
 import matplotlib.colors as mpl_colors
 import matplotlib.cm as cmx
-
-this_dir = '/astro/users/ebyler/python/pro/astrodata/'
+import pkg_resources
 
 def plot_bpt(var_label, ax=None, **kwargs):
     '''
@@ -15,7 +13,8 @@ def plot_bpt(var_label, ax=None, **kwargs):
         lab = 'Van Zee (1998)'
     else:
         lab = '__nolegend__'
-    data = np.genfromtxt(this_dir+'vanzee_lines.dat', comments='#',
+    linefile = pkg_resources.resource_string(__name__, "vanzee_lines.dat")
+    data = np.genfromtxt(linefile, comments='#',
                          names='o2, o2_e, o3, o3_e, ha, ha_e, n2, n2_e')
     if auto_corr:
         #removing contribution from doublet lines I_b = 2.88*I_a
@@ -41,8 +40,8 @@ def get_abunds():
           temp, logO, logOerr, logNO, logNOerr
           T(O++), log(O/H), log(N/O)
     '''
-    fname = 'vanzee_abund.dat'
-    data = np.genfromtxt(this_dir+fname, delimiter='\t',
+    linefile = pkg_resources.resource_string(__name__, "data/vanzee_abund.dat")
+    data = np.genfromtxt(linefile, delimiter='\t',
                          names='temp, logO, logOerr, logNO, logNOerr')
     return data
 
