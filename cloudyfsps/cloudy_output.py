@@ -15,7 +15,7 @@ def format_lines(dir_, model_prefix, **kwargs):
     modnums = np.array([int(f.strip(model_prefix)) for f in filelist])
     startnum = modnums.min()
     endnum = modnums.max()
-    to_run = './mk_linefile.sh {} {} {} {}'.format(this_dir, dir_, startnum, endnum)
+    to_run = '{0}/mk_linefile.sh {0} {1} {2} {3}'.format(this_dir, dir_, startnum, endnum)
     stdout = subprocess.PIPE
     proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
     proc.communicate()
