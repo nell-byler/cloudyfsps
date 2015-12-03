@@ -36,7 +36,8 @@ def csfh_ascii(fileout='FSPS_csfh.ascii', **kwargs):
     return
 
 ascii_file = 'FSPS_csfh.ascii'
-ascii_dir = '/astro/users/ebyler/pro/cloudy/data/'
+#ascii_dir = '/astro/users/ebyler/pro/cloudy/data/'
+ascii_dir = '/Users/Nell/programs/cloudy/c13.01/data/'
 compiled_ascii = '{}.mod'.format(ascii_file.split('.')[0])
 if not os.path.exists(ascii_dir+compiled_ascii):
     # write ascii file
@@ -47,7 +48,8 @@ if not os.path.exists(ascii_dir+compiled_ascii):
         print 'bad model compilation, try again'
 
 # write grid of input files, run cloudy
-mod_dir = './output_csfh/'
+#mod_dir = './output_csfh/'
+mod_dir = '/Users/Nell/research/newem/output_csfh/'
 mod_prefix = 'ZAU'
 
 ages = np.array([1.0e6, 2.0e6, 3.0e6, 5.0e6, 10.0e6])

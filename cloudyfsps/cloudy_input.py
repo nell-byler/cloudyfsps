@@ -5,6 +5,8 @@ import cloudytools as ct
 from scipy.interpolate import InterpolatedUnivariateSpline 
 import neb_abund
 
+this_dir = os.getcwd()
+
 def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     '''
     write_input('./test/', 'ZAU115', logZ=-0.5, age=5.0e6, logU=-2.0)
@@ -77,7 +79,7 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     this_print('iterate to convergence max=5')
     this_print('stop temperature 100.0')
     this_print('stop efrac -1.0')
-    this_print('save last linelist ".lin" "cloudy_lines.dat" absolute column')
+    this_print('save last linelist ".lin" "{}/data/cloudy_lines.dat" absolute column'.format(this_dir))
     this_print('save last outward continuum ".outwcont" units Angstrom no title')
     this_print('save last incident continuum ".inicont" units Angstrom no title')
     if to_file:
