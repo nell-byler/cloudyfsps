@@ -4,7 +4,7 @@ if ($# != 4) then
     echo "Usage: mk_linefile [current/dir/path] [save/dir/path] [start] [end]"
     exit
 endif
-set wavfile = $1'/data/shell_lambda.dat'
+set wavfile = $1'data/shell_lambda.dat'
 @ i = $3
 while ($i <= $4)
     echo '****ZAU model '$i'****'

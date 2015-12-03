@@ -9,6 +9,7 @@ from astropy.convolution import convolve
 from scipy.interpolate import interp1d
 
 this_dir = os.getcwd()
+this_dir = '/Users/Nell/python/cloudyfsps/cloudyfsps/'
 
 def format_lines(dir_, model_prefix, **kwargs):
     filelist = [f.split('.')[0] for f in listdir(dir_) if (isfile(join(dir_, f)) and f.split('.')[-1] == 'out')]

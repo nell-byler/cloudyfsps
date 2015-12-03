@@ -6,6 +6,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import neb_abund
 
 this_dir = os.getcwd()
+this_dir = '/Users/Nell/python/cloudyfsps/cloudyfsps/'
 
 def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     '''
@@ -79,7 +80,7 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     this_print('iterate to convergence max=5')
     this_print('stop temperature 100.0')
     this_print('stop efrac -1.0')
-    this_print('save last linelist ".lin" "{}/data/cloudy_lines.dat" absolute column'.format(this_dir))
+    this_print('save last linelist ".lin" "{}data/cloudy_lines.dat" absolute column'.format(this_dir))
     this_print('save last outward continuum ".outwcont" units Angstrom no title')
     this_print('save last incident continuum ".inicont" units Angstrom no title')
     if to_file:

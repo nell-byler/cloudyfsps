@@ -86,3 +86,5 @@ cloudy_output.format_lines(mod_dir, mod_prefix)
 print 'shell script finished. formatting output files'
 
 cloudy_output.format_all(mod_dir, mod_prefix)
+
+#write_output.PrepOutput(mod_dir, mod_prefix, 'CSFH')
