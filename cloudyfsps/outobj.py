@@ -1,22 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import cubehelix
 import matplotlib.colors as mpl_colors
 import matplotlib.cm as cmx
 import cloudytools as ct
 import fsps
 from astrodata import dopita, sdss, vanzee, kewley
+from astrotools import get_colors
 
 c = 2.9979e18
 lsun = 3.846e33
 planck = 6.626e-27
-fsps_dat = np.genfromtxt('fsps_znum.txt', names='ind, znum, zrats')
-
-def get_colors(vals, cmap=cubehelix.cmap()):
-    cNorm = mpl_colors.Normalize(vmin=vals.min(), vmax=vals.max())
-    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=cmap)
-    scalarMap.set_array(vals)
-    return scalarMap
 
 def sextract(text, par1=None, par2=None):
     
@@ -98,9 +91,8 @@ class modObj(object):
         self.spec_Q = ct.calcQ(self.lam, self.incflu*lsun, f_nu=True)
         return
     def get_fsps_spec(self, **kwargs):
-        zind = np.argmin(np.abs(fsps_dat['zrats'] - self.logZ))
-        zmet = fsps_dat['ind'][zind]
-        sp = fsps.StellarPopulation(zmet=zmet)
+        sp = fsps.StellarPopulation(zcontinuous=1)
+        sp.params['logzsol'] = self.logZ
         lam, spec = sp.get_spectrum(tage=self.age*1.0e-9)
         self.__setattr__('fsps_spec', spec)
         self.__setattr__('fsps_Q', ct.calcQ(lam, spec*lsun, f_nu=True))
