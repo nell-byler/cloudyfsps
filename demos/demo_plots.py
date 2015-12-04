@@ -25,5 +25,5 @@ for age, col in zip(ages, cols):
     csf.makeBPT(ax=ax, val1=age, color=col,
                 par_label='{0:.1f} Myr'.format(age*1.0e-6),
                 plot_data=pd, var_label=var_label)
-
-
+plt.title('CSFH Models')
+fig.savefig('CSFH_BPT.png')
