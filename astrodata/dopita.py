@@ -12,7 +12,7 @@ def plot_bpt(logq_val=8.5, z_val=1.0, label='Dopita (2013)',
     dopita.plot_bpt(logq_val='all', color='blue', auto_corr=True)
     '''
     auto_corr = kwargs.get('auto_corr', False)
-    linefile = pkg_resources.resource_string(__name__, "data/dopita_lines.dat")
+    linefile = pkg_resources.resource_filename(__name__, "data/dopita_lines.dat")
     data = np.genfromtxt(linefile,
                          comments='#', delimiter='\t',
                          names='z,k,logq,o3a,o3b,o1,n2a,ha,n2b,s2a,s2b')

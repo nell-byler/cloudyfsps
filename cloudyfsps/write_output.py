@@ -55,7 +55,7 @@ class PrepOutput(object):
         line in the output file. converts all wavelengths to vacuum.
         '''
         #read in file containing wavelength info
-        linefile = pkg_resources.resource_string(__name__, "data/ordered_lambda.dat")
+        linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda.dat")
         data = np.genfromtxt(linefile)
         data_vac = air_to_vac(data)
         nlines = len(data)
@@ -118,7 +118,7 @@ class PrepOutput(object):
         line in the output file. converts all wavelengths to vacuum.
         '''
         #read in file containing wavelength info
-        linefile = pkg_resources.resource_string(__name__, "data/fsps_lam.dat")
+        linefile = pkg_resources.resource_filename(__name__, "data/fsps_lam.dat")
         data = np.genfromtxt(linefile)
         self.__setattr__('fsps_lam', data)
         nlines = len(data)

@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_colors
 import matplotlib.cm as cmx
-import cloudytools as ct
+import cloudyfsps.cloudytools as ct
 import fsps
 from astrodata import dopita, sdss, vanzee, kewley
-from astrotools import get_colors
+from cloudyfsps.astrotools import get_colors
 
 c = 2.9979e18
 lsun = 3.846e33
@@ -50,6 +50,7 @@ class modObj(object):
         '''
         [0]modnum; [1]logZ; [2]age; [3]logU; [4]logR; [5]logQ  
         '''
+        auto_corr = kwargs.get('auto_corr', False) # fix n2/o3 line ratios
         read_out = kwargs.get('read_out', False)
         read_cont = kwargs.get('read_cont', False)
         self.modnum = int(parline[0])
@@ -61,13 +62,13 @@ class modObj(object):
         self.nH = parline[6]
         self.logq = np.log10((10.0**self.logQ)/(np.pi*4.0*self.nH*(10.0**self.logR)**2.0))
         self.fl = '{}{}{}'.format(dir_, prefix, self.modnum)
-        self.load_lines()
+        self.load_lines(auto_corr=auto_corr)
         if read_out:
             self.read_out(dust_mod=dust_mod)
         if read_cont:
             self.load_cont()
         
-    def load_lines(self, **kwargs):
+    def load_lines(self, auto_corr=False, **kwargs):
         lines = {'ha':6562.50,
                  'hb':4861.36,
                  'o3':5007.00,
@@ -81,8 +82,12 @@ class modObj(object):
             self.__setattr__(name, flu[matchind])
         self.alln2 = self.n2+self.an2
         self.allo3 = self.o3+self.ao3
-        self.bpt_x = np.log10(self.n2/self.ha)
-        self.bpt_y = np.log10(self.o3/self.hb)
+        if auto_corr:
+            self.bpt_x = np.log10(self.alln2/self.ha)
+            self.bpt_y = np.log10(self.allo3/self.hb)
+        else:
+            self.bpt_x = np.log10(self.n2/self.ha)
+            self.bpt_y = np.log10(self.o3/self.hb)
         return
     def load_cont(self, **kwargs):
         cont_info = np.genfromtxt(self.fl+'.out_cont', skip_header=1)
@@ -215,8 +220,8 @@ class allmods(object):
         if plot_data:
             sdss.plot_bpt(plot_data)
             vanzee.plot_bpt(plot_data)
-        xlabel = r'log ( [N II] $\lambda\lambda$6584 / H$\alpha$ )'
-        ylabel = r'log ( [O III]$\lambda$5007 / H$\beta$ )'
+        xlabel = r'log [N II] $\lambda 6584$ / H$\alpha$'
+        ylabel = r'log [O III]$\lambda 5007$ / H$\beta$'
         ax.set_xlabel(xlabel, fontsize=16)
         ax.set_ylabel(ylabel, fontsize=16)
         # regular limits on BPT

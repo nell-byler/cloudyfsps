@@ -13,7 +13,7 @@ def plot_bpt(var_label, ax=None, **kwargs):
         lab = 'Van Zee (1998)'
     else:
         lab = '__nolegend__'
-    linefile = pkg_resources.resource_string(__name__, "vanzee_lines.dat")
+    linefile = pkg_resources.resource_filename(__name__, "data/vanzee_lines.dat")
     data = np.genfromtxt(linefile, comments='#',
                          names='o2, o2_e, o3, o3_e, ha, ha_e, n2, n2_e')
     if auto_corr:
@@ -40,7 +40,7 @@ def get_abunds():
           temp, logO, logOerr, logNO, logNOerr
           T(O++), log(O/H), log(N/O)
     '''
-    linefile = pkg_resources.resource_string(__name__, "data/vanzee_abund.dat")
+    linefile = pkg_resources.resource_filename(__name__, "data/vanzee_abund.dat")
     data = np.genfromtxt(linefile, delimiter='\t',
                          names='temp, logO, logOerr, logNO, logNOerr')
     return data
