@@ -50,7 +50,7 @@ class modObj(object):
         '''
         [0]modnum; [1]logZ; [2]age; [3]logU; [4]logR; [5]logQ  
         '''
-        auto_corr = kwargs.get('auto_corr', False) # fix n2/o3 line ratios
+        use_doublet = kwargs.get('use_doublet', False) # fix n2/o3 line ratios
         read_out = kwargs.get('read_out', False)
         read_cont = kwargs.get('read_cont', False)
         self.modnum = int(parline[0])
@@ -62,19 +62,23 @@ class modObj(object):
         self.nH = parline[6]
         self.logq = np.log10((10.0**self.logQ)/(np.pi*4.0*self.nH*(10.0**self.logR)**2.0))
         self.fl = '{}{}{}'.format(dir_, prefix, self.modnum)
-        self.load_lines(auto_corr=auto_corr)
+        self.load_lines(use_doublet=use_doublet)
         if read_out:
             self.read_out(dust_mod=dust_mod)
         if read_cont:
             self.load_cont()
         
-    def load_lines(self, auto_corr=False, **kwargs):
+    def load_lines(self, use_doublet=False, **kwargs):
         lines = {'ha':6562.50,
                  'hb':4861.36,
                  'o3':5007.00,
                  'n2':6584.00,
                  'an2':6548.00,
-                 'ao3':4959.00}
+                 'ao3':4959.00,
+                 'o2':3727.00,
+                 's2a':6716.00,
+                 's2b':6731.00,
+                 'o1':6300.00}
         line_info = np.genfromtxt(self.fl+'.lineflux')
         lam, flu = line_info[:,0], line_info[:,1]
         for name, wav in lines.iteritems():
@@ -82,12 +86,15 @@ class modObj(object):
             self.__setattr__(name, flu[matchind])
         self.alln2 = self.n2+self.an2
         self.allo3 = self.o3+self.ao3
-        if auto_corr:
-            self.bpt_x = np.log10(self.alln2/self.ha)
-            self.bpt_y = np.log10(self.allo3/self.hb)
-        else:
-            self.bpt_x = np.log10(self.n2/self.ha)
-            self.bpt_y = np.log10(self.o3/self.hb)
+        self.s2 = self.s2a+self.s2b
+        self.bpt_x_s2 = np.log10(self.s2/self.ha)
+        self.bpt_x_o1 = np.log10(self.o1/self.ha)
+        self.bpt_x_all = np.log10(self.alln2/self.ha)
+        self.bpt_y_all = np.log10(self.allo3/self.hb)
+        self.bpt_x = np.log10(self.n2/self.ha)
+        self.bpt_y = np.log10(self.o3/self.hb)
+        self.o3o2 = np.log10(self.allo3/self.o2)
+        self.n2o2 = np.log10(self.alln2/self.o2)
         return
     def load_cont(self, **kwargs):
         cont_info = np.genfromtxt(self.fl+'.out_cont', skip_header=1)
@@ -168,7 +175,9 @@ class allmods(object):
     def set_arrs(self):
         iterstrings = ['logZ', 'age', 'logU', 'logR', 'logQ', 'nH',
                        'n2', 'alln2', 'o3', 'allo3', 'hb', 'ha',
-                       'bpt_x', 'bpt_y']
+                       'bpt_x', 'bpt_y', 'o3o2', 'n2o2', 's2', 'o1',
+                       'o2', 'bpt_x_all', 'bpt_y_all', 'bpt_x_s2',
+                       'bpt_x_o1']
         for i in iterstrings:
             vals = np.array([mod.__getattribute__(i) for mod in self.mods])
             self.__setattr__(i, vals)
@@ -179,11 +188,28 @@ class allmods(object):
         return
     
     
-    def makeBPT(self, ax=None, plot_data=True, **kwargs):
+    def makeBPT(self, ax=None, plot_data=True, line_ratio='NII', **kwargs):
         '''
         mo.makeBPT(ax=ax, const1='age', val1=0.5e6, const2=logR, val2=19.0,
                    const3='nH', val3=10.0)
         '''
+        xlabel = r'log [N II] $\lambda 6548,6584$ / H$\alpha$'
+        ylabel = r'log [O III] $\lambda 4959,5007$ / H$\beta$'
+        bpt_inds = ['bpt_x_all', 'bpt_y_all']
+        if line_ratio=='NIIb':
+            bpt_inds = ['bpt_x', 'bpt_y']
+            xlabel = r'log [N II] $\lambda 6584$ / H$\alpha$'
+            ylabel = r'log [O III] $\lambda 5007$ / H$\beta$'
+        if line_ratio == 'SII':
+            bpt_inds[0] = 'bpt_x_s2'
+            xlabel = r'log [S II] $\lambda 6716,6731$ / H$\alpha$'
+        if line_ratio == 'OI':
+            bpt_inds[0] = 'bpt_x_o1'
+            xlabel = r'log [O I] $\lambda 6300$ / H$\alpha$'
+        if line_ratio == 'OII':
+            bpt_inds = ['n2o2', 'o3o2']
+            ylabel = r'log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$'
+            xlabel = r'log [N II] $\lambda 6548,6584$ / [O II] $\lambda 3726,3727$'
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
@@ -212,22 +238,15 @@ class allmods(object):
         Zy = np.zeros(gshape)
         nrows = gshape[0]
         ncols = gshape[1]
-        
         for ind, val in np.ndenumerate(X):
             arr = [mod for mod in use_mods if (mod.__getattribute__(x_name) == val) & (mod.__getattribute__(y_name) == Y[ind])]
-            Zx[ind] = arr[0].bpt_x
-            Zy[ind] = arr[0].bpt_y
+            Zx[ind] = arr[0].__getattribute__(bpt_inds[0])
+            Zy[ind] = arr[0].__getattribute__(bpt_inds[1])
         if plot_data:
-            sdss.plot_bpt(plot_data)
-            vanzee.plot_bpt(plot_data)
-        xlabel = r'log [N II] $\lambda 6584$ / H$\alpha$'
-        ylabel = r'log [O III]$\lambda 5007$ / H$\beta$'
+            sdss.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax)
+            vanzee.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax)
         ax.set_xlabel(xlabel, fontsize=16)
         ax.set_ylabel(ylabel, fontsize=16)
-        # regular limits on BPT
-        xlims = [-2.0, 1.0]
-        ylims = [-1.5, 1.5]
-        
         for i in range(nrows):
             if i == 0:
                 par_label = kwargs.get('par_label', '__nolegend__')
@@ -271,7 +290,19 @@ class allmods(object):
         plt.legend(numpoints=1)
         return
 
-
+def nice_lines():
+    lines = {'ha':[6562.50, r'H\alpha', r'\lambda6563'],
+             'hb':[4861.36, r'H\beta', r'\lambda4861'],
+             'o3':[5007.00, r'O III', r'\lambda5007'],
+             'n2':[6584.00, r'N II', r'\lambda6584'],
+             'an2':[6548.00, r'N II', r'\lambda6548'],
+             'ao3':[4959.00, r'O III', r'\lambda4959'],
+             'o2':[3727.00, r'O II', r'\lambdalambda3726,9'],
+             's2a':[6716.00, r'S II', r'\lambda6716'],
+             's2b':[6731.00, r'S II', r'\lambda6731'],
+             'o1':[6300, r'O I', r'\lambda6300']}
+    return lines
+    
 # uvals = [-3.0, -2.5, -2.0]
 # uvals = [18.0, 19.0, 20.0]
 # uvals = [0.5e6, 1.0e6, 2.0e6]

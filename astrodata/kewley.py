@@ -32,18 +32,18 @@ def SII_OIII_agn_lim(ax=None, color='k', **kwargs):
     '''
     if ax is None:
         ax = plt.gca()
-    SII = np.linspace(-2.0, 0.5)
+    SII = np.linspace(-2.0, 0.35)
     OIII = 0.72/(SII - 0.32) + 1.3
     ax.plot(SII, OIII, color=color, lw=2)
     return
-def OI_OIII_agn(ax=None, color='k', **kwargs):
+def OI_OIII_agn_lim(ax=None, color='k', **kwargs):
     '''
     Kewley (2006)
     [OI]6300/Ha vs [OIII]5007/Hb
     '''
     if ax is None:
         ax = plt.gca()
-    OI = np.linspace(-2.0, 0.0)
+    OI = np.linspace(-2.5, -0.75)
     OIII = 0.73/(OI + 0.59) + 1.33
     ax.plot(OI, OIII, color=color, lw=2)
     return

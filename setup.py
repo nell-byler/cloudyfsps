@@ -12,6 +12,4 @@ setup(name='cloudyfsps',
                    'astrodata':'astrodata'},
       package_data={'cloudyfsps':['data/*.dat','*.sh'],
                     'astrodata':['data/*.dat']}, 
-      install_requires=['fsps==0.2.0', 'numpy==1.9.3',
-                        'astroML', 'scipy'],
       zip_safe=False)
