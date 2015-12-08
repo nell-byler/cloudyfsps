@@ -24,7 +24,7 @@ from cloudyfsps import write_output
 # 5. Formats the various output files
 
 zsun = 0.019
-exec_write_ascii = False
+exec_write_ascii = True
 
 # Function to write the ascii file.
 # This is where you set the properties of the
@@ -90,7 +90,7 @@ if exec_write_ascii:
 # WRITE CLOUDY INPUT
 #---------------------------------------------------------------------
 # local folder to read and write *.in, *.out files
-mod_dir = '/Users/Nell/research/newem/output_csfh/'
+mod_dir = '/home/oliver/research/emission/output_csfh/'
 mod_prefix = 'ZAU'
 
 # GRID PARAMETERS FOR CLOUDY RUN
