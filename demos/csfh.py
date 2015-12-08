@@ -25,6 +25,8 @@ from cloudyfsps import write_output
 
 zsun = 0.019
 exec_write_ascii = True
+exec_write_input = True
+exec_run_cloudy = False
 
 # Function to write the ascii file.
 # This is where you set the properties of the
@@ -108,31 +110,41 @@ pars = np.array([(Z, a, U, R, ct.calc_4_logQ(logU=U, Rinner=10.0**R, nh=n), n)
                  for U in logUs 
                  for R in Rinners
                  for n in nhs])
-cloudy_input.param_files(dir_=mod_dir,
-                         model_prefix=mod_prefix,
-                         cloudy_mod=compiled_ascii, #this is the ascii file from above
-                         run_cloudy=False, #don't run yet
-                         ages=ages,
-                         logZs=logZs,
-                         logUs=logUs,
-                         r_inners=Rinners,
-                         nhs=nhs,
-                         use_Q=True,
-                         verbose=False, #don't print output to screen
-                         set_name='dopita') #abundance set to use
-print 'wrote {} param files'.format(len(pars))
+
+if exec_write_input:
+    print 'Writing input files...'
+    cloudy_input.param_files(dir_=mod_dir,
+                             model_prefix=mod_prefix,
+                             cloudy_mod=compiled_ascii, #this is the ascii file from above
+                             run_cloudy=False, #don't run yet
+                             ages=ages,
+                             logZs=logZs,
+                             logUs=logUs,
+                             r_inners=Rinners,
+                             nhs=nhs,
+                             use_Q=True,
+                             verbose=False, #don't print output to screen
+                             set_name='dopita') #abundance set to use
+    print 'Wrote {} param files'.format(len(pars))
+else:
+    print 'Skipping input writing.'
 #---------------------------------------------------------------------
 # RUN CLOUDY ON ALL INPUT FILES
 #---------------------------------------------------------------------
-print 'running cloudy....'
-cloudy_input.run_make(dir_=mod_dir, n_proc=8, model_name=mod_prefix)
+if exec_run_cloudy:
+    print 'Running Cloudy....'
+    cloudy_input.run_make(dir_=mod_dir, n_proc=8, model_name=mod_prefix)
+    print 'Cloudy finished.'
+else:
+    print 'Not running Cloudy. Skipping to formatting output.'
 #---------------------------------------------------------------------
 # FORMAT OUTPUT
 #---------------------------------------------------------------------
-print 'running finished, starting shell script'
+print 'Starting shell script...'
 # fast way to pull needed columns from raw cloudy output
 cloudy_output.format_lines(mod_dir, mod_prefix)
-print 'shell script finished. formatting output files'
+print 'Shell script finished. Formatting output files...'
 cloudy_output.format_all(mod_dir, mod_prefix)
 # this is the file that is input to FSPS
+print 'Output formatted. Creating FSPS input grids...'
 write_output.PrepOutput(mod_dir, mod_prefix, '_CSFH')
