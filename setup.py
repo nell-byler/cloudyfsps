@@ -11,5 +11,5 @@ setup(name='cloudyfsps',
       package_dir={'cloudyfsps':'cloudyfsps',
                    'astrodata':'astrodata'},
       package_data={'cloudyfsps':['data/*.dat','*.sh'],
-                    'astrodata':['data/*.dat']}, 
+                    'astrodata':['data/*.dat', 'data/*.npz']}, 
       zip_safe=False)

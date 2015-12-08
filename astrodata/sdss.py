@@ -2,21 +2,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_colors
 import matplotlib.cm as cmx
-from astroML.datasets import fetch_sdss_corrected_spectra
-#from astroML.datasets.tools.sdss_fits import log_OIII_Hb_NII
+import pkg_resources
 from astrodata.kewley import NII_OIII_agn_lim, NII_OIII_sf_lim
 from astrodata.kewley import OI_OIII_agn_lim, SII_OIII_agn_lim
 
 def plot_bpt(var_label, ax=None, color_code=False, line_ratio='NII', **kwargs):
     '''
     sdss.plot_bpt(True)
+    SDSS data generated with astroML.fetch_corrected_sdss_spectra()
     '''
     assert line_ratio in ['NII','NIIb','SII','OI', 'OIa', 'OII']
     if var_label:
         lab = 'SDSS'
     else:
         lab = '__nolegend__'
-    data = fetch_sdss_corrected_spectra()
+    linefile = pkg_resources.resource_filename(__name__, "data/sdss_data.npz")
+    data = np.load(linefile)
     lineindex_cln = 'lineindex_cln_{}'.format(line_ratio)
     single_OIII = kwargs.get('single_OIII', False)
     if line_ratio == 'OII': # this produces NII/OII by OIII/OII plot
