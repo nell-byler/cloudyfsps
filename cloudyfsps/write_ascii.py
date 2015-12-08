@@ -5,6 +5,17 @@ import itertools
 import fsps
 import subprocess
 
+try:
+    CLOUDY_EXE = os.environ['CLOUDY_EXE']
+except KeyError:
+    print 'Must have set system environment CLOUDY_EXE'
+
+try:
+    CLOUDY_DATA_PATH = os.environ['CLOUDY_DATA_PATH']
+except KeyError:
+    print 'Cloudy data path not set. Assuming standard cloudy structure'
+    CLOUDY_DATA_PATH = '/'.join(CLOUDY_EXE.split('/')[:-2])+'/data'
+    
 def grouper(n, iterable):
     '''
     Iterate through array in groups of n
@@ -76,22 +87,24 @@ class FileOps:
         flu[(flu < 0.0)] = 0.0
         [FileOps.write_data(self, fl) for fl in flu]
         
-def compile_mod(dir_, ascii_file, **kwargs):
-    comp_file = dir_+'compile.in'
+def compile_mod(ascii_file, **kwargs):
+    comp_file = CLOUDY_DATA_PATH+'/compile.in'
     f = open(comp_file, 'w')
     f.write('compile stars "{}"\n'.format(ascii_file))
     f.close()
-    to_run = 'cd {} ; run compile'.format(dir_)
+    to_run = 'cd {} ; {} compile.in'.format(CLOUDY_DATA_PATH, CLOUDY_EXE)
     stdout = subprocess.PIPE
     print 'compiling {}'.format(ascii_file)
     proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
     proc.communicate()
-def check_compile(dir_, ascii_file, **kwargs):
-    out_file = dir_+'compile.out'
+def check_compile(ascii_file, **kwargs):
+    out_file = CLOUDY_DATA_PATH+'/compile.out'
     f = open(out_file, 'r')
     content = f.readlines()
     f.close()
-    check = np.all(['OK' in content[-1], os.path.exists('{}{}.mod'.format(dir_, ascii_file.split('.')[0])) ])
+    comp_mod = '{}/{}.mod'.format(CLOUDY_DATA_PATH, ascii_file.split('.')[0])
+    check = np.all(['OK' in content[-1],
+                    os.path.exists(comp_mod) ])
     return check
     
         
@@ -119,56 +132,3 @@ def main(fileout = 'FSPS_IMF2a.ascii', **kwargs):
 
 if __name__ == "__main__":
     main()
-
-# def pagb_main(fileout = 'FSPS_pagb.ascii', **kwargs):
-#     sp = fsps.StellarPopulation(pagb=1.5)
-#     ages = 10.0**sp.log_age
-#     zmets = np.arange(1,23,1)
-#     dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
-#     logZs = dat['zrats'][zmets-1]
-#     modpars = [(age, logZ) for age in ages for logZ in logZs]
-#     
-#     all_sp = [fsps.StellarPopulation(pagb=1.5, zmet=zmet) for zmet in zmets]
-#     all_specs = np.array([sp.get_spectrum() for sp in all_sp]) #lsun per hz
-#     lam = all_specs[0][0] #angstroms
-#     fluxs = np.array([all_spec[1][i] for i in range(len(ages))
-#                       for all_spec in all_specs])
-#     fluxs[fluxs<0.0]=0.0
-#     nmod = len(modpars)
-#     FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod)
-#     return
-# 
-# def fbhb_main(fileout = 'FSPS_fbhb.ascii', **kwargs):
-#     sp = fsps.StellarPopulation(fbhb=0.1)
-#     ages = 10.0**sp.log_age
-#     zmets = np.arange(1,23,1)
-#     dat = np.genfromtxt(dat_dir+'fsps_znum.txt', names='ind, znum, zrats')
-#     logZs = dat['zrats'][zmets-1]
-#     modpars = [(age, logZ) for age in ages for logZ in logZs]
-#     
-#     all_sp = [fsps.StellarPopulation(fbhb=0.1, zmet=zmet) for zmet in zmets]
-#     all_specs = np.array([sp.get_spectrum() for sp in all_sp]) #lsun per hz
-#     lam = all_specs[0][0] #angstroms
-#     fluxs = np.array([all_spec[1][i] for i in range(len(ages))
-#                       for all_spec in all_specs])
-#     fluxs[fluxs<0.0]=0.0
-#     nmod = len(modpars)
-#     FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod)
-#     return
-# 
-# def dust_main(fileout='FSPS_dust.ascii'):
-#     sp = fsps.StellarPopulation(imf_type=2, dust_type=1)
-#     ages = 10.0**sp.log_age
-#     dusts = [2.1, 2.5, 3.1, 4.0, 5.5]
-#     zmet = kwargs.get('zmet', 10)
-#     logZ = -0.98
-#     modpars = [(age, dust) for age in ages for dust in dusts]
-#     all_sp = [fsps.StellarPopulation(imf_type=2, zmet=zmet, dust_type=1,
-#                                      mwr=dust) for dust in dusts]
-#     all_specs = np.array([sp.get_spectrum() for sp in all_sp])
-#     lam = all_specs[0][0]
-#     fluxs = np.array([all_spec[1][i] for i in range(len(ages))
-#                       for all_spec in all_specs])
-#     nmod = len(modpars)
-#     FileOps(fileout, lam, fluxs, modpars, ndim=2, npar=2, nmod=nmod, par2='mwr')
-#     return
