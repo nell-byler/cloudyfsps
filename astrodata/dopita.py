@@ -32,15 +32,20 @@ def plot_bpt(logq_val=8.5, z_val=1.0, kappa_val=20, label='Dopita (2013)', line_
                          (data['kappa'] == kappa_val))
     do_grid = kwargs.get('do_grid', True)
     if do_grid:
+        i=0
         for q in np.unique(data['logq']):
             inds, = np.where((data['logq'] == q) & (data['kappa'] == kappa_val))
-            ax.plot(rat_x[inds], rat_y[inds], color=color)
+            if i == 0:
+                ax.plot(rat_x[inds], rat_y[inds], color=color, label=label)
+            else:
+                ax.plot(rat_x[inds], rat_y[inds], color=color, label='__nolegend__')
             ax.annotate('{0:.1f}'.format(np.log10((10.0**q)/c)),
                         xy=(rat_x[inds][-1], rat_y[inds][-1]), xycoords='data',
                         xytext=(-10,0), textcoords='offset points',
                         horizontalalignment='right',
                         verticalalignment='bottom',
                         size=18, color=tcolor)
+            i+=1
         for z in np.unique(data['Z']):
             #print np.log10(z)
             inds, = np.where((data['Z'] == z) & (data['kappa'] == kappa_val))
@@ -51,6 +56,5 @@ def plot_bpt(logq_val=8.5, z_val=1.0, kappa_val=20, label='Dopita (2013)', line_
                         horizontalalignment='left',
                         verticalalignment='top',
                         size=18, color=tcolor)
-    #ax.plot(rat_x[inds], rat_y[inds], 'o', color=color, label=label)
     return
 
