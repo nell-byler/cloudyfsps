@@ -1,12 +1,12 @@
 import os
+import numpy as np
+import fsps
 from cloudyfsps import cloudy_input
 from cloudyfsps import cloudy_output
 from cloudyfsps import cloudytools as ct
 from cloudyfsps import write_ascii
-from cloudyfsps import write_ascii
 from cloudyfsps import write_output
-import numpy as np
-import fsps
+
 
 # this code snippet goes through every step needed
 # to integrate FSPS into Cloudy.
@@ -30,7 +30,7 @@ exec_write_ascii = False
 # This is where you set the properties of the
 # ionizing spectrum (SSP/CSFH, IMF, FBHB, etc)
 
-def csfh_ascii(fileout='FSPS_csfh.ascii', **kwargs):
+def csfh_ascii(fileout, **kwargs):
     # change these parameters to modify the ionizing source grid
     # default mode is to produce an ascii grid in age and Z,
     # though different variables and more dimensions are possible.
@@ -63,39 +63,42 @@ def csfh_ascii(fileout='FSPS_csfh.ascii', **kwargs):
 #---------------------------------------------------------------------
 # ASCII FILE: WRITE AND COMPILE
 #---------------------------------------------------------------------
+# assumes you have $CLOUDY_EXE and $CLOUDY_DATA_PATH set as sys vars.
 
-# you should set this to your cloudy data directory
-ascii_dir = '/Users/Nell/programs/cloudy/c13.01/data/'
 # name of ascii file
 ascii_file = 'FSPS_csfh.ascii'
-# or if there is an already-compiled one you want to use,
-# specify here
+# or if there is an already-compiled one you want to use, specify here
 compiled_ascii = '{}.mod'.format(ascii_file.split('.')[0])
 
 if exec_write_ascii:
-    # will not attempt to re-compile if a .mod file already exists
-    if not os.path.exists(ascii_dir+compiled_ascii):
-        # write ascii file
-        csfh_ascii(fileout=ascii_dir+ascii_file)
-        # compile ascii file with cloudy
+    print 'Executing write ascii sequence...'
+    if not write_ascii.mod_exists(ascii_file):
+        print 'No compiled model exists...Writing.'
+        csfh_ascii(ascii_file)
+        print 'Compiling {} with Cloudy'.format(ascii_file)
         write_ascii.compile_mod(ascii_dir, ascii_file)
-        # check that it was successful
-        if not write_ascii.check_compile(ascii_dir, ascii_file):
-            print 'bad model compilation, try again'
+        print 'Checking to see if compilation was successful...'
+        if not write_ascii.check_compiled_mod(ascii_dir, ascii_file):
+            print 'Something went wrong!'
+            sys.exit()
+        else:
+            print 'Your model {} is ready to run.'.format(compiled_ascii)
+    else:
+        print '{} already exists.'.format(compiled_ascii)
 
 #---------------------------------------------------------------------
 # WRITE CLOUDY INPUT
 #---------------------------------------------------------------------
-# location to read and write *.in, *.out files
+# local folder to read and write *.in, *.out files
 mod_dir = '/Users/Nell/research/newem/output_csfh/'
 mod_prefix = 'ZAU'
 
-#modify these as you see fit
+# GRID PARAMETERS FOR CLOUDY RUN
 #--------------
-ages = np.array([1.0e6, 2.0e6, 3.0e6, 5.0e6, 10.0e6])
+ages = np.array([0.5e6, 1.0e6, 2.0e6, 4.0e6, 6.0e6])
 logUs =  np.array([-4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.0])
-logZs =  np.array([-2.0, -1.5, -1.0, -0.5, 0.0, 0.2])
-# don't need to change these, persay
+logZs =  np.array([-1.3, -1.0, -0.7, -0.5, -0.3, -0.1, 0.0, 0.2])
+#
 Rinners =  np.array([19.])
 nhs = np.array([10.0])
 #--------------
@@ -115,13 +118,14 @@ cloudy_input.param_files(dir_=mod_dir,
                          r_inners=Rinners,
                          nhs=nhs,
                          use_Q=True,
+                         verbose=False, #don't print output to screen
                          set_name='dopita') #abundance set to use
 print 'wrote {} param files'.format(len(pars))
 #---------------------------------------------------------------------
 # RUN CLOUDY ON ALL INPUT FILES
 #---------------------------------------------------------------------
 print 'running cloudy....'
-cloudy_input.run_make(dir_=mod_dir, n_proc=4, model_name=mod_prefix)
+cloudy_input.run_make(dir_=mod_dir, n_proc=8, model_name=mod_prefix)
 #---------------------------------------------------------------------
 # FORMAT OUTPUT
 #---------------------------------------------------------------------
@@ -131,4 +135,4 @@ cloudy_output.format_lines(mod_dir, mod_prefix)
 print 'shell script finished. formatting output files'
 cloudy_output.format_all(mod_dir, mod_prefix)
 # this is the file that is input to FSPS
-write_output.PrepOutput(mod_dir, mod_prefix, 'CSFH_')
+write_output.PrepOutput(mod_dir, mod_prefix, '_CSFH')

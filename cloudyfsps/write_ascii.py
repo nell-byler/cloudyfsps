@@ -97,7 +97,11 @@ def compile_mod(ascii_file, **kwargs):
     print 'compiling {}'.format(ascii_file)
     proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
     proc.communicate()
-def check_compile(ascii_file, **kwargs):
+def check_compiled_mod(ascii_file, **kwargs):
+    '''
+    checks to make sure ascii_file.mod exists and that 
+    the words "Cloudy exited OK' are in compile.out
+    '''
     out_file = CLOUDY_DATA_PATH+'/compile.out'
     f = open(out_file, 'r')
     content = f.readlines()
@@ -107,7 +111,12 @@ def check_compile(ascii_file, **kwargs):
                     os.path.exists(comp_mod) ])
     return check
     
-        
+def mod_exists(filename):
+    if filename.split('.')[-1] == 'mod':
+        return os.path.exists('/'.join(CLOUDY_DATA_PATH, filename))
+    else:
+        return os.path.exists('/'.join(CLOUDY_DATA_PATH, filename.split('.')[0]+'.mod'))
+
 zsun=0.019
 #-----------------------------------------------------------------------------
 def main(fileout = 'FSPS_IMF2a.ascii', **kwargs):

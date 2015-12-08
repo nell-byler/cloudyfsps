@@ -129,7 +129,7 @@ def print_par_file(dir_, mod_prefix, pars):
     return
 
 def param_files(**kwargs):
-    nom_dict = {'dir_':'./ftest/',
+    nom_dict = {'dir_':'./output/',
                 'model_prefix':'ZAU',
                 'ages':np.arange(1.0e6, 6.0e6, 1.0e6),
                 'logZs':np.linspace(-2.0, 0.2, 5),
@@ -143,7 +143,7 @@ def param_files(**kwargs):
                 'use_Q':True,
                 'dust':True,
                 're_z':False,
-                'cloudy_mod':'FSPS_IMF2a.mod'}
+                'cloudy_mod':'FSPS_SPS.mod'}
     for key, val in kwargs.iteritems():
         nom_dict[key] = val
     print '{} ages, {} logZs, {} logUs'.format(len(nom_dict['ages']),
