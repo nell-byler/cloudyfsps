@@ -4,8 +4,6 @@ from os.path import isfile, join, splitext
 import numpy as np
 import subprocess
 from scipy.interpolate import InterpolatedUnivariateSpline
-from astropy.convolution import Gaussian1DKernel
-from astropy.convolution import convolve
 from scipy.interpolate import interp1d
 import pkg_resources
 
@@ -139,10 +137,3 @@ def spec(dir_, model_prefix, modnum, print_line=False, conv=False, **kwargs):
 def find_nearest(array, value):
     idx = (np.abs(array-value)).argmin()
     return idx
-
-def convolve_spec(numpts, wav, flux, FWHM):
-    
-    gauss_kernel = Gaussian1DKernel(width=FWHM/2.355)
-    out = convolve(flux, gauss_kernel, boundary='extend')
-    
-    return  out
