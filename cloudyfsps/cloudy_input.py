@@ -143,7 +143,8 @@ def param_files(**kwargs):
                 'use_Q':True,
                 'dust':True,
                 're_z':False,
-                'cloudy_mod':'FSPS_SPS.mod'}
+                'cloudy_mod':'FSPS_SPS.mod',
+                'verbose':True}
     for key, val in kwargs.iteritems():
         nom_dict[key] = val
     print '{} ages, {} logZs, {} logUs'.format(len(nom_dict['ages']),
@@ -174,7 +175,8 @@ def param_files(**kwargs):
                     use_Q=nom_dict['use_Q'],
                     dust=nom_dict['dust'],
                     re_z=nom_dict['re_z'],
-                    cloudy_mod=nom_dict['cloudy_mod'])
+                    cloudy_mod=nom_dict['cloudy_mod'],
+                    verbose=nom_dict['verbose'])
     #--------------------------------------------
     write_make(dir_=nom_dict['dir_'])
     #--------------------------------------------

@@ -41,7 +41,7 @@ class FileOps:
                          'conv2':3.839e33, 'par1':'age', 'par2':'logz'}
         FileOps.init_pars(self, **kwargs)
         
-        self.file = open(outfile, 'w')
+        self.file = open('/'.join([CLOUDY_DATA_PATH,outfile]), 'w')
         FileOps.write_header(self, modpars)
         FileOps.write_body(self, lam, flu, modpars)
         self.file.close()
@@ -97,6 +97,7 @@ def compile_mod(ascii_file, **kwargs):
     print 'compiling {}'.format(ascii_file)
     proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
     proc.communicate()
+
 def check_compiled_mod(ascii_file, **kwargs):
     '''
     checks to make sure ascii_file.mod exists and that 
@@ -113,9 +114,9 @@ def check_compiled_mod(ascii_file, **kwargs):
     
 def mod_exists(filename):
     if filename.split('.')[-1] == 'mod':
-        return os.path.exists('/'.join(CLOUDY_DATA_PATH, filename))
+        return os.path.exists('/'.join([CLOUDY_DATA_PATH, filename]))
     else:
-        return os.path.exists('/'.join(CLOUDY_DATA_PATH, filename.split('.')[0]+'.mod'))
+        return os.path.exists('/'.join([CLOUDY_DATA_PATH, filename.split('.')[0]+'.mod']))
 
 zsun=0.019
 #-----------------------------------------------------------------------------
