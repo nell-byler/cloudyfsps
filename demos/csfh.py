@@ -78,9 +78,9 @@ if exec_write_ascii:
         print 'No compiled model exists...Writing.'
         csfh_ascii(ascii_file)
         print 'Compiling {} with Cloudy'.format(ascii_file)
-        write_ascii.compile_mod(ascii_dir, ascii_file)
+        write_ascii.compile_mod(ascii_file)
         print 'Checking to see if compilation was successful...'
-        if not write_ascii.check_compiled_mod(ascii_dir, ascii_file):
+        if not write_ascii.check_compiled_mod(ascii_file):
             print 'Something went wrong!'
             sys.exit()
         else:
