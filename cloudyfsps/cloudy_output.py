@@ -14,7 +14,11 @@ def format_lines(dir_, model_prefix, **kwargs):
     endnum = modnums.max()
     wavfile = pkg_resources.resource_filename(__name__, "data/shell_lambda.dat")
     shscript = pkg_resources.resource_filename(__name__, "mk_linefile.sh")
-    to_run = '{0} {1} {2} {3} {4}'.format(shscript, wavfile, dir_, startnum, endnum)
+    to_run = '{0} {1} {2} {3} {4}'.format(shscript,
+                                          wavfile,
+                                          '/'.join([dir_, model_prefix]),
+                                          startnum,
+                                          endnum)
     stdout = subprocess.PIPE
     proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
     proc.communicate()
