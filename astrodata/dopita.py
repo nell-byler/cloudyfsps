@@ -22,6 +22,9 @@ def plot_bpt(logq_val=8.5, z_val=1.0, kappa_val=20, label='Dopita (2013)', line_
     if line_ratio == 'OII':
         rat_x = np.log10((data['NIIa']+data['NIIb'])/(data['OIIa']+ data['OIIb']))
         rat_y = np.log10((data['OIIIa']+data['OIIIb'])/(data['OIIa']+ data['OIIb']))
+    if line_ratio == 'R23':
+        rat_x = np.log10((data['OIIIa'] + data['OIIIb'] + data['OIIa'] + data['OIIb']))
+        rat_y = np.log10((data['OIIIa']+data['OIIIb'])/(data['OIIa']+ data['OIIb']))
     if ax is None:
         ax = plt.gca()
     if type(logq_val) is str:

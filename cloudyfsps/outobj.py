@@ -95,6 +95,7 @@ class modObj(object):
         self.bpt_y = np.log10(self.o3/self.hb)
         self.o3o2 = np.log10(self.allo3/self.o2)
         self.n2o2 = np.log10(self.alln2/self.o2)
+        self.R23 = np.log10((self.o2+self.allo3)/self.hb)
         return
     def load_cont(self, **kwargs):
         cont_info = np.genfromtxt(self.fl+'.out_cont', skip_header=1)
@@ -210,6 +211,10 @@ class allmods(object):
             bpt_inds = ['n2o2', 'o3o2']
             ylabel = r'log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$'
             xlabel = r'log [N II] $\lambda 6548,6584$ / [O II] $\lambda 3726,3727$'
+        if line_ratio == 'R23':
+            bpt_inds = ['R23','o3o2']
+            ylabel = r'log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$'
+            xlabel = r'(log [O II] $\lambda 3726,3727$ + [O III] $\lambda 4959,5007$) / H$\beta$'
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
