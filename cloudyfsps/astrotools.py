@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_colors
-from matplotlib import cm
+from matplotlib import cm as cmx
 from matplotlib import rc
 
 rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})

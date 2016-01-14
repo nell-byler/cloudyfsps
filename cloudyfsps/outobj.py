@@ -189,7 +189,7 @@ class allmods(object):
         return
     
     
-    def makeBPT(self, ax=None, plot_data=True, line_ratio='NII', **kwargs):
+    def makeBPT(self, ax=None, plot_data=True, line_ratio='NII', plt_pars={}, **kwargs):
         '''
         mo.makeBPT(ax=ax, const1='age', val1=0.5e6, const2=logR, val2=19.0,
                    const3='nH', val3=10.0)
@@ -248,7 +248,7 @@ class allmods(object):
             Zx[ind] = arr[0].__getattribute__(bpt_inds[0])
             Zy[ind] = arr[0].__getattribute__(bpt_inds[1])
         if plot_data:
-            sdss.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax)
+            sdss.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax, **plt_pars)
             vanzee.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax)
         ax.set_xlabel(xlabel, fontsize=16)
         ax.set_ylabel(ylabel, fontsize=16)
