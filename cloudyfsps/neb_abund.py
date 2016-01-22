@@ -3,6 +3,10 @@ from astrotools import sym_to_name
 from scipy.interpolate import InterpolatedUnivariateSpline as InterpUS
 
 def get_abunds(set_name, logZ, dust=True, re_z=False):
+    '''
+    neb_abund.get_abunds(set_name, logZ, dust=True, re_z=False)
+    set_name must be 'dopita', 'newdopita', 'cl01' or 'yeh'
+    '''
     allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh']
     if set_name in allowed_names:
         return eval('{}({}, dust={}, re_z={})'.format(set_name, logZ, dust, re_z))
@@ -11,6 +15,10 @@ def get_abunds(set_name, logZ, dust=True, re_z=False):
 
 class abundSet(object):
     def __init__(self, set_name, logZ):
+        '''
+        overarching class for abundance sets.
+        abundSet('dopita', 0.0)
+        '''
         self.logZ = logZ
         self.abund_0 = load_abund(set_name)
         self.depl = load_depl(set_name)
@@ -40,6 +48,10 @@ class abundSet(object):
 class dopita(abundSet):
     solar = 'old solar 84'
     def __init__(self, logZ, dust=True, re_z=False):
+        '''
+        Dopita (2003) uses old solar abundances
+        ISM grains
+        '''
         if dust:
             self.grains = 'no grains\ngrains ISM'
         else:
@@ -52,7 +64,7 @@ class dopita(abundSet):
         
     def calcSpecial(self):
         '''
-        piece-wise function for nitrogen abund
+        piece-wise function for nitrogen abund (step-function)
         functional form for helium
         '''
         def calc_N(logZ):
@@ -77,6 +89,14 @@ class dopita(abundSet):
 class newdopita(abundSet):
     solar = 'GASS10'
     def __init__(self, logZ, dust=True, re_z=False):
+        '''
+        Abundances from Dopita (2013)
+            Solar Abundances from Grevasse 2010
+            includes smooth polynomial for N/O relationship
+            functional form for He(z)
+            new depletion factors
+            ISM grains
+        '''
         if dust:
             self.grains = 'no grains\ngrains ISM'
         else:

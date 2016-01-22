@@ -36,7 +36,7 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
             'set_name':'dopita',
             'dust':True,
             're_z':False,
-            'cloudy_mod':'FSPS_IMF2a.mod'
+            'cloudy_mod':'FSPS_SPS.mod'
             }
     for key, value in kwargs.iteritems():
         pars[key] = value

@@ -8,7 +8,7 @@ from scipy.interpolate import interp1d
 import pkg_resources
 
 def format_lines(dir_, model_prefix, **kwargs):
-    filelist = [f.split('.')[0] for f in listdir(dir_) if (isfile(join(dir_, f)) and f.split('.')[-1] == 'out')]
+    filelist = [f.split('.')[0] for f in listdir(dir_) if (isfile(join(dir_, f)) and f.split('.')[-1] == 'out' and f[0:len(model_prefix)] == model_prefix)]
     modnums = np.array([int(f.strip(model_prefix)) for f in filelist])
     startnum = modnums.min()
     endnum = modnums.max()
