@@ -6,6 +6,19 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import neb_abund
 import pkg_resources
 
+extra_str = '''
+save last radius ".rad"
+save last physical conditions ".phys"
+save last element hydrogen ".ele_H"
+save last element helium ".ele_He"
+save last element carbon ".ele_C"
+save last element nitrogen ".ele_N"
+save last element oxygen ".ele_O"
+save last element sulphur ".ele_S"
+save last element silicon ".ele_Si"
+save last element iron ".ele_Fe"
+'''
+
 def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     '''
     write_input('./test/', 'ZAU115', logZ=-0.5, age=5.0e6, logU=-2.0)
@@ -36,7 +49,9 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
             'set_name':'dopita',
             'dust':True,
             're_z':False,
-            'cloudy_mod':'FSPS_SPS.mod'
+            'cloudy_mod':'FSPS_SPS.mod',
+            'efrac':-1.0,
+            'extras':None
             }
     for key, value in kwargs.iteritems():
         pars[key] = value
@@ -77,10 +92,12 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     this_print('cosmic ray background')
     this_print('iterate to convergence max=5')
     this_print('stop temperature 100.0')
-    this_print('stop efrac -1.0')
+    this_print('stop efrac {0:.2f}'.format(pars['efrac']))
     this_print('save last linelist ".lin" "{}" absolute column'.format(linefile))
     this_print('save last outward continuum ".outwcont" units Angstrom no title')
     this_print('save last incident continuum ".inicont" units Angstrom no title')
+    if pars['extras'] is not None:
+        this_print(pars['extras'])
     if to_file:
         print('Input written in {0}'.format(file_name))
         f.close()
@@ -123,7 +140,7 @@ def print_par_file(dir_, mod_prefix, pars):
     f = open(outfile, 'w')
     for i in range(len(pars)):
         par = pars[i]
-        pstr = '{0} {1:.2f} {2:.2e} {3:.2f} {4:.2f} {5:.2f} {6:.2f}\n'.format(i+1, *par)
+        pstr = '{0} {1:.2f} {2:.2e} {3:.2f} {4:.2f} {5:.2f} {6:.2f} {7:.2f}\n'.format(i+1, *par)
         f.write(pstr)
     f.close()
     return
@@ -144,18 +161,20 @@ def param_files(**kwargs):
                 'dust':True,
                 're_z':False,
                 'cloudy_mod':'FSPS_SPS.mod',
-                'verbose':True}
+                'verbose':True,
+                'efracs':np.array([-1.0])}
     for key, val in kwargs.iteritems():
         nom_dict[key] = val
     print '{} ages, {} logZs, {} logUs'.format(len(nom_dict['ages']),
                                                len(nom_dict['logZs']),
                                                len(nom_dict['logUs']))
-    pars = [(Z, a, U, R, ct.calc_4_logQ(logU=U, Rinner=10.0**R, nh=n), n)
+    pars = [(Z, a, U, R, ct.calc_4_logQ(logU=U, Rinner=10.0**R, nh=n), n, efrac)
             for Z in nom_dict['logZs']
             for a in nom_dict['ages']
             for U in nom_dict['logUs']
             for R in nom_dict['r_inners']
-            for n in nom_dict['nhs']]
+            for n in nom_dict['nhs']
+            for efrac in nom_dict['efracs']]
         
     print '{} models'.format(len(pars))
     full_model_names = ['{}{}'.format(nom_dict['model_prefix'], n+1)
@@ -171,12 +190,14 @@ def param_files(**kwargs):
                     r_inner=par[3],
                     logQ=par[4],
                     dens=par[5],
+                    efrac=par[6],
                     set_name=nom_dict['set_name'],
                     use_Q=nom_dict['use_Q'],
                     dust=nom_dict['dust'],
                     re_z=nom_dict['re_z'],
                     cloudy_mod=nom_dict['cloudy_mod'],
-                    verbose=nom_dict['verbose'])
+                    verbose=nom_dict['verbose'],
+                    extras=nom_dict['extras'])
     #--------------------------------------------
     write_make(dir_=nom_dict['dir_'])
     #--------------------------------------------

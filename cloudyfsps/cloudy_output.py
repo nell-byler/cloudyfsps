@@ -79,7 +79,7 @@ def format_output(dir_, model_prefix, modnum, modpars, **kwargs):
     return
 
 def format_all(dir_, model_prefix, **kwargs):
-    filelist = [f.split('.')[0] for f in listdir(dir_) if (isfile(join(dir_, f)) and f.split('.')[-1] == 'out')]
+    filelist = [f.split('.')[0] for f in listdir(dir_) if (isfile(join(dir_, f)) and f.split('.')[-1] == 'out' and f[0:len(model_prefix)] == model_prefix)]
     modnums = np.array([int(f.strip(model_prefix)) for f in filelist])
     data = np.genfromtxt(dir_+model_prefix+'.pars')
     if len(modnums) > 1:

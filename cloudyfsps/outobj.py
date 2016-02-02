@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_colors
@@ -10,6 +11,7 @@ from cloudyfsps.astrotools import get_colors
 c = 2.9979e18
 lsun = 3.846e33
 planck = 6.626e-27
+pc_to_cm = 3.08568e18
 
 def sextract(text, par1=None, par2=None):
     
@@ -46,13 +48,11 @@ def sextract(text, par1=None, par2=None):
 class modObj(object):
     '''
     '''
-    def __init__(self, dir_, prefix, parline, **kwargs):
+    def __init__(self, dir_, prefix, parline, read_out=False, read_rad=False,
+                 read_cont=False, use_doublet=False, **kwargs):
         '''
         [0]modnum; [1]logZ; [2]age; [3]logU; [4]logR; [5]logQ  
         '''
-        use_doublet = kwargs.get('use_doublet', False) # fix n2/o3 line ratios
-        read_out = kwargs.get('read_out', False)
-        read_cont = kwargs.get('read_cont', False)
         self.modnum = int(parline[0])
         self.logZ = parline[1]
         self.age = parline[2]
@@ -60,14 +60,26 @@ class modObj(object):
         self.logR = parline[4]
         self.logQ = parline[5]
         self.nH = parline[6]
+        try:
+            self.efrac = parline[7]
+        except IndexError:
+            self.efrac = -1.0
         self.logq = np.log10((10.0**self.logQ)/(np.pi*4.0*self.nH*(10.0**self.logR)**2.0))
         self.fl = '{}{}{}'.format(dir_, prefix, self.modnum)
         self.load_lines(use_doublet=use_doublet)
         if read_out:
-            self.read_out(dust_mod=dust_mod)
+            self._read_out()
         if read_cont:
-            self.load_cont()
-        
+            self._load_cont()
+        if read_rad:
+            self._dat = dict()
+            self._init_rad()
+            eles = ['H', 'He', 'C', 'N', 'O', 'S', 'Si', 'Fe']
+            self.ion_names, self.n_ions, self.ion_arr = dict(), dict(), dict()
+            for ele in eles:
+                self._init_ele(ele)
+            self._init_phys()
+        return
     def load_lines(self, use_doublet=False, **kwargs):
         lines = {'ha':6562.50,
                  'hb':4861.36,
@@ -97,7 +109,7 @@ class modObj(object):
         self.n2o2 = np.log10(self.alln2/self.o2)
         self.R23 = np.log10((self.o2+self.allo3)/self.hb)
         return
-    def load_cont(self, **kwargs):
+    def _load_cont(self, **kwargs):
         cont_info = np.genfromtxt(self.fl+'.out_cont', skip_header=1)
         self.lam, self.nebflu = cont_info[:,0], cont_info[:,3]
         self.incflu, self.attflu = cont_info[:,1], cont_info[:,2]
@@ -110,7 +122,90 @@ class modObj(object):
         self.__setattr__('fsps_spec', spec)
         self.__setattr__('fsps_Q', ct.calcQ(lam, spec*lsun, f_nu=True))
         return
-    def read_out(self):
+    def _read_f(self, key, delimiter='\t', comments=';', names=True):
+        '''
+        self._read_f('.rad')
+        '''
+        file_ = self.fl+key
+        try:
+            return np.genfromtxt(file_, delimiter='\t', comments=';', names=True)
+        except IOError:
+            return None
+        
+    def _init_rad(self):
+        '''
+        self._init_rad()
+        attributes:
+            n_zones
+            zones 
+            depth
+            thickness (cm)
+            radius_all (cm)
+            rad_pc (pc)
+            dr_all (cm)
+            dv_all (cm)
+            r_in (cm)
+            r_out (cm)
+        '''
+        self._dat['rad'] = self._read_f('.rad')
+        if self._dat['rad'] is not None:
+            self.n_zones = self._dat['rad'].size
+            self.zones = np.arange(self.n_zones)
+            self.depth = self._dat['rad']['depth']
+            self.thickness = self.depth[-1]
+            self.radius_all = self._dat['rad']['radius']
+            self.rad_pc = self.radius_all/pc_to_cm
+            self.dr_all = self._dat['rad']['dr']
+            self.dv_all = 4.*np.pi*self.radius_all**2*self.dr_all
+            self.r_in = self.radius_all[0] - self.dr_all[0]/2.
+            self.r_out = self.radius_all[-1] + self.dr_all[0]/2.
+        return
+    def _init_phys(self):
+        '''
+        self._init_phys()
+        adds attributes:
+            ne_all: electron density (cm^-3)
+            nH_all: hydrogen density (cm^-3)
+            Te: electron temperature (K)
+        '''
+        key = 'phys'
+        self._dat[key] =  self._read_f('.phys')
+        if self._dat[key] is not None:
+            self.ne_all = self._dat[key]['ne']
+            self.nH_all = self._dat[key]['nH']
+            self.Te = self._dat[key]['Te']
+        return
+    def _init_ele(self, key):
+        '''
+        keys = [H, He, C, N, O, S, Si, Fe]
+        attributes:
+            ion_names['C'] = C__1, C__2,...C__n
+            n_ions['C'] = n
+            ion_arr['C'][0] = f1, f2,...,f_r
+        '''
+        self._dat[key] = self._read_f('.ele_'+key)
+        if self._dat[key] is not None:
+            ion_names = self._dat[key].dtype.names[1:]
+            n_ions = np.size(ion_names)
+            ion_arr = np.zeros((n_ions, self.n_zones))
+            for i, ion in enumerate(ion_names):
+                ion_arr[i,:] = self._dat[key][ion]
+            self.ion_names[key] = ion_names
+            self.n_ions[key] = n_ions
+            self.ion_arr[key] = ion_arr
+        
+    def _read_out(self):
+        '''
+        self._read_out()
+        attributes:
+            dist_fact: 4 pi Rinner^2 (cm^2)
+            Phi0: ionizing photon flux (s^-1 cm^-2)
+            cloudyQ: Phi0 * dist_fact = Q (s-1)
+            gasC, gasN, gasO: n relative to H
+            DGR: dust to gas ratio
+            Av_ex: extinction from extended source
+            Av_pt: extinction from pt source
+        '''
         filename = self.fl+'.out'
         self.out = {}
         file_ = open(filename, 'r')
@@ -137,9 +232,10 @@ class modObj(object):
         self.gasC = float(sextract(self.out['gascomp'], 'C :', 8))
         self.gasN = float(sextract(self.out['gascomp'], 'N :', 8))
         self.gasO = float(sextract(self.out['gascomp'], 'O :', 8))
-        self.DGR = float(sextract(self.out['dust'], '(by mass):',',' ))
-        self.Av_ex = float(sextract(self.out['dust'], 'AV(ext):', '(pnt)'))
-        self.Av_pt = float(sextract(self.out['dust'], ' (pnt):'))
+        if self.out.has_key('dust'):
+            self.DGR = float(sextract(self.out['dust'], '(by mass):',',' ))
+            self.Av_ex = float(sextract(self.out['dust'], 'AV(ext):', '(pnt)'))
+            self.Av_pt = float(sextract(self.out['dust'], ' (pnt):'))
         return
 
 class allmods(object):
@@ -152,11 +248,13 @@ class allmods(object):
         self.set_pars()
         self.set_arrs()
         read_out = kwargs.get('read_out', False)
-        dust_mod = kwargs.get('dust_mod', False)
+        read_rad = kwargs.get('read_rad', False)
         if read_out:
             self.add_arrs('gasC', 'gasN', 'gasO')
-            if dust_mod:
+            if hasattr(self.mods[0], 'DGR'):
                 self.add_arrs('DGR', 'Av_ex', 'Av_pt')
+            if read_rad:
+                self.add_arrs('Te')
         
     def load_mods(self, dir_, prefix, **kwargs):
         mods = []
@@ -173,8 +271,12 @@ class allmods(object):
         self.logR_vals = np.unique(self.modpars[:,4])
         self.logQ_vals = np.unique(self.modpars[:,5])
         self.nH_vals = np.unique(self.modpars[:,6])
+        try:
+            self.efrac_vals = np.unique(self.modpars[:,7])
+        except IndexError:
+            self.efrac_vals = np.array([-1.0])
     def set_arrs(self):
-        iterstrings = ['logZ', 'age', 'logU', 'logR', 'logQ', 'nH',
+        iterstrings = ['logZ', 'age', 'logU', 'logR', 'logQ', 'nH', 'efrac',
                        'n2', 'alln2', 'o3', 'allo3', 'hb', 'ha',
                        'bpt_x', 'bpt_y', 'o3o2', 'n2o2', 's2', 'o1',
                        'o2', 'bpt_x_all', 'bpt_y_all', 'bpt_x_s2',
@@ -226,7 +328,7 @@ class allmods(object):
               'val3':10.0}
         for key, val in kwargs.iteritems():
             pd[key] = val
-        allvars = ['nH', 'logZ', 'logR', 'logU', 'age']
+        allvars = ['nH', 'logZ', 'logR', 'logU', 'age', 'efrac']
         [allvars.remove(x) for x in [pd['const1'], pd['const2'], pd['const3']]]
         x_name, y_name = allvars[0], allvars[1]
         grid_x = self.__getattribute__(x_name+'_vals')
