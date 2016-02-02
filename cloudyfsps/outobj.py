@@ -173,7 +173,9 @@ class modObj(object):
         if self._dat[key] is not None:
             self.ne_all = self._dat[key]['ne']
             self.nH_all = self._dat[key]['nH']
+            self.nenH = self.ne_all*self.nH_all
             self.Te = self._dat[key]['Te']
+            self.ff_all = self._dat[key]['fillfac']
         return
     def _init_ele(self, key):
         '''
@@ -193,7 +195,44 @@ class modObj(object):
             self.ion_names[key] = ion_names
             self.n_ions[key] = n_ions
             self.ion_arr[key] = ion_arr
-        
+    @property
+    def dvff(self):
+        try:
+            return self.dv_all*self.ff_all
+        except:
+            print "poop"
+            return None
+    
+    def _quiet_div(self, a, b):
+        if a is None or b is None:
+            to_return = None
+        else:
+            np.seterr(all="ignore")
+            to_return = a/b
+            np.seterr(all=None)
+        return to_return
+    def _vol_integ(self, a):
+        if a is None or self.dvff is None:
+            return None
+        else:
+            return (a*self.dvff).sum()
+    def _vol_mean(self, a, b=1.):
+        return self._quiet_div(self._vol_integ(a*b), self._vol_integ(b))
+    
+    @property
+    def T0(self):
+        try:
+            return self._vol_mean(self.Te, self.nenH)
+        except:
+            print "poop"
+            return None
+    
+    @property
+    def Tpiem(self):
+       try:
+           return self._vol_mean((self.Te - self.T0)**2., self.nenH) / self.T0**2
+       except:
+           return None
     def _read_out(self):
         '''
         self._read_out()
@@ -399,8 +438,56 @@ class allmods(object):
                         verticalalignment='bottom')
         plt.legend(numpoints=1)
         return
+    def group_mods(self, xval='logZ', yval='age', zval='NIIb',
+                   const='logU', cval=-2.0, **kwargs):
+        grid_x = self.__getattribute__(xval+'_vals')
+        grid_y = self.__getattribute__(yval+'_vals')
+        X, Y = np.meshgrid(grid_x, grid_y)
+        Z = np.zeros_like(X)
+        for index, x in np.ndenumerate(Z):
+            mind = [i for i in range(len(self.mods))
+                    if (self.mods[i].__getattribute__(xval) == X[index]
+                        and self.mods[i].__getattribute__(yval) == Y[index]
+                        and self.mods[i].__getattribute__(const) == cval)]
+            Z[index] = self.mods[mind[0]].__getattribute__(zval)
+        if xval == 'age':
+            X*=1.0e-6
+        if yval == 'age':
+            Y*=1.0e-6
+        return X,Y,Z
+    def pxl_plot(self, xval='logZ', yval='age', zval='bpt_x',
+                 const='logU', cval=-2.0, ax=None, **kwargs):
+        '''
+        mods.pxl_plot(xval='logZ', yval='age', zval='bpt_y',
+                      const='logR', cval=18, clab='log R (cm)')
+        '''
+        X, Y, Z = self.group_mods(xval=xval, yval=yval, zval=zval,
+                                  const=const, cval=cval, **kwargs)
+        extent, aspect = calc_dim(X, Y, Z)
+        masked_array = np.ma.array(Z, mask=np.isnan(Z))
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+        sM, cNorm = get_colors(masked_array, return_cNorm=True, set_bad_vals=True)
+        pf = ax.imshow(Z, norm=cNorm, interpolation='nearest', origin='lower',
+                       extent=extent, aspect=aspect,
+                       cmap='CMRmap')
+        xlab = kwargs.get('xlab', None)
+        ylab = kwargs.get('ylab', None)
+        clab = kwargs.get('clab', None)
+        if xlab is None:
+            xlab = xval
+            ylab = yval
+        ax.set_xlabel(xval)
+        ax.set_ylabel(yval)
+        cb = plt.colorbar(pf, ax=ax)
+        if clab is not None:
+            cb.set_label(clab)
+        plt.draw()
+        return ax
 
-def nice_lines():
+
+def nice_lines(key):
     lines = {'ha':[6562.50, r'H\alpha', r'\lambda6563'],
              'hb':[4861.36, r'H\beta', r'\lambda4861'],
              'o3':[5007.00, r'O III', r'\lambda5007'],
@@ -411,22 +498,11 @@ def nice_lines():
              's2a':[6716.00, r'S II', r'\lambda6716'],
              's2b':[6731.00, r'S II', r'\lambda6731'],
              'o1':[6300, r'O I', r'\lambda6300']}
-    return lines
-    
-# uvals = [-3.0, -2.5, -2.0]
-# uvals = [18.0, 19.0, 20.0]
-# uvals = [0.5e6, 1.0e6, 2.0e6]
-# cols = ['red', 'blue', 'green']
-# fig = plt.figure()
-# ax = fig.add_subplot(111)
-# for i in range(3):
-#     uval = uvals[i]
-#     col = cols[i]
-#     if i == 0:
-#         pd = True
-#     else:
-#         pd = False
-        
-#     mo.makeBPT(const1='age', val1=uval, const2='logR', val2=19.0,
-#                const3='nH', val3=10.0, color=col, var_label=True,
-#                par_label='{0:.1f} Myr'.format(uval*1.0e-6), plot_data=pd, ax=ax)
+    return lines[key]
+
+
+def calc_dim(X,Y,Z):
+    extent = [np.min(X), np.max(X), np.min(Y), np.max(Y)]
+    dx = (extent[1] - extent[0]) / float(Z.shape[1])
+    dy = (extent[3] - extent[2]) / float(Z.shape[0])
+    return extent, dx/dy
