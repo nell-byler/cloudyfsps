@@ -286,8 +286,11 @@ class allmods(object):
             self.__setattr__(i, vals)
     def add_arrs(self, *args):
         for item in args:
-            vals = np.array([mod.__getattribute__(item) for mod in self.mods])
-            self.__setattr__(item, vals)
+            try:
+                vals = np.array([mod.__getattribute__(item) for mod in self.mods])
+                self.__setattr__(item, vals)
+            except AttributeError:
+                continue
         return
     
     
