@@ -6,24 +6,11 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 import neb_abund
 import pkg_resources
 
-extra_str = '''
-save last radius ".rad"
-save last physical conditions ".phys"
-save last element hydrogen ".ele_H"
-save last element helium ".ele_He"
-save last element carbon ".ele_C"
-save last element nitrogen ".ele_N"
-save last element oxygen ".ele_O"
-save last element sulphur ".ele_S"
-save last element silicon ".ele_Si"
-save last element iron ".ele_Fe"
-'''
-
 def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     '''
-    write_input('./test/', 'ZAU115', logZ=-0.5, age=5.0e6, logU=-2.0)
+    write_input('./test/', 'ZAU115', logZ=-1.5, age=5.0e6, logU=-4.0)
     writes standard cloudy input to ./test/ZAU115.in
-    defaults: 3 Myr, solar, logU=-1.0, nH=30, r_inner=0.01 pc
+    defaults: 1Myr, logZ=-0.5, logU=-2.0, nH=100, r_inner=3 pc
     '''
     if to_file:
         file_name = dir_+model_name+'.in'
@@ -38,12 +25,12 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
             if to_file:
                 if eol: to_print += '\n'
                 f.write(to_print)
-    pars = {'age':3.0e6, #age in years
-            'logZ': 0.0, #logZ/Zsol (-2.0 to 0.2)
+    pars = {'age':1.0e6, #age in years
+            'logZ': -0.5, #logZ/Zsol (-2.0 to 0.2)
             'logQ':47.0,
-            'logU':-1.0, #log of ionization parameter
-            'dens':30.0, # number density of hydrogen
-            'r_inner':0.01, #inner radius of cloud
+            'logU':-2.0, #log of ionization parameter
+            'dens':100.0, # number density of hydrogen
+            'r_inner':1.0, #inner radius of cloud
             'r_in_pc':False,
             'use_Q:':True,
             'set_name':'dopita',
@@ -51,7 +38,8 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
             're_z':False,
             'cloudy_mod':'FSPS_SPS.mod',
             'efrac':-1.0,
-            'extras':None
+            'extras':'',
+            'extra_output':False
             }
     for key, value in kwargs.iteritems():
         pars[key] = value
@@ -68,7 +56,6 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     this_print('set line precision 6')
     ####
     this_print('table star "{0}" age={1:.2e} logz={2:.2f}'.format(pars['cloudy_mod'], pars['age'],pars['logZ']))
-    #this_print('table star "FSPS_csfh.mod" age={0:.2e} logz={1:.2f}'.format(pars['age'], pars['logZ']))
     if pars['use_Q']:
         this_print('Q(H) = {0:.3f} log'.format(pars['logQ']))
     else:
@@ -96,21 +83,41 @@ def write_input(dir_, model_name, to_file=True, verbose=True, **kwargs):
     this_print('save last linelist ".lin" "{}" absolute column'.format(linefile))
     this_print('save last outward continuum ".outwcont" units Angstrom no title')
     this_print('save last incident continuum ".inicont" units Angstrom no title')
-    if pars['extras'] is not None:
+    if len(pars['extras']) > 0:
         this_print(pars['extras'])
+    if pars['extra_output']:
+        this_print(extra_str)
     if to_file:
         print('Input written in {0}'.format(file_name))
         f.close()
 
+extra_str = '''
+save last radius ".rad"
+save last physical conditions ".phys"
+save last element hydrogen ".ele_H"
+save last element helium ".ele_He"
+save last element carbon ".ele_C"
+save last element nitrogen ".ele_N"
+save last element oxygen ".ele_O"
+save last element sulphur ".ele_S"
+save last element silicon ".ele_Si"
+save last element iron ".ele_Fe"
+save last hydrogen Lya ".H_lya"
+save last hydrogen ionization ".H_ion"
+'''
+
 def write_make(dir_=None):
+    '''
+    writes makefile that runs Cloudy on all files in directory with
+    the same prefix.
+    '''
     makefile = open('{0}/Makefile'.format(dir_), 'w')
     txt_exe = 'CLOUDY = {0}\n'.format(os.environ['CLOUDY_EXE'])
     txt = """
 SRC = $(wildcard ${name}*.in)
 OBJ = $(SRC:.in=.out)
 
-#Usage: make -j N name='NAME'
-#N is the number of processors
+#Usage: make -j n_proc name='NAME'
 #optional: NAME is a generic name, all models named NAME*.in will be run
 
 all: $(OBJ)
@@ -136,6 +143,10 @@ def run_make(dir_=None, n_proc=1, model_name=None):
     proc.communicate()
 
 def print_par_file(dir_, mod_prefix, pars):
+    '''
+    prints parameter file for easy parsing later
+    modnum, Z, a, U, R, logQ, n, efrac
+    '''
     outfile = '{}{}.pars'.format(dir_, mod_prefix)
     f = open(outfile, 'w')
     for i in range(len(pars)):
@@ -146,14 +157,19 @@ def print_par_file(dir_, mod_prefix, pars):
     return
 
 def param_files(**kwargs):
+    '''
+    for making grids of parameters.
+    can pass arrays of ages, logZs, logUs, nHs.
+    cloudy_input.param_files(extras='extra line to add to input')
+    '''
     nom_dict = {'dir_':'./output/',
                 'model_prefix':'ZAU',
                 'ages':np.arange(1.0e6, 6.0e6, 1.0e6),
                 'logZs':np.linspace(-2.0, 0.2, 5),
                 'logQs':np.linspace(45,49, 5),
                 'logUs':np.linspace(-3.0, -1.0, 5),
-                'r_inners':np.array([0.1]),
-                'nhs':np.array([30.0]),
+                'r_inners':np.array([19.]),
+                'nhs':np.array([100.0]),
                 'pc_to_cm':False,
                 'run_cloudy':False,
                 'set_name':'dopita',
@@ -162,7 +178,9 @@ def param_files(**kwargs):
                 're_z':False,
                 'cloudy_mod':'FSPS_SPS.mod',
                 'verbose':True,
-                'efracs':np.array([-1.0])}
+                'efracs':np.array([-1.0]),
+                'extras':'',
+                'extra_output':False}
     for key, val in kwargs.iteritems():
         nom_dict[key] = val
     print '{} ages, {} logZs, {} logUs'.format(len(nom_dict['ages']),
@@ -197,7 +215,8 @@ def param_files(**kwargs):
                     re_z=nom_dict['re_z'],
                     cloudy_mod=nom_dict['cloudy_mod'],
                     verbose=nom_dict['verbose'],
-                    extras=nom_dict['extras'])
+                    extras=nom_dict['extras'],
+                    extra_output=nom_dict['extra_output'])
     #--------------------------------------------
     write_make(dir_=nom_dict['dir_'])
     #--------------------------------------------

@@ -439,17 +439,25 @@ class allmods(object):
         plt.legend(numpoints=1)
         return
     def group_mods(self, xval='logZ', yval='age', zval='NIIb',
-                   const='logU', cval=-2.0, **kwargs):
+                   const='logU', cval=-2.0, make_cut=False, **kwargs):
         grid_x = self.__getattribute__(xval+'_vals')
         grid_y = self.__getattribute__(yval+'_vals')
+        if make_cut:
+            xlims = kwargs.get('xlims', (-1.0, 0.1))
+            ylims = kwargs.get('ylims', (0.0, 10.e6))
+            grid_x = grid_x[(grid_x >= xlims[0]) & (grid_x <= xlims[1])]
+            grid_y = grid_y[(grid_y >= ylims[0]) & (grid_y <= ylims[1])]
         X, Y = np.meshgrid(grid_x, grid_y)
         Z = np.zeros_like(X)
         for index, x in np.ndenumerate(Z):
-            mind = [i for i in range(len(self.mods))
+            mind = [i for i in range(self.nmods))
                     if (self.mods[i].__getattribute__(xval) == X[index]
                         and self.mods[i].__getattribute__(yval) == Y[index]
                         and self.mods[i].__getattribute__(const) == cval)]
-            Z[index] = self.mods[mind[0]].__getattribute__(zval)
+            try:
+                Z[index] = self.mods[mind[0]].__getattribute__(zval)
+            except AttributeError:
+                print 'not a valid attribute.'
         if xval == 'age':
             X*=1.0e-6
         if yval == 'age':
@@ -464,6 +472,9 @@ class allmods(object):
         X, Y, Z = self.group_mods(xval=xval, yval=yval, zval=zval,
                                   const=const, cval=cval, **kwargs)
         extent, aspect = calc_dim(X, Y, Z)
+        calc_aspect = kwargs.get('calc_aspect', True)
+        if not calc_aspect:
+            aspect = 'auto'
         masked_array = np.ma.array(Z, mask=np.isnan(Z))
         if ax is None:
             fig = plt.figure()
