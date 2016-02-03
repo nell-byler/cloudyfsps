@@ -11,7 +11,8 @@ except KeyError:
     print 'Must have set system environment CLOUDY_EXE'
 
 try:
-    CLOUDY_DATA_PATH = os.environ['CLOUDY_DATA_PATH']
+    # taking the last in path, if more than one directory given
+    CLOUDY_DATA_PATH = os.environ['CLOUDY_DATA_PATH'].split(':')[-1]
 except KeyError:
     print 'Cloudy data path not set. Assuming standard cloudy structure'
     CLOUDY_DATA_PATH = '/'.join(CLOUDY_EXE.split('/')[:-2])+'/data'
