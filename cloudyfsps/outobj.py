@@ -51,6 +51,8 @@ class modObj(object):
     def __init__(self, dir_, prefix, parline, read_out=False, read_rad=False,
                  read_cont=False, use_doublet=False, **kwargs):
         '''
+        this needs to be called from other class or given
+        a line from a ".pars" file
         [0]modnum; [1]logZ; [2]age; [3]logU; [4]logR; [5]logQ  
         '''
         self.modnum = int(parline[0])
@@ -81,33 +83,47 @@ class modObj(object):
             self._init_phys()
         return
     def load_lines(self, use_doublet=False, **kwargs):
-        lines = {'ha':6562.50,
-                 'hb':4861.36,
-                 'o3':5007.00,
-                 'n2':6584.00,
-                 'an2':6548.00,
-                 'ao3':4959.00,
-                 'o2':3727.00,
-                 's2a':6716.00,
-                 's2b':6731.00,
-                 'o1':6300.00}
+        lines = {'Ha':6562.50,
+                 'Hb':4861.36,
+                 'OIIIa':4959.00,
+                 'OIIIb':5007.00,
+                 'NIIa':6548.00,
+                 'NIIb':6584.00,
+                 'OII':3727.00,
+                 'SIIa':6716.00,
+                 'SIIb':6731.00,
+                 'OI':6300.00}
         line_info = np.genfromtxt(self.fl+'.lineflux')
         lam, flu = line_info[:,0], line_info[:,1]
         for name, wav in lines.iteritems():
             matchind = np.argmin(np.abs(lam-wav))
             self.__setattr__(name, flu[matchind])
-        self.alln2 = self.n2+self.an2
-        self.allo3 = self.o3+self.ao3
-        self.s2 = self.s2a+self.s2b
-        self.bpt_x_s2 = np.log10(self.s2/self.ha)
-        self.bpt_x_o1 = np.log10(self.o1/self.ha)
-        self.bpt_x_all = np.log10(self.alln2/self.ha)
-        self.bpt_y_all = np.log10(self.allo3/self.hb)
-        self.bpt_x = np.log10(self.n2/self.ha)
-        self.bpt_y = np.log10(self.o3/self.hb)
-        self.o3o2 = np.log10(self.allo3/self.o2)
-        self.n2o2 = np.log10(self.alln2/self.o2)
-        self.R23 = np.log10((self.o2+self.allo3)/self.hb)
+        self.HaHb = self.Ha/self.Hb
+        def logify(a,b):
+            return np.log10(a/b)
+        def logHa(x):
+            return np.log10(x/self.Ha)
+        def logHb(x):
+            return np.log10(x/self.Hb)
+        self.log_NII_Ha = logHa(self.NIIa+self.NIIb)
+        self.log_SII_Ha = logHa(self.SIIa+self.SIIb)
+        self.log_OIII_Hb = logHb(self.OIIIa+self.OIIIb)
+        #
+        self.log_NIIa_Ha = logHa(self.NIIa)
+        self.log_NIIb_Ha = logHa(self.NIIb)
+        self.log_SIIa_Ha = logHa(self.SIIa)
+        self.log_SIIb_Ha = logHa(self.SIIb)
+        #
+        self.log_OIIIa_Hb = logHb(self.OIIIa)
+        self.log_OIIIb_Hb = logHb(self.OIIIb)
+        #
+        self.log_OIII_OII = logify(self.OIIIa+self.OIIIb, self.OII)
+        self.log_OIIIa_OII = logify(self.OIIIa, self.OII)
+        self.log_OIIIb_OII = logify(self.OIIIb, self.OII)
+        #
+        self.log_OI_Ha = logHa(self.OI)
+        self.log_NII_OII = logify(self.NIIa+self.NIIb, self.OII)
+        self.R23 = logHb(self.OII+self.OIIIa+self.OIIIb)
         return
     def _load_cont(self, **kwargs):
         cont_info = np.genfromtxt(self.fl+'.out_cont', skip_header=1)
@@ -200,7 +216,6 @@ class modObj(object):
         try:
             return self.dv_all*self.ff_all
         except:
-            print "poop"
             return None
     
     def _quiet_div(self, a, b):
@@ -224,7 +239,6 @@ class modObj(object):
         try:
             return self._vol_mean(self.Te, self.nenH)
         except:
-            print "poop"
             return None
     
     @property
@@ -279,7 +293,7 @@ class modObj(object):
 
 class allmods(object):
     '''
-    mods = outobj.allmods(dir, prefix, read_out=True)
+    mods = outobj.allmods(dir, prefix, read_out=True, read_rad=False)
     '''
     def __init__(self, dir_, prefix, **kwargs):
         self.modpars = np.genfromtxt('{}{}.pars'.format(dir_, prefix))
@@ -316,10 +330,10 @@ class allmods(object):
             self.efrac_vals = np.array([-1.0])
     def set_arrs(self):
         iterstrings = ['logZ', 'age', 'logU', 'logR', 'logQ', 'nH', 'efrac',
-                       'n2', 'alln2', 'o3', 'allo3', 'hb', 'ha',
-                       'bpt_x', 'bpt_y', 'o3o2', 'n2o2', 's2', 'o1',
-                       'o2', 'bpt_x_all', 'bpt_y_all', 'bpt_x_s2',
-                       'bpt_x_o1']
+                       'log_NII_Ha','log_NIIa_Ha','log_NIIb_Ha',
+                       'log_OIII_Hb','log_OIIIa_Hb','log_OIIIb_Hb',
+                       'log_SII_Ha','log_SIIa_Ha','log_SIIb_Ha',
+                       'HaHb', 'R23','log_NII_OII', 'log_OIII_OII']
         for i in iterstrings:
             vals = np.array([mod.__getattribute__(i) for mod in self.mods])
             self.__setattr__(i, vals)
@@ -333,32 +347,40 @@ class allmods(object):
         return
     
     
-    def makeBPT(self, ax=None, plot_data=True, line_ratio='NII', plt_pars={}, **kwargs):
+    def makeBPT(self, ax=None, plot_data=True, line_ratio='NIIb',
+                bpt_inds=None, axlabs=None, plt_pars={}, **kwargs):
         '''
         mo.makeBPT(ax=ax, const1='age', val1=0.5e6, const2=logR, val2=19.0,
                    const3='nH', val3=10.0)
         '''
-        xlabel = r'log [N II] $\lambda 6548,6584$ / H$\alpha$'
-        ylabel = r'log [O III] $\lambda 4959,5007$ / H$\beta$'
-        bpt_inds = ['bpt_x_all', 'bpt_y_all']
-        if line_ratio=='NIIb':
-            bpt_inds = ['bpt_x', 'bpt_y']
+        if axlabs is None:
             xlabel = r'log [N II] $\lambda 6584$ / H$\alpha$'
             ylabel = r'log [O III] $\lambda 5007$ / H$\beta$'
-        if line_ratio == 'SII':
-            bpt_inds[0] = 'bpt_x_s2'
-            xlabel = r'log [S II] $\lambda 6716,6731$ / H$\alpha$'
-        if line_ratio == 'OI':
-            bpt_inds[0] = 'bpt_x_o1'
-            xlabel = r'log [O I] $\lambda 6300$ / H$\alpha$'
-        if line_ratio == 'OII':
-            bpt_inds = ['n2o2', 'o3o2']
-            ylabel = r'log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$'
-            xlabel = r'log [N II] $\lambda 6548,6584$ / [O II] $\lambda 3726,3727$'
-        if line_ratio == 'R23':
-            bpt_inds = ['R23','o3o2']
-            ylabel = r'log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$'
-            xlabel = r'(log [O II] $\lambda 3726,3727$ + [O III] $\lambda 4959,5007$) / H$\beta$'
+        else:
+            xlabel=axlabs[0]
+            ylabel=ylabs[0]
+        if bpt_inds is None:
+            xlabel = r'log [N II] $\lambda 6584$ / H$\alpha$'
+            ylabel = r'log [O III] $\lambda 5007$ / H$\beta$'
+            bpt_inds = ['log_NIIb_Ha', 'log_OIIIb_Hb']
+            if line_ratio == 'NII':
+                xlabel = r'log [N II] $\lambda 6548,6584$ / H$\alpha$'
+                ylabel = r'log [O III] $\lambda 4959,5007$ / H$\beta$'
+                bpt_inds = ['log_NII_Ha', 'log_OIII_Hb']
+            if line_ratio == 'SII':
+                bpt_inds[0] = 'log_SII_Ha'
+                xlabel = r'log [S II] $\lambda 6716,6731$ / H$\alpha$'
+            if line_ratio == 'OI':
+                bpt_inds[0] = 'log_OI_Ha'
+                xlabel = r'log [O I] $\lambda 6300$ / H$\alpha$'
+            if line_ratio == 'OII':
+                bpt_inds = ['log_NII_OII', 'log_OIII_OII']
+                ylabel = r'log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$'
+                xlabel = r'log [N II] $\lambda 6548,6584$ / [O II] $\lambda 3726,3727$'
+            if line_ratio == 'R23':
+                bpt_inds = ['R23','log_OIII_OII']
+                ylabel = r'log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$'
+                xlabel = r'(log [O II] $\lambda 3726,3727$ + [O III] $\lambda 4959,5007$) / H$\beta$'
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
@@ -450,7 +472,7 @@ class allmods(object):
         X, Y = np.meshgrid(grid_x, grid_y)
         Z = np.zeros_like(X)
         for index, x in np.ndenumerate(Z):
-            mind = [i for i in range(self.nmods))
+            mind = [i for i in range(self.nmods)
                     if (self.mods[i].__getattribute__(xval) == X[index]
                         and self.mods[i].__getattribute__(yval) == Y[index]
                         and self.mods[i].__getattribute__(const) == cval)]

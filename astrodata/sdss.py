@@ -31,6 +31,8 @@ def load_spec():
 
 def get_line_ratio(data, line_ratio, **kwargs):
     both_OIII = kwargs.get('both_OIII', False)
+    yratio = 'log_OIIIb_Hb'
+    xratio = 'log_NIIb_Ha'
     if line_ratio == 'OII': # this produces NII/OII by OIII/OII plot
         yratio = 'log_OIII_OII'
         xratio = 'log_NII_OII'
