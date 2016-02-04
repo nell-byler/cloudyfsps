@@ -21,31 +21,35 @@ def format_lines(dir_, model_prefix, **kwargs):
                                           endnum)
     stdout = subprocess.PIPE
     proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
-    proc.communicate()
-    
+    proc.communicate()  
 def format_output(dir_, model_prefix, modnum, modpars, **kwargs):
+    # model information
     logZ, age, logU, logR, logQ, nH = modpars[1:7]
     
     dist_fact = 4.0*np.pi*(10.0**logR)**2.0
     lsun = 3.846e33
     c = 2.9979e18 #ang/s
     
-    line_info = np.genfromtxt('{}{}{}.lineflux'.format(dir_,
-                                                       model_prefix,
-                                                       modnum))
-    inds = np.argsort(line_info[:,0])
-    line_wav = line_info[:,0][inds]
-    #line luminosity in solar lums per Q
-    line_flu = line_info[:,1][inds]/lsun/(10.0**logQ)
+    oldfile = '{}{}{}.lin'.format(dir_, model_prefix, modnum)
+    newfile = '{}{}{}.lineflux'.format(dir_, model_prefix, modnum)
     print_file = '{}{}{}.out_lines'.format(dir_, model_prefix, modnum)
+    # read cloudy output
+    dat = np.genfromtxt(oldfile, skip_header=2, delimiter='\t',
+                        dtype=[('name','S20'),('flu','f8')])
+    # non-ordered wavelengths
+    wavfile = pkg_resources.resource_filename(__name__, "data/shell_lambda.dat")
+    wl = np.genfromtxt(wavfile)
+    # sort them by wavelength
+    sinds = np.argsort(wl)
+    output = np.column_stack((wl[sinds], dat['flu'][sinds]))
+    np.savetxt(newfile, output, fmt='%4.6e')
+    # save line luminosity in solar lums per Q
+    line_wav = wl[sinds]
+    line_flu = dat['flu'][sinds]/lsun/(10.0**logQ)
+    print_output = np.column_stack((line_wav, line_flu))
+    np.savetxt(print_file, print_output, fmt=('%.6e','%.6e'))
+    # print to file
     print 'Lines were printed to file {}'.format(print_file)
-    f = open(print_file, 'w')
-    f.write('# lam (A) L (Lsun/Q)\n')
-    for i in range(len(line_wav)):
-        printstring = '{0:.6e} {1:.6e}\n'.format(line_wav[i], line_flu[i])
-        f.write(printstring)
-    f.close()
-    
     cont_data = np.genfromtxt('{}{}{}.outwcont'.format(dir_,
                                                        model_prefix,
                                                        modnum),
