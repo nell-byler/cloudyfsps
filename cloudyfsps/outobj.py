@@ -402,6 +402,9 @@ class allmods(object):
         if cut_z is None:
             logZmin=np.min(self.logZ_vals)
             logZmax=np.max(self.logZ_vals)
+        else:
+            logZmin= cut_z[0]
+            logZmax=cut_z[1]
         use_mods = [mod for mod in self.mods
                     if (mod.__getattribute__(pd['const1']) == pd['val1'])
                     & (mod.__getattribute__(pd['const2']) == pd['val2'])
