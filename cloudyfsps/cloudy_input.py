@@ -183,17 +183,19 @@ def param_files(**kwargs):
                 'extra_output':False}
     for key, val in kwargs.iteritems():
         nom_dict[key] = val
-    print '{} ages, {} logZs, {} logUs'.format(len(nom_dict['ages']),
-                                               len(nom_dict['logZs']),
-                                               len(nom_dict['logUs']))
-    pars = [(Z, a, U, R, ct.calc_4_logQ(logU=U, Rinner=10.0**R, nh=n), n, efrac)
-            for Z in nom_dict['logZs']
-            for a in nom_dict['ages']
-            for U in nom_dict['logUs']
-            for R in nom_dict['r_inners']
-            for n in nom_dict['nhs']
-            for efrac in nom_dict['efracs']]
-        
+    pars = kwargs.get('pars', None)
+    if pars is None:
+        print '{} ages, {} logZs, {} logUs'.format(len(nom_dict['ages']),
+                                                   len(nom_dict['logZs']),
+                                                   len(nom_dict['logUs']))
+        pars = [(Z, a, U, R, ct.calc_4_logQ(logU=U, Rinner=10.0**R, nh=n), n, efrac)
+                for Z in nom_dict['logZs']
+                for a in nom_dict['ages']
+                for U in nom_dict['logUs']
+                for R in nom_dict['r_inners']
+                for n in nom_dict['nhs']
+                for efrac in nom_dict['efracs']]
+    # Z, a, U, R, Q, n, efrac
     print '{} models'.format(len(pars))
     full_model_names = ['{}{}'.format(nom_dict['model_prefix'], n+1)
                         for n in range(len(pars))]
