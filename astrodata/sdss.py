@@ -14,17 +14,25 @@ def load_spec():
     outdata = dict()
     for key, val in data.iteritems():
         outdata[key] = val
-    outdata['log_OIII_OII'] = np.log10(data['strength_OIII'][i]/data['strength_OII'][i])
-    outdata['log_NII_OII'] = np.log10(data['strength_NII'][i]/data['strength_OII'][i])
-    outdata['log_OIII_Hb'] = np.log10(data['strength_OIII'][i]/data['strength_Hb'][i])
-    outdata['log_OIIIb_Hb'] = np.log10(data['strength_OIIIb'][i]/data['strength_Hb'][i])
-    outdata['log_NII_Ha'] = np.log10(data['strength_NII'][i]/data['strength_Ha'][i])
-    outdata['log_NIIb_Ha'] = np.log10(data['strength_NIIb'][i]/data['strength_Ha'][i])
-    outdata['log_SII_Ha'] = np.log10(data['strength_SII'][i]/data['strength_Ha'][i])
-    outdata['log_OI_Ha'] = np.log10(data['strength_OI'][i]/data['strength_Ha'][i])
-    outdata['log_OIa_Ha'] = np.log10(data['strength_OIa'][i]/data['strength_Ha'][i])
-    outdata['log_OII_Ha'] = np.log10(data['strength_OII'][i]/data['strength_Ha'][i])
-    outdata['log_OIII_OII'] = np.log10(data['strength_OIII'][i]/data['strength_OII'][i])
+    def logify(a,b):
+        if a is None or b is None:
+            to_return = None
+        else:
+            np.seterr(all="ignore")
+            to_return = np.log10(a/b)
+            np.seterr(all=None)
+        return to_return
+    outdata['log_OIII_OII'] = logify(data['strength_OIII'][i], data['strength_OII'][i])
+    outdata['log_NII_OII'] = logify(data['strength_NII'][i], data['strength_OII'][i])
+    outdata['log_OIII_Hb'] = logify(data['strength_OIII'][i], data['strength_Hb'][i])
+    outdata['log_OIIIb_Hb'] = logify(data['strength_OIIIb'][i], data['strength_Hb'][i])
+    outdata['log_NII_Ha'] = logify(data['strength_NII'][i], data['strength_Ha'][i])
+    outdata['log_NIIb_Ha'] = logify(data['strength_NIIb'][i], data['strength_Ha'][i])
+    outdata['log_SII_Ha'] = logify(data['strength_SII'][i], data['strength_Ha'][i])
+    outdata['log_OI_Ha'] = logify(data['strength_OI'][i], data['strength_Ha'][i])
+    outdata['log_OIa_Ha'] = logify(data['strength_OIa'][i], data['strength_Ha'][i])
+    outdata['log_OII_Ha'] = logify(data['strength_OII'][i], data['strength_Ha'][i])
+    outdata['log_OIII_OII'] = logify(data['strength_OIII'][i], data['strength_OII'][i])
     outdata['HaHb'] = data['strength_Ha'][i]/data['strength_Hb'][i]
     outdata['R23'] = np.log10((data['strength_OII'][i] + data['strength_OIII'][i])/data['strength_Hb'][i])
     return outdata
