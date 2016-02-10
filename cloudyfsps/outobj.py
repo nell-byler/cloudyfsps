@@ -399,17 +399,18 @@ class allmods(object):
         grid_y = self.__getattribute__(y_name+'_vals')
         
         cut_z = kwargs.get('cut_z', None)
-        if cut_z is None:
-            logZmin=np.min(self.logZ_vals)
-            logZmax=np.max(self.logZ_vals)
-        else:
+        if cut_z is not None:
             logZmin= cut_z[0]
             logZmax=cut_z[1]
+            if x_name == 'logZ':
+                grid_x = grid_x[(grid_x >= logZmin) & (grid_x <= logZmax)]
+            if y_name == 'logZ':
+                grid_y = grid_y[(grid_y >= logZmin) & (grid_y <= logZmax)]
+        
         use_mods = [mod for mod in self.mods
                     if (mod.__getattribute__(pd['const1']) == pd['val1'])
                     & (mod.__getattribute__(pd['const2']) == pd['val2'])
-                    & (mod.__getattribute__(pd['const3']) == pd['val3'])
-                    & (mod.logZ >= logZmin) & (mod.logZ <= logZmax)]
+                    & (mod.__getattribute__(pd['const3']) == pd['val3'])]
         
         gshape = (len(grid_y), len(grid_x))
         X, Y = np.meshgrid(grid_x, grid_y, indexing='xy')
