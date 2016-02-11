@@ -75,8 +75,8 @@ def plot_NO(ax=None, lab='__nolabel__', plot_dop=True, **kwargs):
                 marker='o', color='grey', alpha=0.8, linestyle='None',
                 markersize=8, label=lab)
     if plot_dop:
-        xx = array([7.39, 7.5, 7.69, 7.99, 8.17, 8.39, 8.69, 8.8, 8.99, 9.17, 9.39])
-        yy = array([-2. , -1.97, -1.92, -1.78, -1.68, -1.53, -1.29, -1.2 , -1.03, -0.84, -0.56])
+        xx = np.array([7.39, 7.5, 7.69, 7.99, 8.17, 8.39, 8.69, 8.8, 8.99, 9.17, 9.39])
+        yy = np.array([-2. , -1.97, -1.92, -1.78, -1.68, -1.53, -1.29, -1.2 , -1.03, -0.84, -0.56])
         
     ax.set_xlabel('12 + log (O/H)')
     ax.set_ylabel('log (N/O)')
