@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_colors
 import matplotlib.cm as cmx
-from cloudyfsps.astrotools import get_colors
 import pkg_resources
 from astrodata.kewley import NII_OIII_agn_lim, NII_OIII_sf_lim
 from astrodata.kewley import OI_OIII_agn_lim, SII_OIII_agn_lim
@@ -114,3 +113,22 @@ def plot_bpt(var_label, ax=None, color_code=False, line_ratio='NIIb', **kwargs):
         ax.set_ylim(-2.0, 1.0)
         ax.set_xlim(-1.3, 1.3)
     return
+    
+def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
+               set_bad_vals=False, return_cNorm=False):
+    '''
+    sM = get_colors(arr, cname='jet', minv=0.0, maxv=1.0)
+    sM = get_colors(arr, cmap=cubehelix.cmap())
+    '''
+    if cmap is None:
+        cmap = plt.get_cmap(cname)
+    new_cmap = mpl_colors.LinearSegmentedColormap.from_list('trunc({0}, {1:.2f}, {2:.2f})'.format(cmap.name, minv, maxv), cmap(np.linspace(minv, maxv, 100)))
+    if set_bad_vals:
+        new_cmap.set_bad('white', alpha=1.0)
+    cNorm = mpl_colors.Normalize(vmin=vals.min(), vmax=vals.max())
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=new_cmap)
+    if return_cNorm:
+        return scalarMap, cNorm
+    else:
+        scalarMap.set_array(vals)
+        return scalarMap

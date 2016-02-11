@@ -65,7 +65,7 @@ def get_abunds():
                          names='temp, logO, logOerr, logNO, logNOerr')
     return data
 
-def plot_NO(ax=None, lab='__nolabel__', **kwargs):
+def plot_NO(ax=None, lab='__nolabel__', plot_dop=True, **kwargs):
     data = get_abunds()
     if ax is None:
         fig = plt.figure()
