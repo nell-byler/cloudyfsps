@@ -7,23 +7,23 @@ __all__ = ["FileOps", "compile_mod", "check_compiled_mod", "mod_exists"]
 
 import os
 import numpy as np
-from cloudytools import grouper
 import fsps
 import subprocess
+from .generalTools import grouper
 
 try:
     CLOUDY_EXE = os.environ['CLOUDY_EXE']
 except KeyError:
-    print 'Must have set system environment CLOUDY_EXE'
+    print('Must have set system environment CLOUDY_EXE')
 
 try:
     # taking the last in path, if more than one directory given
     CLOUDY_DATA_PATH = os.environ['CLOUDY_DATA_PATH'].split(':')[-1]
 except KeyError:
-    print 'Cloudy data path not set. Assuming standard cloudy structure'
+    print('Cloudy data path not set. Assuming standard cloudy structure')
     CLOUDY_DATA_PATH = '/'.join(CLOUDY_EXE.split('/')[:-2])+'/data'
 
-class FileOps:
+class writeASCII:
     '''
     Print FSPS data into ascii files readable by CLOUDY
     Calling sequence:
@@ -83,17 +83,17 @@ class FileOps:
         flu[(flu < 0.0)] = 0.0
         [FileOps.write_data(self, fl) for fl in flu]
         
-def compile_mod(ascii_file, **kwargs):
+def compileASCII(ascii_file, **kwargs):
     comp_file = CLOUDY_DATA_PATH+'/compile.in'
     f = open(comp_file, 'w')
     f.write('compile stars "{}"\n'.format(ascii_file))
     f.close()
     to_run = 'cd {} ; {} compile.in'.format(CLOUDY_DATA_PATH, CLOUDY_EXE)
-    print 'compiling {}'.format(ascii_file)
+    print('compiling {}'.format(ascii_file))
     proc = subprocess.Popen(to_run, shell=True)
     proc.communicate()
 
-def check_compiled_mod(ascii_file, **kwargs):
+def checkCompiled(ascii_file, **kwargs):
     '''
     checks to make sure ascii_file.mod exists and that 
     the words "Cloudy exited OK' are in compile.out
@@ -107,7 +107,7 @@ def check_compiled_mod(ascii_file, **kwargs):
                     os.path.exists(comp_mod)])
     return check
     
-def mod_exists(filename):
+def compiledExists(filename):
     if filename.split('.')[-1] == 'mod':
         return os.path.exists('/'.join([CLOUDY_DATA_PATH, filename]))
     else:

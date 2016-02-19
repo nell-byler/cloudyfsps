@@ -3,13 +3,11 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
-__all__ = ["get_abunds"]
-
 import numpy as np
-from astrotools import sym_to_name
+from .generalTools import sym_to_name
 from scipy.interpolate import InterpolatedUnivariateSpline as InterpUS
 
-def get_abunds(set_name, logZ, dust=True, re_z=False):
+def getNebAbunds(set_name, logZ, dust=True, re_z=False):
     '''
     neb_abund.get_abunds(set_name, logZ, dust=True, re_z=False)
     set_name must be 'dopita', 'newdopita', 'cl01' or 'yeh'

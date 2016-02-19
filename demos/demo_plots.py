@@ -4,7 +4,7 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
-from cloudyfsps import outobj as ob
+from cloudyfsps import outObj as ob
 from astrodata import dopita
 
 # this code assumes you have run "csfh.py"

@@ -9,6 +9,9 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import cloudyfsps
+VERSION = cloudyfsps.__version__
+
 setup(name="cloudyfsps",
       version="0.1",
       description="nebular emission for FSPS",
@@ -16,9 +19,10 @@ setup(name="cloudyfsps",
       author="Nell Byler",
       author_email="nell.byler@gmail.com",
       license="BSD new",
-      packages=["cloudyfsps", "astrodata"],
+      packages=["cloudyfsps",
+                "cloudyfsps.astrodata"],
       package_dir={"cloudyfsps":"cloudyfsps",
-                   "astrodata":"astrodata"},
+                   "astrodata":"cloudyfsps/astrodata"},
       package_data={
         "": ["README.rst", "LICENSE.rst", "AUTHORS.rst"],
         "cloudyfsps":["data/*.dat"],
