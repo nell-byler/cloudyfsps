@@ -30,6 +30,7 @@ setup(name="cloudyfsps",
       },
       include_package_data=True,
       scripts=glob.glob("scripts/*.py"),
+      install_requires=['fsps'],
       classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",

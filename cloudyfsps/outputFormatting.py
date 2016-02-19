@@ -9,12 +9,9 @@ from scipy.interpolate import interp1d
 import pkg_resources
 import fsps
 from .generalTools import air_to_vac
-
 #grid: 2 files: line, cont
-
 #columns: wavelengths
 #rows: models
-
 #header
 #wavelength grid
 #age, Z, logU
@@ -22,10 +19,9 @@ from .generalTools import air_to_vac
 #flux2
 #flux3
 
-sp = fsps.StellarPopulation()
-fsps_lam = sp.wavelengths
-
 class writeFormattedOutput(object):
+    #sp = fsps.StellarPopulation()
+    #fsps_lam = sp.wavelengths
     def __init__(self, dir_, mod_prefix, mod_suffix, **kwargs):
         self.dir_, self.mod_prefix = dir_, mod_prefix
         self.file_pr = dir_ + mod_prefix
@@ -37,14 +33,14 @@ class writeFormattedOutput(object):
         self.line_out = self.out_pr + ".lines"
         self.cont_out = self.out_pr + ".cont"
         self.loadModInfo() # load each model's parameters from prefix.pars
-        self.doLineOut() # print ordered emission line wavelengths + fluxes
-        self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
+        #self.doLineOut() # print ordered emission line wavelengths + fluxes
+        #self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
         return
     def loadModInfo(self, **kwargs):
         '''
         reads model parameters from "ZAU.pars"
         '''
-        name_keys = ["mod_num", "logZ", "Age", "logU", "logR", "logQ", "nH"]
+        name_keys = ["mod_num", "logZ", "Age", "logU", "logR", "logQ", "nH", "efrac"]
         data = np.genfromtxt(self.file_pr+".pars", names=name_keys)
         self.__setattr__("modpars", data)
         for k in name_keys:
@@ -81,14 +77,14 @@ class writeFormattedOutput(object):
         return
     def printLineFlu(self, f, pars):
         #write model parameters
-        tstr = "{0: 2.4e} {1: 2.4e} {2: 2.4e}\n".format(pars["logZ"], pars["Age"], pars["logU"])
+        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}\n".format(pars["logZ"], pars["Age"], pars["logU"])
         f.write(tstr)
         #read in and print emission line intensities (Lsun/Q)
         nst = "{0:.0f}".format(pars["mod_num"])
         filename = self.file_pr+nst+".out_lines"
         dat = np.genfromtxt(filename, names=["lam", "I"])
         I_lin = dat["I"]
-        I_str = ["{0: 1.4e}".format(s) for s in I_lin]
+        I_str = ["{0:1.4e}".format(s) for s in I_lin]
         tstr = " ".join(I_str)
         f.write(tstr+"\n")
         return
@@ -102,7 +98,7 @@ class writeFormattedOutput(object):
         return
     def printContFlu(self, f, pars):
         #write model parameters
-        tstr = "{0: 2.4e} {1: 2.4e} {2: 2.4e}\n".format(pars["logZ"],
+        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}\n".format(pars["logZ"],
                                                         pars["Age"],
                                                         pars["logU"])
         f.write(tstr)
@@ -119,7 +115,7 @@ class writeFormattedOutput(object):
         # interpolate them onto FSPS grid
         for y in fluxs_out:
             newy = interp1d(x, y)(newx)
-            y_str = " ".join(["{0: 1.4}".format(yy) for yy in newy])
+            y_str = " ".join(["{0:1.4}".format(yy) for yy in newy])
             f.write(y_str+"\n")
         return
     def printContLam(self, f):
