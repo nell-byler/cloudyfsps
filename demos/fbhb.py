@@ -1,10 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+
 import os
-from cloudyfsps import cloudy_input
-from cloudyfsps import cloudy_output
+import sys
+from cloudyfsps import cloudy_input, cloudy_output, write_ascii, write_output
 from cloudyfsps import cloudytools as ct
-from cloudyfsps import write_ascii
-from cloudyfsps import write_ascii
-from cloudyfsps import write_output
 import numpy as np
 import fsps
 
@@ -81,11 +84,10 @@ if exec_write_ascii:
         print 'Compiling {} with Cloudy'.format(ascii_file)
         write_ascii.compile_mod(ascii_file)
         print 'Checking to see if compilation was successful...'
-        if not write_ascii.check_compiled_mod(ascii_file):
-            print 'Something went wrong!'
-            sys.exit()
-        else:
+        if write_ascii.check_compiled_mod(ascii_file):
             print 'Your model {} is ready to run.'.format(compiled_ascii)
+        else:
+            sys.exit()
     else:
         print '{} already exists.'.format(compiled_ascii)
 

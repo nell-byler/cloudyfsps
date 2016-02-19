@@ -1,12 +1,9 @@
-import os
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.colors as mpl_colors
-import matplotlib.cm as cmx
-import cloudyfsps.cloudytools as ct
 import fsps
+import cloudytools as ct
 from astrodata import dopita, sdss, vanzee, kewley
-from cloudyfsps.astrotools import get_colors
+from plottools import get_colors
 
 c = 2.9979e18
 lsun = 3.846e33
@@ -14,7 +11,9 @@ planck = 6.626e-27
 pc_to_cm = 3.08568e18
 
 def sextract(text, par1=None, par2=None):
-    
+    '''
+    to extract stuff from cloudy output
+    '''
     if np.size(text) == 1:
         if type(par1) is int:
             str1 = text[par1::]
@@ -144,7 +143,7 @@ class modObj(object):
         '''
         file_ = self.fl+key
         try:
-            return np.genfromtxt(file_, delimiter='\t', comments=';', names=True)
+            return np.genfromtxt(file_,delimiter='\t', comments=';', names=True)
         except IOError:
             return None
         
@@ -211,6 +210,8 @@ class modObj(object):
             self.ion_names[key] = ion_names
             self.n_ions[key] = n_ions
             self.ion_arr[key] = ion_arr
+        return
+    
     @property
     def dvff(self):
         try:
@@ -226,11 +227,13 @@ class modObj(object):
             to_return = a/b
             np.seterr(all=None)
         return to_return
+    
     def _vol_integ(self, a):
         if a is None or self.dvff is None:
             return None
         else:
             return (a*self.dvff).sum()
+    
     def _vol_mean(self, a, b=1.):
         return self._quiet_div(self._vol_integ(a*b), self._vol_integ(b))
     
@@ -247,6 +250,7 @@ class modObj(object):
            return self._vol_mean((self.Te - self.T0)**2., self.nenH) / self.T0**2
        except:
            return None
+    
     def _read_out(self):
         '''
         self._read_out()
@@ -528,7 +532,6 @@ class allmods(object):
         plt.draw()
         return ax
 
-
 def nice_lines(key):
     lines = {'ha':[6562.50, r'H\alpha', r'\lambda6563'],
              'hb':[4861.36, r'H\beta', r'\lambda4861'],
@@ -541,7 +544,6 @@ def nice_lines(key):
              's2b':[6731.00, r'S II', r'\lambda6731'],
              'o1':[6300, r'O I', r'\lambda6300']}
     return lines[key]
-
 
 def calc_dim(X,Y,Z):
     extent = [np.min(X), np.max(X), np.min(Y), np.max(Y)]

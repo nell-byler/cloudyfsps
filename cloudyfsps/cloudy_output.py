@@ -1,27 +1,13 @@
-import os
-from os import listdir
-from os.path import isfile, join, splitext
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+__all__ = ["format_output"]
+
 import numpy as np
 import subprocess
-from scipy.interpolate import InterpolatedUnivariateSpline
-from scipy.interpolate import interp1d
 import pkg_resources
 
-def format_lines(dir_, model_prefix, **kwargs):
-    filelist = [f.split('.')[0] for f in listdir(dir_) if (isfile(join(dir_, f)) and f.split('.')[-1] == 'out' and f[0:len(model_prefix)] == model_prefix)]
-    modnums = np.array([int(f.strip(model_prefix)) for f in filelist])
-    startnum = modnums.min()
-    endnum = modnums.max()
-    wavfile = pkg_resources.resource_filename(__name__, "data/shell_lambda.dat")
-    shscript = pkg_resources.resource_filename(__name__, "mk_linefile.sh")
-    to_run = '{0} {1} {2} {3} {4}'.format(shscript,
-                                          wavfile,
-                                          '/'.join([dir_, model_prefix]),
-                                          startnum,
-                                          endnum)
-    stdout = subprocess.PIPE
-    proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
-    proc.communicate()  
 def format_output(dir_, model_prefix, modnum, modpars, **kwargs):
     # model information
     logZ, age, logU, logR, logQ, nH = modpars[1:7]
@@ -50,10 +36,7 @@ def format_output(dir_, model_prefix, modnum, modpars, **kwargs):
     np.savetxt(print_file, print_output, fmt=('%.6e','%.6e'))
     # print to file
     print 'Lines were printed to file {}'.format(print_file)
-    cont_data = np.genfromtxt('{}{}{}.outwcont'.format(dir_,
-                                                       model_prefix,
-                                                       modnum),
-                              skip_header=1)
+    cont_data = np.genfromtxt('{}{}{}.outwcont'.format(dir_, model_prefix, modnum), skip_header=1)
     cont_1 = cont_data[:,1] * dist_fact / lsun * cont_data[:,0] / c
     cont_2 = cont_data[:,2] * dist_fact / lsun * cont_data[:,0] / c
     
@@ -74,74 +57,7 @@ def format_output(dir_, model_prefix, modnum, modpars, **kwargs):
     f.write('# lam (ang) incid (lsun/hz) attenuated_incid (lsun/hz) diffuse_cont (lsun/hz)\n')
     
     for i in range(len(contwav)):
-        printstring = '{0:.6e} {1:.6e} {2:.6e} {3:.6e}\n'.format(contwav[i],
-                                                                 cont_IF[i],
-                                                                 cont_AI[i],
-                                                                 cont_DC[i])
+        printstring = '{0:.6e} {1:.6e} {2:.6e} {3:.6e}\n'.format(contwav[i], cont_IF[i], cont_AI[i], cont_DC[i])
         f.write(printstring)
     f.close()
     return
-
-def format_all(dir_, model_prefix, **kwargs):
-    filelist = [f.split('.')[0] for f in listdir(dir_) if (isfile(join(dir_, f)) and f.split('.')[-1] == 'out' and f[0:len(model_prefix)] == model_prefix)]
-    modnums = np.array([int(f.strip(model_prefix)) for f in filelist])
-    data = np.genfromtxt(dir_+model_prefix+'.pars')
-    if len(modnums) > 1:
-        [format_output(dir_, model_prefix, num, data[num-1]) for num in modnums]
-    else:
-        format_output(dir_, model_prefix, modnums[0], data)
-    return
-
-def spec(dir_, model_prefix, modnum, print_line=False, conv=False, **kwargs):
-    '''
-    numpts = number of pts in output spectrum
-    contrast = multiplier for emission lines to account for covering factor
-    '''
-    FWHM = kwargs.get('FWHM', 2.3) #angstroms
-    numpts = kwargs.get('numpts', 5000)
-    startwav = kwargs.get('startwav', 3000.0)
-    endwav = kwargs.get('endwav', 9000.0)
-    c = 2.9979e18
-    wav = np.linspace(startwav, endwav, numpts)
-    dwav = np.mean(np.diff(wav))
-    flux = np.zeros(numpts)
-    
-    line_info = np.genfromtxt('{}{}{}.out_lines'.format(dir_, model_prefix, modnum), skip_header=1)
-    line_wav, line_flu = line_info[:,0], line_info[:,1]
-    aa, = np.where((line_wav >= startwav) & (line_wav <= endwav))
-    linewav, lineflux = line_wav[aa], line_flu[aa]
-    
-    if print_line:
-        wav_id = kwargs.get('wav_id', 6562.85)
-        #hb 4861.36, n2 6584.00, o3 5007.00
-        matchind = np.argmin(np.abs(line_wav - wav_id))
-        print_flux = line_flu[matchind]
-        return print_flux
-    
-    print 'Adding emission lines...'
-    for i in range(len(linewav)):
-        idx = find_nearest(wav, linewav[i])
-        flux[idx] += lineflux[i]*wav[idx]/dwav
-    
-    print 'Adding continuum...'
-    cont_info = np.genfromtxt('{}{}{}.out_cont'.format(dir_, model_prefix, modnum), skip_header=1)
-    
-    contwav_in = cont_info[:,0]
-    contflux_in = (cont_info[:,2]+cont_info[:,3])* c / cont_info[:,0]
-    a, = np.where((contwav_in >= startwav) & (contwav_in <= endwav))
-    contwav, contflux = contwav_in[a], contflux_in[a]
-    
-    scontflux = InterpolatedUnivariateSpline(contwav, contflux)(wav)
-    flux += scontflux
-    
-    if conv:
-        observed = convolve_spec(numpts, wav, flux, FWHM)
-    else:
-        observed = flux/c*wav
-    
-    return (wav, observed)
-
-
-def find_nearest(array, value):
-    idx = (np.abs(array-value)).argmin()
-    return idx

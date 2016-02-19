@@ -1,7 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+__all__ = ["NII_OIII_sf_lim", "NII_OIII_agn_lim", "SII_OIII_agn_lim", "OI_OIII_agn_lim"]
+
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.colors as mpl_colors
-import matplotlib.cm as cmx
 
 def NII_OIII_sf_lim(ax=None, color='k', **kwargs):
     '''

@@ -1,7 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+__all__ = ["plot_bpt", "plot_NO"]
+
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.colors as mpl_colors
-import matplotlib.cm as cmx
 import pkg_resources
 
 def plot_bpt(var_label, ax=None, line_ratio='NII', **kwargs):

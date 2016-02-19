@@ -1,7 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+
+__all__ = ["FileOps", "compile_mod", "check_compiled_mod", "mod_exists"]
+
 import os
-import sys
 import numpy as np
-import itertools
+from cloudytools import grouper
 import fsps
 import subprocess
 
@@ -16,17 +22,6 @@ try:
 except KeyError:
     print 'Cloudy data path not set. Assuming standard cloudy structure'
     CLOUDY_DATA_PATH = '/'.join(CLOUDY_EXE.split('/')[:-2])+'/data'
-    
-def grouper(n, iterable):
-    '''
-    Iterate through array in groups of n
-    '''
-    it = iter(iterable)
-    while True:
-        chunk = tuple(itertools.islice(it, n))
-        if not chunk:
-            return
-        yield chunk
 
 class FileOps:
     '''
@@ -94,9 +89,8 @@ def compile_mod(ascii_file, **kwargs):
     f.write('compile stars "{}"\n'.format(ascii_file))
     f.close()
     to_run = 'cd {} ; {} compile.in'.format(CLOUDY_DATA_PATH, CLOUDY_EXE)
-    stdout = subprocess.PIPE
     print 'compiling {}'.format(ascii_file)
-    proc = subprocess.Popen(to_run, shell=True, stdout=stdout)
+    proc = subprocess.Popen(to_run, shell=True)
     proc.communicate()
 
 def check_compiled_mod(ascii_file, **kwargs):
@@ -110,7 +104,7 @@ def check_compiled_mod(ascii_file, **kwargs):
     f.close()
     comp_mod = '{}/{}.mod'.format(CLOUDY_DATA_PATH, ascii_file.split('.')[0])
     check = np.all(['OK' in content[-1],
-                    os.path.exists(comp_mod) ])
+                    os.path.exists(comp_mod)])
     return check
     
 def mod_exists(filename):
@@ -118,28 +112,3 @@ def mod_exists(filename):
         return os.path.exists('/'.join([CLOUDY_DATA_PATH, filename]))
     else:
         return os.path.exists('/'.join([CLOUDY_DATA_PATH, filename.split('.')[0]+'.mod']))
-
-zsun=0.019
-#-----------------------------------------------------------------------------
-def main(fileout = 'FSPS_IMF2a.ascii', **kwargs):
-    sp_dict = dict(zcontinuous=1,
-                   imf_type=2)
-    sp = fsps.StellarPopulation(**sp_dict)
-    ages = 10.**sp.log_age
-    lam = sp.wavelengths
-    logZs = np.log10(sp.zlegend/zsun)
-    modpars = [(age, logZ) for age in ages for logZ in logZs]
-    all_fluxs = []
-    for logZ in logZs:
-        sp.params['logzsol'] = logZ
-        all_fluxs.append(sp.get_spectrum()[1]) #lsun per hz
-    nmod = len(modpars)
-    flat_flux = np.array([all_fluxs[j][i]
-                          for i in range(len(ages))
-                          for j in range(len(logZs))])
-    write_ascii.FileOps(fileout, lam, flat_flux,
-                        modpars, ndim=2, npar=2, nmod=nmod)
-    return
-
-if __name__ == "__main__":
-    main()

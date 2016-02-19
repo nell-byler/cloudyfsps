@@ -1,59 +1,58 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as mpl_colors
-from matplotlib import cm as cmx
-from matplotlib import rc
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+__all__ = ["name_to_sym", "sym_to_name", "air_to_vac"]
 
-rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-rc('text', usetex=True)
+import numpy as np
 
 def name_to_sym(val=None):
-    elem_keys = dict(helium='He',
-                     carbon='C',
-                     nitrogen='N',
-                     oxygen='O',
-                     neon='Ne',
-                     magnesium='Mg',
-                     silicon='Si',
-                     sulphur='S',
-                     argon='Ar',
-                     calcium='Ca',
-                     iron='Fe',
-                     sodium='Na',
-                     aluminum='Al',
-                     chlorine='Cl',
-                     nickel='Ni')
+    elem_keys = dict(helium="He",
+                     carbon="C",
+                     nitrogen="N",
+                     oxygen="O",
+                     neon="Ne",
+                     magnesium="Mg",
+                     silicon="Si",
+                     sulphur="S",
+                     argon="Ar",
+                     calcium="Ca",
+                     iron="Fe",
+                     sodium="Na",
+                     aluminum="Al",
+                     chlorine="Cl",
+                     nickel="Ni")
     if val is None:
         return elem_keys
     else:
         try:
             return elem_keys[val.lower()]
         except KeyError:
-            print 'key must be in ', elem_keys.keys()
+            print "key must be in ", elem_keys.keys()
 
 def sym_to_name(val=None):
-    elem_keys = dict(He='helium',
-                     C='carbon',
-                     N='nitrogen',
-                     O='oxygen',
-                     Ne='neon',
-                     Mg='magnesium',
-                     Si='silicon',
-                     S='sulphur',
-                     Ar='argon',
-                     Ca='calcium',
-                     Fe='iron',
-                     Na='sodium',
-                     Al='aluminum',
-                     Cl='chlorine',
-                     Ni='nickel')
+    elem_keys = dict(He="helium",
+                     C="carbon",
+                     N="nitrogen",
+                     O="oxygen",
+                     Ne="neon",
+                     Mg="magnesium",
+                     Si="silicon",
+                     S="sulphur",
+                     Ar="argon",
+                     Ca="calcium",
+                     Fe="iron",
+                     Na="sodium",
+                     Al="aluminum",
+                     Cl="chlorine",
+                     Ni="nickel")
     if val is None:
         return elem_keys
     else:
         try:
             return elem_keys[val.title()]
         except KeyError:
-            print 'element not in ', elem_keys.keys()
+            print "element not in ", elem_keys.keys()
         
 def air_to_vac(inpt, no_uv_conv=True):
     '''
@@ -70,50 +69,3 @@ def air_to_vac(inpt, no_uv_conv=True):
     else:
         outpt = to_vac(wl)
     return outpt
-
-
-def BPT_diagram(n2, o3, hb, ha, ax=None, color='k', label='__nolabel__', xlims=(-2.0, 0.5), ylims=(-1.5, 1.5), bounds=True, **kwargs):
-    '''
-    N2, O3, HB, HA
-    '''
-    if ax is None:
-        ax = plt.gca()
-    xax = np.log10(n2/ha)
-    yax = np.log10(o3/hb)
-    xlabel = r'log [N II] $\lambda 6584$ / H$\alpha$'
-    ylabel = r'log [O III]$\lambda 5007$ / H$\beta$'
-    ax.plot(xax, yax, color=color, marker='.', linestyle='None', label=label)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_xlim(xlims[0], xlims[1])
-    ax.set_ylim(ylims[0], ylims[1])
-    if bounds:
-        xlims = [-2.0, 1.0]
-        ylims = [-1.5, 1.5]
-        xarr = np.linspace(xlims[0], xlims[1], 500)
-        yarr = 0.61 / (xarr - 0.05) + 1.3
-        inds, = np.nonzero((yarr > ylims[0]) & (yarr<ylims[1]) & (xarr>xlims[0]) & (xarr<xlims[1]))
-        ax.plot(xarr[inds], yarr[inds], lw=2, color='blue')
-        ax.vlines(xlims, ylims[0], ylims[1], linestyle='dashed')
-        ax.hlines(ylims, xlims[0], xlims[1], linestyle='dashed')
-        
-    return ax
-
-def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
-               set_bad_vals=False, return_cNorm=False):
-    '''
-    sM = get_colors(arr, cname='jet', minv=0.0, maxv=1.0)
-    sM = get_colors(arr, cmap=cubehelix.cmap())
-    '''
-    if cmap is None:
-        cmap = plt.get_cmap(cname)
-    new_cmap = mpl_colors.LinearSegmentedColormap.from_list('trunc({0}, {1:.2f}, {2:.2f})'.format(cmap.name, minv, maxv), cmap(np.linspace(minv, maxv, 100)))
-    if set_bad_vals:
-        new_cmap.set_bad('white', alpha=1.0)
-    cNorm = mpl_colors.Normalize(vmin=vals.min(), vmax=vals.max())
-    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=new_cmap)
-    if return_cNorm:
-        return scalarMap, cNorm
-    else:
-        scalarMap.set_array(vals)
-        return scalarMap

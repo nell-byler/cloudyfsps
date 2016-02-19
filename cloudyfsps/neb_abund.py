@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+
+__all__ = ["get_abunds"]
+
 import numpy as np
 from astrotools import sym_to_name
 from scipy.interpolate import InterpolatedUnivariateSpline as InterpUS

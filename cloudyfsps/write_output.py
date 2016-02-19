@@ -1,9 +1,13 @@
-import os
-from os import listdir
-from os.path import isfile, join, splitext
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+
+__all__ = ["PrepOutput"]
+
 import numpy as np
-import subprocess
-from .astrotools import air_to_vac
+from astrotools import air_to_vac
 from scipy.interpolate import interp1d
 import pkg_resources
 import fsps
@@ -19,6 +23,7 @@ import fsps
 #flux1
 #flux2
 #flux3
+
 sp = fsps.StellarPopulation()
 fsps_lam = sp.wavelengths
 

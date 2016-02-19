@@ -1,8 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+__all__ = ["write_input", "param_files", "write_make", "run_make"]
+
 import os
 import numpy as np
 import subprocess
 import cloudytools as ct
-from scipy.interpolate import InterpolatedUnivariateSpline 
 import neb_abund
 import pkg_resources
 

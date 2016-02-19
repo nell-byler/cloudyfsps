@@ -1,13 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+__all__ = ["plot_bpt"]
+
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.colors as mpl_colors
-import matplotlib.cm as cmx
 import pkg_resources
 
 c = 2.9979e10
 
-def plot_bpt(logq_val=8.5, z_val=1.0, kappa_val=20, label='Dopita (2013)', line_ratio='NII',
-             ax=None, color='k', tcolor='k', **kwargs):
+def plot_bpt(logq_val=8.5, z_val=1.0, kappa_val=20, label='Dopita (2013)', line_ratio='NII', ax=None, color='k', tcolor='k', **kwargs):
     '''
     dopita.plot_bpt(logq_val='all', color='blue', use_doublet=True)
     '''

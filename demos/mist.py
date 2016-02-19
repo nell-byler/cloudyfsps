@@ -1,10 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+
 import os
-from cloudyfsps import cloudy_input
-from cloudyfsps import cloudy_output
+import sys
+from cloudyfsps import cloudy_input, cloudy_output, write_ascii, write_output
 from cloudyfsps import cloudytools as ct
-from cloudyfsps import write_ascii
-from cloudyfsps import write_ascii
-from cloudyfsps import write_output
 import numpy as np
 import fsps
 
@@ -83,11 +86,11 @@ if exec_write_ascii:
         print 'Compiling {} with Cloudy'.format(ascii_file)
         write_ascii.compile_mod(ascii_file)
         print 'Checking to see if compilation was successful...'
-        if not write_ascii.check_compiled_mod(ascii_file):
+        if write_ascii.check_compiled_mod(ascii_file):
+            print 'Your model {} is ready to run.'.format(compiled_ascii)
+        else:
             print 'Something went wrong!'
             sys.exit()
-        else:
-            print 'Your model {} is ready to run.'.format(compiled_ascii)
     else:
         print '{} already exists.'.format(compiled_ascii)
 
@@ -95,7 +98,6 @@ if exec_write_ascii:
 # WRITE CLOUDY INPUT
 #---------------------------------------------------------------------
 # local folder to read and write *.in, *.out files
-#mod_dir = '/home/oliver/research/emission/output_salp/'
 mod_dir = '/Users/Nell/research/newem/output_mist/'
 mod_prefix = 'ZAU'
 
@@ -120,17 +122,17 @@ if exec_write_input:
     print 'Writing input files...'
     cloudy_input.param_files(dir_=mod_dir,
                              model_prefix=mod_prefix,
-                             cloudy_mod=compiled_ascii, #this is the ascii file from above
-                             run_cloudy=False, #don't run yet
+                             cloudy_mod=compiled_ascii, # ascii file from above
+                             run_cloudy=False, # don't run yet
                              ages=ages,
                              logZs=logZs,
                              logUs=logUs,
                              r_inners=Rinners,
                              nhs=nhs,
                              use_Q=True,
-                             verbose=False, #don't print output to screen
+                             verbose=False, # don't print output to screen
                              set_name='dopita',
-                             extra_output=True) #abundance set to use
+                             extra_output=True)
     print 'Wrote {} param files'.format(len(pars))
 else:
     print 'Skipping input writing.'
@@ -156,4 +158,4 @@ else:
     print '\n\nNot formatting output. DONE.'
 if exec_gen_FSPS_grid:
     print 'Creating FSPS input grids...'
-    write_output.PrepOutput(mod_dir, mod_prefix, '_FBHB')
+    write_output.PrepOutput(mod_dir, mod_prefix, '_MIST')

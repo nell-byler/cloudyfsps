@@ -1,10 +1,12 @@
-import os
-import sys
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import (division, print_function, absolute_import,
+                        unicode_literals)
+__all__ = ["calcQ", "calc_4_logQ", "calcU_avg", "calcU", "calcRs", "find_nearest", "grouper"]
+
 import numpy as np
 import itertools
 from scipy.integrate import simps
-#import pyCloudy as pc
-#pc.config.cloudy_exe = os.environ["CLOUDY_EXE"]
 
 def calcQ(lamin0, specin0, mstar=1.0, helium=False, f_nu=False):
     '''
@@ -46,6 +48,7 @@ def calcU_avg(lamin, specin, Rinner=0.01, nh=100.0, eff=1.0, mass=1.0):
     c = 2.9979e10
     U = ((3.0*Q*nh*eff**2)/(4.0*np.pi))**(1./3)*alphab**(2./3)/c
     return U
+
 def calcU(lamin=None, specin=None, Rinner=0.01, nh=30.0, Q=None):
     '''
     Calculate U, the ionization parameter
@@ -92,63 +95,3 @@ def grouper(n, iterable):
         if not chunk:
             return
         yield chunk
-
-#-----------------------------------------------------------------------------
-
-class FileOps:
-    '''
-    Print FSPS data into ascii files readable by CLOUDY
-    Calling sequence:
-        FileOps('outfile.ascii', lamda_array, spec_array, model_array, **kwargs)
-    Dictionary with header information - change any of these values by
-    inputting them as kwargs.
-    '''
-    def __init__(self, outfile, lam, flu, mods, **kwargs):
-        self.nom_dict = {'nmod': 11, 'ndim': 1, 'npar':1, 'nfreq':1221,
-                         'xax':'lambda', 'conv1':1.0, 'f_type':'F_lambda',
-                         'conv2':1.0, 'par1':'Age', 'par2':'Z'}
-        for key, value in kwargs.items():
-            if key in self.nom_dict:
-                self.nom_dict[key] = value
-        self.file = open(outfile, 'w')
-        #interpolate onto linear grid
-        
-        FileOps.write_header(self, mods)
-        FileOps.write_data(self, lam)
-        #correct to erg/s/AA
-        solar_lum = 3.839e33
-        fluout = flu*solar_lum
-        for i in range(self.nom_dict['nmod']):
-            FileOps.write_data(self, fluout[i,:])
-        self.file.close()
-    
-    def write_header(self, mods):
-        '''
-        Header for cloudy ascii files
-        '''
-        self.file.write("  20060612\n")
-        self.file.write("  %i\n" %self.nom_dict['ndim'])
-        self.file.write("  %i\n" %self.nom_dict['npar'])
-        self.file.write("  %s\n" %self.nom_dict['par1'])
-        if self.nom_dict['npar'] > 1:
-            self.file.write("  %s\n" %self.nom_dict['par2'])
-        self.file.write("  %i\n" %self.nom_dict['nmod'])
-        self.file.write("  %i\n" %self.nom_dict['nfreq'])
-        self.file.write("  %s\n" %self.nom_dict['xax'])
-        self.file.write("  %.8e\n" %self.nom_dict['conv1'])
-        self.file.write("  %s\n" %self.nom_dict['f_type'])
-        self.file.write("  %.8e\n" %self.nom_dict['conv2'])
-        for chunk in grouper(4, mods):
-            if self.nom_dict['npar'] > 1:
-                self.file.write("  " + "  ".join("%1.3e  %.1f" %(x[0], x[1]) for x in chunk) + "\n")
-            else:
-                self.file.write("  " + "  ".join("%1.3e" %x for x in chunk) + "\n")
-    
-    def write_data(self, array):
-        '''
-        write array with 5 items per line in format 1.0000e+00
-        '''
-        for chunk in grouper(5, array):
-            self.file.write("  " + "  ".join("%1.4e" %x for x in chunk) + "\n")
-
-#-----------------------------------------------------------------------------
