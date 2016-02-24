@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_colors
 from matplotlib import cm as cmx
+from matplotlib import rc
+
+rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+rc('text', usetex=True)
 
 def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
                set_bad_vals=False, return_cNorm=False):

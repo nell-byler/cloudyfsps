@@ -5,7 +5,7 @@ from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
 from cloudyfsps import outObj as ob
-from astrodata import dopita
+from cloudyfsps.astrodata import dopita
 
 # this code assumes you have run "csfh.py"
 # to produce a grid of cloudy models and now

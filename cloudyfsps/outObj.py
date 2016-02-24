@@ -382,6 +382,9 @@ class allmods(object):
         '''
         mo.makeBPT(ax=ax, const1='age', val1=0.5e6, const2=logR, val2=19.0,
                    const3='nH', val3=10.0)
+        default line_ratio is NII_b / Ha
+        line_ratio = ['NII', 'SII', 'OII', 'OI', 'R23']
+        or bpt_inds=['log_OIb_Ha', 'log_OIIIb_Hb']
         '''
         if axlabs is None:
             xlabel = r'log [N II] $\lambda 6584$ / H$\alpha$'
@@ -524,10 +527,10 @@ class allmods(object):
         if yval == 'age':
             Y*=1.0e-6
         return X,Y,Z
-    def pxl_plot(self, xval='logZ', yval='age', zval='bpt_x',
-                 const='logU', cval=-2.0, ax=None, **kwargs):
+    def pxl_plot(self, xval='logZ', yval='age', zval='log_OIII_Hb',
+                 const='logU', cval=-2.0, ax=None, cname='CMRmap', **kwargs):
         '''
-        mods.pxl_plot(xval='logZ', yval='age', zval='bpt_y',
+        mods.pxl_plot(xval='logZ', yval='age', zval='log_OIII_Hb',
                       const='logR', cval=18, clab='log R (cm)')
         '''
         X, Y, Z = self.group_mods(xval=xval, yval=yval, zval=zval,
@@ -537,21 +540,25 @@ class allmods(object):
         if not calc_aspect:
             aspect = 'auto'
         masked_array = np.ma.array(Z, mask=np.isnan(Z))
+        cbar_arr = kwargs.get('cbar_arr', None)
+        if cbar_arr is None:
+            sM, cNorm = get_colors(masked_array, return_cNorm=True, set_bad_vals=True, cname=cname)
+        else:
+            sM, cNorm = get_colors(cbar_arr, return_cNorm=True, set_bad_vals=True, cname=cname)
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
-        sM, cNorm = get_colors(masked_array, return_cNorm=True, set_bad_vals=True)
         pf = ax.imshow(Z, norm=cNorm, interpolation='nearest', origin='lower',
                        extent=extent, aspect=aspect,
-                       cmap='CMRmap')
+                       cmap=cname)
         xlab = kwargs.get('xlab', None)
         ylab = kwargs.get('ylab', None)
         clab = kwargs.get('clab', None)
         if xlab is None:
             xlab = xval
             ylab = yval
-        ax.set_xlabel(xval)
-        ax.set_ylabel(yval)
+        ax.set_xlabel(xlab)
+        ax.set_ylabel(ylab)
         cb = plt.colorbar(pf, ax=ax)
         if clab is not None:
             cb.set_label(clab)

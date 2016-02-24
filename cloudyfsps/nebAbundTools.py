@@ -54,7 +54,7 @@ class dopita(abundSet):
     solar = 'old solar 84'
     def __init__(self, logZ, dust=True, re_z=False):
         '''
-        Dopita (2003) uses old solar abundances
+        Dopita (2003) uses old solar abundances = 0.019
         ISM grains
         '''
         if dust:
@@ -96,7 +96,7 @@ class newdopita(abundSet):
     def __init__(self, logZ, dust=True, re_z=False):
         '''
         Abundances from Dopita (2013)
-            Solar Abundances from Grevasse 2010
+            Solar Abundances from Grevasse 2010 - z= 0.013
             includes smooth polynomial for N/O relationship
             functional form for He(z)
             new depletion factors

@@ -70,6 +70,8 @@ def cloudyInput(dir_, model_name, **kwargs):
     this_print(abunds.solarstr)
     if pars['dust']:
         this_print('metals grains {0:.2f} log'.format(pars['logZ']))
+    else:
+        this_print('metals {0:.2f} log'.format(pars['logZ']))
     for line in abunds.elem_strs:
         this_print(line)
     ####
