@@ -99,7 +99,7 @@ def plot_bpt(var_label, ax=None, color_code=False, line_ratio='NIIb', **kwargs):
             cb.set_label(r'$H \alpha / H\beta$')
     else:
         ax.plot(data[xratio], data[yratio], 'o',
-        markersize=2.0, color='k', alpha=0.5)
+                markersize=2.0, color='k', alpha=0.5, label=lab)
     if line_ratio[0] == 'N':
         NII_OIII_agn_lim(ax=ax)
         NII_OIII_sf_lim(ax=ax)

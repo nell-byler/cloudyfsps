@@ -43,7 +43,7 @@ def sextract(text, par1=None, par2=None):
     if np.size(text) == 1:
         if type(par1) is int:
             str1 = text[par1::]
-        elif type(par1) is str:
+        elif type(par1) is str or type(par1) is unicode:
             str1 = text.split(par1)
             if len(str1) == 1:
                 return ''
@@ -53,7 +53,7 @@ def sextract(text, par1=None, par2=None):
             str1 = text
         if type(par2) is int:
             str2 = str1[0:par2]
-        elif type(par2) is str:
+        elif type(par2) is str or type(par2) is unicode:
             str2 = str1.split(par2)
             if len(str2) == 1:
                 return ''
@@ -108,8 +108,11 @@ class modObj(object):
             self._init_phys()
         return
     def load_lines(self, use_doublet=False, **kwargs):
-        lines = {'Ha':6562.50,
+        lines = {'Lya':1215.68,
+                 'Ha':6562.50,
                  'Hb':4861.36,
+                 'Hg':4340.49,
+                 'Hd':4101.76,
                  'OIIIa':4959.00,
                  'OIIIb':5007.00,
                  'NIIa':6548.00,
@@ -293,6 +296,7 @@ class modObj(object):
         self.out = {}
         file_ = open(filename, 'r')
         for line in file_:
+            line = line.split('\n')[0]
             if line[0:8] == ' ####  1':
                 self.out['###First'] = line
             elif line[0:5] == ' ###':
@@ -311,7 +315,7 @@ class modObj(object):
         self.Phi0 = float(sextract(self.out['SED2'], 'Ion pht flx:'))
         self.cloudyQ = self.Phi0*self.dist_fact
         #self.logU_Rs = float(sextract(self.out['INZ'], 'U(sp):', 'Q(ion):'))
-        #self.calc_Q = (10.0**(self.logU))*self.dist_fact*30.0*2.9979e10
+        self.cl_Q = float(sextract(self.out['INZ'], 'Q(ion): ', 8))
         self.gasC = float(sextract(self.out['gascomp'], 'C :', 8))
         self.gasN = float(sextract(self.out['gascomp'], 'N :', 8))
         self.gasO = float(sextract(self.out['gascomp'], 'O :', 8))
@@ -422,7 +426,7 @@ class allmods(object):
               'const2':'logR',
               'val2':19.0,
               'const3':'nH',
-              'val3':10.0}
+              'val3':100.0}
         for key, val in kwargs.iteritems():
             pd[key] = val
         allvars = ['nH', 'logZ', 'logR', 'logU', 'age', 'efrac']
@@ -456,20 +460,25 @@ class allmods(object):
             Zx[ind] = arr[0].__getattribute__(bpt_inds[0])
             Zy[ind] = arr[0].__getattribute__(bpt_inds[1])
         if plot_data:
-            sdss.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax, **plt_pars)
             vanzee.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax)
+            sdss.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax, **plt_pars)
         ax.set_xlabel(xlabel, fontsize=16)
         ax.set_ylabel(ylabel, fontsize=16)
         for i in range(nrows):
+            color = kwargs.get('color', 'k')
+            lw = kwargs.get('lw', 2)
+            alpha = kwargs.get('alpha', 0.95)
             if i == 0:
                 par_label = kwargs.get('par_label', '__nolegend__')
-                color = kwargs.get('color', 'k')
-                ax.plot(Zx[i,:], Zy[i,:], color=color, label=par_label)
+                ax.plot(Zx[i,:], Zy[i,:], color=color, lw=lw,
+                        alpha=alpha, label=par_label)
             else:
-                ax.plot(Zx[i,:], Zy[i,:], color=color, label='__nolegend__')
+                ax.plot(Zx[i,:], Zy[i,:], color=color, lw=lw, alpha=alpha,
+                        label='__nolegend__')
         row_labs = [(Zx[i,0], Zy[i,0], '{0:.1f}'.format(float(np.unique(Y[i,:])))) for i in range(gshape[0])]
         for i in range(ncols):
-            ax.plot(Zx[:,i], Zy[:,i], color=color, label='__nolegend__')
+            ax.plot(Zx[:,i], Zy[:,i], color=color, lw=lw, alpha=alpha,
+                    label='__nolegend__')
         col_labs = [(Zx[0, i], Zy[0, i], '{0:.1f}'.format(float(np.unique(X[:,i])))) for i in range(gshape[1])]
         
         var_label = kwargs.get('var_label', '__nolegend__')
