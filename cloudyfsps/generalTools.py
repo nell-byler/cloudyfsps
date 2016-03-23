@@ -54,9 +54,13 @@ def calcU(lamin=None, specin=None, Rinner=0.01, nh=30.0, Q=None):
     if Rinner < 16, assume inner radius is given in parsecs.
     if 16 < Rinner < 30: assume logR in cm is given
     otherwise, assume R in cm is given.
+    if Q is less than 100, assumes you have given a logQ
     '''
     if Q is None:
         Q = calcQ(lamin, specin)
+    else:
+        if Q < 100.:
+            Q = 10.**Q
     if Rinner < 16.: # assume pc given, convert to cm
         Rin = Rinner*3.09e18
     elif (Rinner >= 16. and Rinner <= 30.): # assume logR in cm given
