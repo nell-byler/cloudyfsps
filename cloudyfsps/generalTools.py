@@ -51,10 +51,18 @@ def calcU_avg(lamin, specin, Rinner=0.01, nh=100.0, eff=1.0, mass=1.0):
 def calcU(lamin=None, specin=None, Rinner=0.01, nh=30.0, Q=None):
     '''
     Calculate U, the ionization parameter
+    if Rinner < 16, assume inner radius is given in parsecs.
+    if 16 < Rinner < 30: assume logR in cm is given
+    otherwise, assume R in cm is given.
     '''
     if Q is None:
         Q = calcQ(lamin, specin)
-    Rin = Rinner*3.09e18
+    if Rinner < 16.: # assume pc given, convert to cm
+        Rin = Rinner*3.09e18
+    elif (Rinner >= 16. and Rinner <= 30.): # assume logR in cm given
+        Rin = 10.**Rinner
+    else: # assume R in cm is given
+        Rin = Rinner
     c = 2.9979e10
     return Q/(4.0*np.pi*Rin**2.0*nh*c)
 
