@@ -74,7 +74,7 @@ class modObj(object):
     '''
     '''
     def __init__(self, dir_, prefix, parline, read_out=False, read_rad=False,
-                 read_cont=False, use_doublet=False, **kwargs):
+                 read_cont=False, use_doublet=False, read_emis=False, **kwargs):
         '''
         this needs to be called from other class or given
         a line from a ".pars" file
@@ -106,6 +106,8 @@ class modObj(object):
             for ele in eles:
                 self._init_ele(ele)
             self._init_phys()
+        if read_emis:
+            self._init_emis()
         return
     def load_lines(self, use_doublet=False, **kwargs):
         lines = {'Lya':1215.68,
@@ -204,6 +206,21 @@ class modObj(object):
             self.r_in = self.radius_all[0] - self.dr_all[0]/2.
             self.r_out = self.radius_all[-1] + self.dr_all[0]/2.
         return
+    def _init_emis(self):
+        '''
+        '''
+        self._dat['emis'] = self._read_f('.emis')
+        if self._dat['emis'] is not None:
+            emis = self._dat['emis']
+            self.depth = emis['depth']/pc_to_cm
+            self.frac_depth = self.depth/(self.rad_pc[-1]-self.rad_pc[0])
+            self.emis_labels = np.asarray(emis.dtype.names[1::])
+            self.n_emis = np.size(self.emis_labels)
+            self.emis_full = np.zeros((self.n_emis, np.size(emis)))
+            trans_emis = lambda x: pow(10., x)
+            for i, label in enumerate(self.emis_labels):
+                self.emis_full[i] = trans_emis(emis[label])
+            return
     def _init_phys(self):
         '''
         self._init_phys()
@@ -279,7 +296,38 @@ class modObj(object):
            return self._vol_mean((self.Te - self.T0)**2., self.nenH) / self.T0**2
        except:
            return None
-    
+    def _i_emis(self, ref):
+        '''
+        get index for emissivity by label or index
+        '''
+        if type(ref) is str or type(ref) is np.string_:
+            if ref in self.emis_labels:
+                to_return = np.squeeze(np.where(self.emis_labels == ref)).item()
+            else:
+                return None
+        elif type(ref) is int or type(ref) is np.int32:
+            to_return = ref
+        else:
+            to_return = None
+        return to_return
+    def get_emis(self, ref):
+        '''
+        return emissivity.
+        '''
+        if self._i_emis(ref) is not None:
+            return self.emis_full[self._i_emis(ref)]
+        else:
+            return None
+    def get_emis_vol(self, ref):
+        '''
+        return integration of the emissivity on the volume
+        '''
+        return self._vol_integ(self.get_emis(ref))
+    def get_emis_rad(self, ref):
+        '''
+        return integration of the emissivity on the radius
+        '''
+        return self._rad_integ(self.get_emis(ref))
     def _read_out(self):
         '''
         self._read_out()
