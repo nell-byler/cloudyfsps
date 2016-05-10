@@ -3,7 +3,7 @@
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
-__all__ = ["FileOps", "compile_mod", "check_compiled_mod", "mod_exists"]
+__all__ = ["writeASCII", "compileASCII", "checkCompiled", "compiledExists"]
 
 import os
 import numpy as np
