@@ -35,11 +35,11 @@ class writeASCII:
         self.nom_dict = {'nmod': 94, 'ndim': 1, 'npar':1, 'nx':1963,
                          'x':'lambda', 'conv1':1.0, 'peraa':False,
                          'conv2':3.839e33, 'par1':'age', 'par2':'logz'}
-        FileOps.init_pars(self, **kwargs)
+        self.init_pars(**kwargs)
         
         self.file = open('/'.join([CLOUDY_DATA_PATH,outfile]), 'w')
-        FileOps.write_header(self, modpars)
-        FileOps.write_body(self, lam, flu, modpars)
+        self.write_header(modpars)
+        self.write_body(lam, flu, modpars)
         self.file.close()
         
     def init_pars(self, **kwargs):

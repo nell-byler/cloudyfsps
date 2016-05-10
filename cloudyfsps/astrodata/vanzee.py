@@ -57,7 +57,35 @@ def plot_bpt(var_label, ax=None, line_ratio='NII', **kwargs):
                 capsize=0, fmt='s', color='white', ecolor='k', 
                 label=lab)
     return
-
+def getLineRatio('OIII', lines):
+    def logify(lnames='OIIIb', denom=None):
+        if denom is None:
+            dval = 1.0
+        else:
+            dval = lines[denom]
+        if (type(lines) == str) or (type(lines) == np.str):
+            val = np.log10(lines[lnames]/dval)
+        else:
+            val = np.log10(np.sum([lines[l] for l in lnames])/dval)
+        return val
+    ldict = {'OIII': logify(lnames='F5007'),
+             'OIIIb': logify(lnames='F5007'),
+             'NII': logify(lnames='F6584', denom='F6563')}
+    return
+def get_vz_lines():
+    linefile = pkg_resources.resource_filename(__name__, "data/vanzee_lines.dat")
+    OII,e_OII,NeIII,e_NeIII,OIII,e_OIII,OI,e_OI,SIII,e_SIII,Ha,e_Ha,NII,e_NII,SII,e_SII,ArIII,e_ArIII,cHb,e_cHb = np.genfromtxt(linefile, delimiter=';', comments='#', unpack=True)
+    return
+def get_bond_lines():
+    '''
+    returns data, with column names
+          temp, logO, logOerr, logNO, logNOerr
+          T(O++), log(O/H), log(N/O)
+    '''
+    linefile = pkg_resources.resource_filename(__name__, "data/bond_lines.dat")
+    data = np.genfromtxt(linefile, dtype=None, names=True, skip_header=24)
+    
+    return
 
 def get_abunds():
     '''
