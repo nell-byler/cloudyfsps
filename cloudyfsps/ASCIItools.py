@@ -27,7 +27,7 @@ class writeASCII:
     '''
     Print FSPS data into ascii files readable by CLOUDY
     Calling sequence:
-        FileOps('outfile.ascii', lamda_array, spec_array, model_array, **kwargs)
+        writeASCII('outfile.ascii', lam_arr, spec_arr, model_arr, **kwargs)
     Dictionary with header information - change any of these values by
     inputting them as kwargs.
     '''
@@ -36,7 +36,6 @@ class writeASCII:
                          'x':'lambda', 'conv1':1.0, 'peraa':False,
                          'conv2':3.839e33, 'par1':'age', 'par2':'logz'}
         self.init_pars(**kwargs)
-        
         self.file = open('/'.join([CLOUDY_DATA_PATH,outfile]), 'w')
         self.write_header(modpars)
         self.write_body(lam, flu, modpars)
@@ -79,9 +78,9 @@ class writeASCII:
         for chunk in grouper(5, array):
             self.file.write("  " + "  ".join("%1.4e" %x for x in chunk) + "\n")
     def write_body(self, lam, flu, modpars):
-        FileOps.write_data(self, lam)
+        self.write_data(lam)
         flu[(flu < 0.0)] = 0.0
-        [FileOps.write_data(self, fl) for fl in flu]
+        [self.write_data(fl) for fl in flu]
         
 def compileASCII(ascii_file, **kwargs):
     comp_file = CLOUDY_DATA_PATH+'/compile.in'

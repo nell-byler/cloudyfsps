@@ -13,9 +13,3 @@ except KeyError:
 __version__ = "0.1"
 
 __all__ = ["generalTools", "cloudyInputTools", "ASCIItools", "cloudyOutputTools", "outputFormatting", "nebAbundTools", "outObj"]
-
-#from .generalTools import (name_to_sym, sym_to_name, air_to_vac, calcForLogQ, grouper)
-#from .nebAbundTools import getNebAbunds
-#from .cloudyOutputTools import formatCloudyOutput, formatAllOutput
-#from .ASCIItools import writeASCII, compileASCII, checkCompiled, compiledExists
-#from .cloudyInputTools import writeParamFiles, runMake
