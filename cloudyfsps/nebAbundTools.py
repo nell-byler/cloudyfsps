@@ -12,7 +12,7 @@ def getNebAbunds(set_name, logZ, dust=True, re_z=False):
     neb_abund.get_abunds(set_name, logZ, dust=True, re_z=False)
     set_name must be 'dopita', 'newdopita', 'cl01' or 'yeh'
     '''
-    allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh']
+    allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh', 'varyNO']
     if set_name in allowed_names:
         return eval('{}({}, dust={}, re_z={})'.format(set_name, logZ, dust, re_z))
     else:
@@ -90,7 +90,6 @@ class dopita(abundSet):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
-
 class newdopita(abundSet):
     solar = 'GASS10'
     def __init__(self, logZ, dust=True, re_z=False):
@@ -130,6 +129,43 @@ class newdopita(abundSet):
         return
     def calcFinal(self):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
+         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+        return
+
+class varyNO(abundSet):
+    solar = 'GASS10'
+    def __init__(self, logZ, dust=True, re_z=False):
+        '''
+        varying N at fixed O.
+        '''
+        if dust:
+            self.grains = 'no grains\ngrains ISM'
+        else:
+            self.grains = 'no grains'
+        self.re_z=re_z
+        abundSet.__init__(self, 'dopita', logZ)
+        
+    def calcSpecial(self):
+        def calc_He(logZ):
+            return -1.01
+        def calc_CNO(logZ):
+            oxy = np.array([7.39, 7.50, 7.69, 7.99, 8.17,
+                    8.39, 8.69, 8.80, 8.99, 9.17, 9.39])
+            nit = np.array([-6.61, -6.47, -6.23, -5.79, -5.51,
+                    -5.14, -4.60, -4.40, -4.04, -3.67, -3.17])
+            car = np.array([-5.58, -5.44, -5.20, -4.76, -4.48,
+                    -4.11, -3.57, -3.37, -3.01, -2.64, -2.14])
+            O = self.abund_0['O']
+            C = float(InterpUS(oxy, car, k=1)(O + 12.0))
+            N = float(InterpUS(oxy, nit, k=1)(O + logZ + 12.0))
+            return C, N, O
+        self.__setattr__('He', calc_He(self.logZ))
+        C, N, O = calc_CNO(self.logZ)
+        [self.__setattr__(key, val)
+         for key, val in zip(['C', 'N', 'O'], [C, N, O])]
+        return
+    def calcFinal(self):
+        [self.__setattr__(key, val)
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
 

@@ -11,7 +11,7 @@ from .nebAbundTools import getNebAbunds
 
 def cloudyInput(dir_, model_name, **kwargs):
     '''
-    write_input('./test/', 'ZAU115', logZ=-1.5, age=5.0e6, logU=-4.0)
+    cloudyInput('./test/', 'ZAU115', logZ=-1.5, age=5.0e6, logU=-4.0)
     writes standard cloudy input to ./test/ZAU115.in
     defaults: 1Myr, logZ=-0.5, logU=-2.0, nH=100, r_inner=3 pc
     '''
@@ -22,7 +22,7 @@ def cloudyInput(dir_, model_name, **kwargs):
             "dens":100.0, # number density of hydrogen
             "r_inner":1.0, #inner radius of cloud
             "r_in_pc":False,
-            "use_Q:":True,
+            "use_Q":True,
             "set_name":"dopita",
             "dust":True,
             "re_z":False,
@@ -31,7 +31,11 @@ def cloudyInput(dir_, model_name, **kwargs):
             "extras":"",
             "extra_output":False,
             "to_file":True,
-            "verbose":False
+            "verbose":False,
+            "par1":"age",
+            "par1val":5.0e6,
+            "par2":"logz",
+            "par2val":0.0
             }
     for key, value in kwargs.iteritems():
         pars[key] = value
@@ -54,14 +58,19 @@ def cloudyInput(dir_, model_name, **kwargs):
                           pars["logZ"],
                           dust=pars["dust"],
                           re_z=pars["re_z"])
-    
+    if pars["set_name"] == 'varyNO':
+        pars["logZ"] = 0.0
     this_print('////////////////////////////////////')
     this_print('title {0}'.format(model_name.split('/')[-1]))
     this_print('////////////////////////////////////')
     this_print('set punch prefix "{0}"'.format(model_name))
     this_print('set line precision 6')
     ####
-    this_print('table star "{0}" age={1:.2e} logz={2:.2f}'.format(pars['cloudy_mod'], pars['age'],pars['logZ']))
+    if pars['par1'] == "age":
+        pars['par1val'] = pars['age']
+    if pars['par2'] == "logz":
+        pars['par2val'] = pars['logZ']
+    this_print('table star "{0}" {1}={2:.2e} {3}={4:.2f}'.format(pars['cloudy_mod'], pars['par1'], pars['par1val'],pars['par2'], pars['par2val']))
     if pars['use_Q']:
         this_print('Q(H) = {0:.3f} log'.format(pars['logQ']))
     else:
@@ -159,7 +168,10 @@ def printParFile(dir_, mod_prefix, pars):
     f = open(outfile, "w")
     for i in range(len(pars)):
         par = pars[i]
-        pstr = "{0} {1:.2f} {2:.2e} {3:.2f} {4:.2f} {5:.2f} {6:.2f} {7:.2f}\n".format(i+1, *par)
+        if len(par) > 7:
+            pstr = "{0} {1:.2f} {2:.2e} {3:.2f} {4:.2f} {5:.2f} {6:.2f} {7:.2f} {8:.2f}\n".format(i+1, *par)
+        else:
+            pstr = "{0} {1:.2f} {2:.2e} {3:.2f} {4:.2f} {5:.2f} {6:.2f} {7:.2f}\n".format(i+1, *par)
         f.write(pstr)
     f.close()
     return

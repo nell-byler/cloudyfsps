@@ -91,6 +91,10 @@ class modObj(object):
             self.efrac = parline[7]
         except IndexError:
             self.efrac = -1.0
+        try:
+            self.fbhb = parline[8]
+        except IndexError:
+            self.fbhb = 0.0
         self.logq = np.log10((10.0**self.logQ)/(np.pi*4.0*self.nH*(10.0**self.logR)**2.0))
         self.fl = '{}{}{}'.format(dir_, prefix, self.modnum)
         self.load_lines(use_doublet=use_doublet)
@@ -159,12 +163,13 @@ class modObj(object):
         cont_info = np.genfromtxt(self.fl+'.out_cont', skip_header=1)
         self.lam, self.nebflu = cont_info[:,0], cont_info[:,3]
         self.incflu, self.attflu = cont_info[:,1], cont_info[:,2]
-        self.spec_Q = calcQ(self.lam, self.incflu*lsun, f_nu=True)
+        self.spec_Q = calcQ(self.lam, self.incflu*lsun*self.logQ, f_nu=True)
         return
     def get_fsps_spec(self, **kwargs):
         sp = fsps.StellarPopulation(zcontinuous=1)
         sp.params['logzsol'] = self.logZ
         lam, spec = sp.get_spectrum(tage=self.age*1.0e-9)
+        self.__setattr__('fsps_lam', lam)
         self.__setattr__('fsps_spec', spec)
         self.__setattr__('fsps_Q', calcQ(lam, spec*lsun, f_nu=True))
         return
@@ -334,7 +339,7 @@ class modObj(object):
         attributes:
             dist_fact: 4 pi Rinner^2 (cm^2)
             Phi0: ionizing photon flux (s^-1 cm^-2)
-            cloudyQ: Phi0 * dist_fact = Q (s-1)
+            clogQ: Phi0 * dist_fact = Q (s-1)
             gasC, gasN, gasO: n relative to H
             DGR: dust to gas ratio
             Av_ex: extinction from extended source
@@ -361,9 +366,11 @@ class modObj(object):
         file_.close()
         self.dist_fact = 4.0*np.pi*(10.0**self.logR)**2.0
         self.Phi0 = float(sextract(self.out['SED2'], 'Ion pht flx:'))
-        self.cloudyQ = self.Phi0*self.dist_fact
+        # Ion pht flx: phi(H) = Q/4piR2
+        self.clogQ = np.log10(self.Phi0*self.dist_fact)
         #self.logU_Rs = float(sextract(self.out['INZ'], 'U(sp):', 'Q(ion):'))
-        self.cl_Q = float(sextract(self.out['INZ'], 'Q(ion): ', 8))
+        # Q(ion) is exiting
+        #self.cl_Q = float(sextract(self.out['INZ'], 'Q(ion): ', 8))
         self.gasC = float(sextract(self.out['gascomp'], 'C :', 8))
         self.gasN = float(sextract(self.out['gascomp'], 'N :', 8))
         self.gasO = float(sextract(self.out['gascomp'], 'O :', 8))
@@ -410,8 +417,13 @@ class allmods(object):
             self.efrac_vals = np.unique(self.modpars[:,7])
         except IndexError:
             self.efrac_vals = np.array([-1.0])
+        try:
+            self.fbhb_vals = np.unique(self.modpars[:,8])
+        except IndexError:
+            self.fbhb_vals = np.array([0.0])
     def set_arrs(self):
-        iterstrings = ['logZ', 'age', 'logU', 'logR', 'logQ', 'nH', 'efrac',
+        iterstrings = ['logZ', 'age', 'logU', 'logR', 'logQ', 'nH',
+                       'efrac','fbhb',
                        'log_NII_Ha','log_NIIa_Ha','log_NIIb_Ha',
                        'log_OIII_Hb','log_OIIIa_Hb','log_OIIIb_Hb',
                        'log_SII_Ha','log_SIIa_Ha','log_SIIb_Ha',
@@ -430,7 +442,8 @@ class allmods(object):
     
     
     def makeBPT(self, ax=None, plot_data=True, line_ratio='NIIb',
-                bpt_inds=None, axlabs=None, plt_pars={}, **kwargs):
+                gridnames=None, bpt_inds=None, axlabs=None,
+                plt_pars={}, **kwargs):
         '''
         mo.makeBPT(ax=ax, const1='age', val1=0.5e6, const2=logR, val2=19.0,
                    const3='nH', val3=10.0)
@@ -474,12 +487,19 @@ class allmods(object):
               'const2':'logR',
               'val2':19.0,
               'const3':'nH',
-              'val3':100.0}
+              'val3':100.0,
+              'const4':None,
+              'val4':0.0,
+              'const5':None,
+              'val5':0.0}
         for key, val in kwargs.iteritems():
             pd[key] = val
-        allvars = ['nH', 'logZ', 'logR', 'logU', 'age', 'efrac']
-        [allvars.remove(x) for x in [pd['const1'], pd['const2'], pd['const3']]]
-        x_name, y_name = allvars[0], allvars[1]
+        allvars = ['nH', 'logZ', 'logR', 'logU', 'age', 'efrac', 'fbhb']
+        [allvars.remove(x) for x in [pd['const1'], pd['const2'], pd['const3'], pd['const4'], pd['const5']] if x is not None]
+        if gridnames is None:
+            x_name, y_name = allvars[0], allvars[1]
+        else:
+            x_name, y_name = gridnames[0], gridnames[1]
         grid_x = self.__getattribute__(x_name+'_vals')
         grid_y = self.__getattribute__(y_name+'_vals')
         
@@ -496,6 +516,12 @@ class allmods(object):
                     if (mod.__getattribute__(pd['const1']) == pd['val1'])
                     & (mod.__getattribute__(pd['const2']) == pd['val2'])
                     & (mod.__getattribute__(pd['const3']) == pd['val3'])]
+        if pd['const4'] is not None:
+            use_mods = [mod for mod in self.mods
+                        if (mod.__getattribute__(pd['const1']) == pd['val1'])
+                        & (mod.__getattribute__(pd['const2']) == pd['val2'])
+                        & (mod.__getattribute__(pd['const3']) == pd['val3'])
+                        & (mod.__getattribute__(pd['const4']) == pd['val4'])]
         
         gshape = (len(grid_y), len(grid_x))
         X, Y = np.meshgrid(grid_x, grid_y, indexing='xy')

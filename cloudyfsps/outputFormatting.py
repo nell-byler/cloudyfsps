@@ -8,6 +8,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 import pkg_resources
 import fsps
+import os
 from .generalTools import air_to_vac
 #grid: 2 files: line, cont
 #columns: wavelengths
@@ -33,7 +34,7 @@ class writeFormattedOutput(object):
         self.line_out = self.out_pr + ".lines"
         self.cont_out = self.out_pr + ".cont"
         self.loadModInfo() # load each model's parameters from prefix.pars
-        #self.doLineOut() # print ordered emission line wavelengths + fluxes
+        self.doLineOut() # print ordered emission line wavelengths + fluxes
         #self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
         return
     def loadModInfo(self, **kwargs):
@@ -41,10 +42,12 @@ class writeFormattedOutput(object):
         reads model parameters from "ZAU.pars"
         '''
         name_keys = ["mod_num", "logZ", "Age", "logU", "logR", "logQ", "nH", "efrac"]
-        data = np.genfromtxt(self.file_pr+".pars", names=name_keys)
-        self.__setattr__("modpars", data)
-        for k in name_keys:
-            self.__setattr__(k, data[k])
+        data = np.genfromtxt(self.file_pr+".pars", unpack=True)
+        ddata = {}
+        for i,key in enumerate(name_keys):
+            ddata[key] = data[i]
+            self.__setattr__(key, data[i])
+        self.__setattr__("modpars", ddata)
         return
     def doLineOut(self, **kwargs):
         '''
@@ -52,10 +55,10 @@ class writeFormattedOutput(object):
         '''
         f = open(self.line_out, "w")
         self.printLineLam(f)
-        for pars in self.modpars:
-            self.printLineFlu(f, pars) 
+        for n in self.mod_num:
+            self.printLineFlu(f, n) 
         f.close()
-        print("lines: {0:.0f} models to file {1}".format(self.modpars[-1][0], self.line_out))
+        print("lines: {0:.0f} models to file {1}".format(self.mod_num[-1], self.line_out))
         return
     def printLineLam(self, f):
         '''
@@ -75,16 +78,15 @@ class writeFormattedOutput(object):
         p_str = " ".join(["{0:1.6e}".format(dat) for dat in data_vac])
         f.write(p_str+"\n")
         return
-    def printLineFlu(self, f, pars):
+    def printLineFlu(self, f, n):
         #write model parameters
-        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}\n".format(pars["logZ"], pars["Age"], pars["logU"])
+        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}\n".format(self.logZ[n-1], self.Age[n-1], self.logU[n-1])
         f.write(tstr)
         #read in and print emission line intensities (Lsun/Q)
-        nst = "{0:.0f}".format(pars["mod_num"])
+        nst = "{0:.0f}".format(n)
         filename = self.file_pr+nst+".out_lines"
-        dat = np.genfromtxt(filename, names=["lam", "I"])
-        I_lin = dat["I"]
-        I_str = ["{0:1.4e}".format(s) for s in I_lin]
+        lam, flu = np.genfromtxt(filename, unpack=True)
+        I_str = ["{0:1.4e}".format(s) for s in flu]
         tstr = " ".join(I_str)
         f.write(tstr+"\n")
         return

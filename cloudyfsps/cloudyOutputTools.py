@@ -15,8 +15,8 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     # model information
     logZ, age, logU, logR, logQ, nH = modpars[1:7]
     
-    dist_fact = 4.0*np.pi*(10.0**logR)**2.0
-    lsun = 3.846e33
+    dist_fact = 4.0*np.pi*(10.0**logR)**2.0 # cm**2
+    lsun = 3.846e33 # erg/s
     c = 2.9979e18 #ang/s
     
     oldfile = "{}{}{}.lin".format(dir_, model_prefix, modnum)
@@ -42,6 +42,8 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     # print to file
     print("Lines were printed to file {}".format(print_file))
     cont_data = np.genfromtxt("{}{}{}.outwcont".format(dir_, model_prefix, modnum), skip_header=1)
+    # cont is nu L_nu / (4 pi R**2): Hz * (erg/s/Hz) * (1/cm**2)
+    # [erg / s / cm^2 ] -> [ erg / s / Hz ]
     cont_1 = cont_data[:,1] * dist_fact / lsun * cont_data[:,0] / c
     cont_2 = cont_data[:,2] * dist_fact / lsun * cont_data[:,0] / c
     

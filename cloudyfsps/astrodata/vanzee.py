@@ -57,7 +57,11 @@ def plot_bpt(var_label, ax=None, line_ratio='NII', **kwargs):
                 capsize=0, fmt='s', color='white', ecolor='k', 
                 label=lab)
     return
-def getLineRatio('OIII', lines):
+
+def getLineRatio(name, lines):
+    '''
+    getLineRatio('OIII', line_dictionary)
+    '''
     def logify(lnames='OIIIb', denom=None):
         if denom is None:
             dval = 1.0
@@ -71,7 +75,8 @@ def getLineRatio('OIII', lines):
     ldict = {'OIII': logify(lnames='F5007'),
              'OIIIb': logify(lnames='F5007'),
              'NII': logify(lnames='F6584', denom='F6563')}
-    return
+    return ldict[name]
+
 def get_vz_lines():
     linefile = pkg_resources.resource_filename(__name__, "data/vanzee_lines.dat")
     OII,e_OII,NeIII,e_NeIII,OIII,e_OIII,OI,e_OI,SIII,e_SIII,Ha,e_Ha,NII,e_NII,SII,e_SII,ArIII,e_ArIII,cHb,e_cHb = np.genfromtxt(linefile, delimiter=';', comments='#', unpack=True)
