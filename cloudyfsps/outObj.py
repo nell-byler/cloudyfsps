@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_colors
 from matplotlib import cm as cmx
 import fsps
-from .generalTools import calcQ
+from .generalTools import calcQ, air_to_vac, getEmis
 from .astrodata import dopita, sdss, vanzee, kewley
+import pkg_resources
 
 c = 2.9979e18
 lsun = 3.846e33
@@ -114,8 +115,12 @@ class modObj(object):
             self._init_emis()
         return
     def load_lines(self, use_doublet=False, **kwargs):
+        names, vacwavs = getEmis()
+        self.lines = dict(names=names, wavs=vacwavs)
         lines = {'Lya':1215.68,
                  'Ha':6562.50,
+                 'HeI':5877.243,
+                 'HeII':4687.015,
                  'Hb':4861.36,
                  'Hg':4340.49,
                  'Hd':4101.76,
@@ -129,6 +134,8 @@ class modObj(object):
                  'OI':6300.00}
         line_info = np.genfromtxt(self.fl+'.lineflux')
         lam, flu = line_info[:,0], line_info[:,1]
+        #lam_air, flu = line_info[:,0], line_info[:,1]
+        #lam = air_to_vac(lam_air)
         for name, wav in lines.iteritems():
             matchind = np.argmin(np.abs(lam-wav))
             self.__setattr__(name, flu[matchind])
@@ -210,6 +217,9 @@ class modObj(object):
             self.dv_all = 4.*np.pi*self.radius_all**2*self.dr_all
             self.r_in = self.radius_all[0] - self.dr_all[0]/2.
             self.r_out = self.radius_all[-1] + self.dr_all[0]/2.
+            if self.Phi0 == 0.0:
+                self.Phiarr = self.Qarr / (4.*np.pi*self.r_in**2.)
+                self.Phi0 = self.Phiarr.sum()
         return
     def _init_emis(self):
         '''
@@ -370,7 +380,28 @@ class modObj(object):
         self.clogQ = np.log10(self.Phi0*self.dist_fact)
         #self.logU_Rs = float(sextract(self.out['INZ'], 'U(sp):', 'Q(ion):'))
         # Q(ion) is exiting
-        #self.cl_Q = float(sextract(self.out['INZ'], 'Q(ion): ', 8))
+        self.Qarr = np.zeros(4)
+        self.Phiarr = np.zeros(4)
+        try:
+            self.Qarr[0] = float(sextract(self.out['SED2'], 'Q(1.0-1.8):', 'Q(1.8-4.0):'))
+            self.Qarr[1] = float(sextract(self.out['SED2'], 'Q(1.8-4.0):', 'Q(4.0-20):'))
+            self.Qarr[2] = float(sextract(self.out['SED2'], 'Q(4.0-20):', 'Q(20--):'))
+            self.Qarr[3] = float(sextract(self.out['SED2'], 'Q(20--):', 'Ion pht'))
+            self.Qarr = pow(10., self.Qarr)
+            self.input_lum = True
+        except:
+            pass
+        self.Q0 = self.Qarr.sum()
+        try:
+            self.Phiarr[0] = float(sextract(self.out['SED2'], 'phi(1.0-1.8):', 'phi(1.8-4.0):'))
+            self.Phiarr[1] = float(sextract(self.out['SED2'], 'phi(1.8-4.0):', 'phi(4.0-20):'))
+            self.Phiarr[2] = float(sextract(self.out['SED2'], 'phi(4.0-20):', 'phi(20--):'))
+            self.Phiarr[3] = float(sextract(self.out['SED2'], 'phi(20--):', 'Ion pht'))
+            self.Phiarr = pow(10., self.Phiarr)
+            self.input_lum = False
+        except:
+            pass
+        self.Phi0 = self.Phiarr.sum()
         self.gasC = float(sextract(self.out['gascomp'], 'C :', 8))
         self.gasN = float(sextract(self.out['gascomp'], 'N :', 8))
         self.gasO = float(sextract(self.out['gascomp'], 'O :', 8))

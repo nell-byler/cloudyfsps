@@ -35,7 +35,7 @@ class writeFormattedOutput(object):
         self.cont_out = self.out_pr + ".cont"
         self.loadModInfo() # load each model's parameters from prefix.pars
         self.doLineOut() # print ordered emission line wavelengths + fluxes
-        #self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
+        self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
         return
     def loadModInfo(self, **kwargs):
         '''
@@ -93,10 +93,19 @@ class writeFormattedOutput(object):
     def doContOut(self, **kwargs):
         f = open(self.cont_out, "w")
         self.printContLam(f)
-        for pars in self.modpars:
+        for num in self.modpars['mod_num']:
+            iind = int(num)
+            pars = dict(logZ=self.logZ[iind-1],
+                        Age=self.Age[iind-1],
+                        nH=self.nH[iind-1],
+                        logQ=self.logQ[iind-1],
+                        logU=self.logU[iind-1],
+                        logR=self.logR[iind-1],
+                        mod_num=iind,
+                        efrac=self.efrac[iind-1])
             self.printContFlu(f, pars) 
         f.close()
-        print("cont: {0:.0f} models to file {1}".format(self.modpars[-1][0], self.cont_out))
+        print("cont: {0:.0f} models to file {1}".format(self.modpars['mod_num'][-1], self.cont_out))
         return
     def printContFlu(self, f, pars):
         #write model parameters
@@ -108,12 +117,14 @@ class writeFormattedOutput(object):
         nst = "{0:.0f}".format(pars["mod_num"])
         filename = self.file_pr+nst+".out_cont"
         # read lambda, incident flux, attenuated incident, diffuse cont
-        m_data = np.genfromtxt(filename, names=["lam", "IF", "AI", "DC"])
+        mdata = np.genfromtxt(filename)
+        lam = mdata[:,0]
+        fIF, fAI, fDC = mdata[:,1], mdata[:,2], mdata[:,3]
         # cloudy has vac < 3000AA and air >3000A
-        x = air_to_vac(m_data["lam"])
+        x = air_to_vac(lam)
         newx = self.fsps_lam
-        fluxs_out = [m_data["IF"], m_data["AI"], m_data["DC"]]
-        fluxs_out = [m_data["DC"]]
+        fluxs_out = [fIF, fAI, fDC]
+        fluxs_out = [fDC]
         # interpolate them onto FSPS grid
         for y in fluxs_out:
             newy = interp1d(x, y)(newx)
@@ -128,6 +139,8 @@ class writeFormattedOutput(object):
         # fsps_lam_1 fsps_lam_2 .... fsps_lam_n
         '''
         #grab fsps wavelength info
+        lamfile = pkg_resources.resource_filename(__name__, "data/fsps_lam.dat")
+        fsps_lam = np.genfromtxt(lamfile)
         self.__setattr__("fsps_lam", fsps_lam)
         nlam = len(fsps_lam)
         nmods = np.max(self.mod_num)

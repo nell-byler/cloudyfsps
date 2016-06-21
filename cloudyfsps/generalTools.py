@@ -6,6 +6,7 @@ from __future__ import (division, print_function, absolute_import,
 import numpy as np
 import itertools
 from scipy.integrate import simps
+import pkg_resources
 
 def calcQ(lamin0, specin0, mstar=1.0, helium=False, f_nu=False):
     '''
@@ -154,7 +155,18 @@ def sym_to_name(val=None):
             return elem_keys[val.title()]
         except KeyError:
             print("element not in ", elem_keys.keys())
-        
+
+def getEmis(use_vac=True):
+    lfile = pkg_resources.resource_filename(__name__, "data/emlines.dat")
+    dat = np.genfromtxt(lfile, delimiter='\t', dtype=None)
+    names = np.array([d[0].replace(' ','') for d in dat], dtype='|S12')
+    vacwavs = np.array([d[1] for d in dat])
+    airwavs = np.array([d[2] for d in dat])
+    if use_vac:
+        return (names, vacwavs)
+    else:
+        return (names, airwavs)
+ 
 def air_to_vac(inpt, no_uv_conv=True):
     '''
     from morton 1991
