@@ -402,6 +402,11 @@ class modObj(object):
         except:
             pass
         self.Phi0 = self.Phiarr.sum()
+        if self.Q0 == 0.0:
+            self.Qarr = self.Phiarr*self.dist_fact
+            self.Q0 = self.Qarr.sum()
+        self.Qhe = self.Qarr[1::].sum()
+        self.QhQhe = np.log10(self.Q0) - np.log10(self.Qarr[1::].sum())
         self.gasC = float(sextract(self.out['gascomp'], 'C :', 8))
         self.gasN = float(sextract(self.out['gascomp'], 'N :', 8))
         self.gasO = float(sextract(self.out['gascomp'], 'O :', 8))
@@ -642,7 +647,7 @@ class allmods(object):
             Y*=1.0e-6
         return X,Y,Z
     def pxl_plot(self, xval='logZ', yval='age', zval='log_OIII_Hb',
-                 const='logU', cval=-2.0, ax=None, cname='CMRmap', **kwargs):
+                 const='logU', cval=-2.0, ax=None, cname='CMRmap',**kwargs):
         '''
         mods.pxl_plot(xval='logZ', yval='age', zval='log_OIII_Hb',
                       const='logR', cval=18, clab='log R (cm)')

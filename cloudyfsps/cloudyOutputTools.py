@@ -44,37 +44,28 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     cont_data = np.genfromtxt("{}{}{}.outwcont".format(dir_, model_prefix, modnum), skip_header=1)
     # cont is nu L_nu / (4 pi R**2): Hz * (erg/s/Hz) * (1/cm**2)
     # [erg / s / cm^2 ] -> [ erg / s / Hz ]
-    atten_0 = cont_data[:,1]
-    diffuse_0 = cont_data[:,2]
+    atten_0, diffuse_0  = cont_data[:,1], cont_data[:,2]
     ang_0 = cont_data[:,0]
     nu_0 = c / cont_data[:,0]
-    atten_1 = atten_0[::-1]
-    diffuse_1 = diffuse_0[::-1]
-    ang_1 = ang_0[::-1]
-    nu_1 = nu_0[::-1]
-    
-    ang_out=ang_1
-    atten_out = atten_1 / nu_1 * dist_fact / pow(10., logQ)
-    diffuse_out = diffuse_1 / nu_1 * dist_fact / pow(10., logQ)
-    #cont_1 = cont_data[:,1] * dist_fact / lsun * cont_data[:,0] / c
-    #cont_2 = cont_data[:,2] * dist_fact / lsun * cont_data[:,0] / c
-    #contwav = cont_data[:,0][::-1]
-    #cont_AI = cont_1[::-1] /(10.0**logQ) #attenuated incident
-    #cont_DC = cont_2[::-1] /(10.0**logQ) #diffuse continuum
+    # reverse arrays
+    atten_in, diffuse_in = atten_0[::-1], diffuse_0[::-1]
+    ang = ang_0[::-1]
+    nu = nu_0[::-1]
+    # attenuated incident continuunm
+    atten_out = atten_in / nu * dist_fact / pow(10., logQ)/ lsun
+    # diffuse continuum
+    diffuse_out = diffuse_in / nu * dist_fact / pow(10., logQ) / lsun
     
     inidata = np.genfromtxt("{}{}{}.inicont".format(dir_, model_prefix, modnum), skip_header=1)
     iang_0 = inidata[:,0]
     inu_0 = c / iang_0
-    inu_1 = inu_0[::-1]
-    iang_1 = iang_0[::-1]
+    inu = inu_0[::-1]
+    iang = iang_0[::-1]
     incid_0 = inidata[:,1]
-    incid_1 = incid_0[::-1]
+    incid_in = incid_0[::-1]
     #
-    incid_out = incid_1 / inu_1 * dist_fact / pow(10., logQ)
+    incid_out = incid_in / inu * dist_fact / pow(10., logQ) / lsun
     # F_nu / (nu=c/lambda) per solar lum
-    #icont = ini_data[:,1] * dist_fact / lsun * ini_data[:,0] / c
-    #icont_wav = ini_data[:,0][::-1]
-    #cont_IF = icont[::-1]/(10.0**logQ) #initial flux
     #####
     #####
     print_file = "{}{}{}.out_cont".format(dir_, model_prefix, modnum)
@@ -82,8 +73,8 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     f = open(print_file, "w")
     f.write("# lam (ang) incid (lsun/hz/Q) attenuated_incid (lsun/hz/Q) diffuse_cont (lsun/hz/Q)\n")
     
-    for i in range(len(ang_out)):
-        printstring = "{0:.6e} {1:.6e} {2:.6e} {3:.6e}\n".format(ang_out[i], incid_out[i], atten_out[i], diffuse_out[i])
+    for i in range(len(ang)):
+        printstring = "{0:.6e} {1:.6e} {2:.6e} {3:.6e}\n".format(ang[i], incid_out[i], atten_out[i], diffuse_out[i])
         f.write(printstring)
     f.close()
     return
