@@ -24,6 +24,9 @@ class writeFormattedOutput(object):
     #sp = fsps.StellarPopulation()
     #fsps_lam = sp.wavelengths
     def __init__(self, dir_, mod_prefix, mod_suffix, **kwargs):
+        '''
+        writeFormattedOutput(mod_dir, 'ZAU', 'BPASS')
+        '''
         self.dir_, self.mod_prefix = dir_, mod_prefix
         self.file_pr = dir_ + mod_prefix
         if mod_suffix is None:
@@ -69,7 +72,7 @@ class writeFormattedOutput(object):
         linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda_new.dat")
         data_vac = np.genfromtxt(linefile)
         #data_vac = air_to_vac(data) # new file is already in vac
-        nlines = len(data)
+        nlines = len(data_vac)
         nmods = np.max(self.mod_num)
         #print header to file
         head_str = "#{0} cols {1:.0f} rows logZ Age logU".format(nlines, nmods)
