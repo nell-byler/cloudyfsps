@@ -7,7 +7,17 @@ from __future__ import (division, print_function, absolute_import,
 import numpy as np
 import subprocess
 import pkg_resources
-
+from .generalTools import air_to_vac
+###
+# ***.lin: [cloudy_ID, flux]
+# ***.lineflux: [sorted_vac_wl, flux]
+# ***.out_lines: [sorted_vac_wl, flux]
+###
+# ***.outwcont: [wl, attenuated_incident, diffuse_continuum]
+# ***.inicont: [wl, incident_flux]
+# ***.contflux: [wl, incid_out, atten_out, diffuse_out]
+# ***.out_cont: [ang, diffuse_out]
+###
 def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     '''
     for formatting the output of a single cloudy job
@@ -35,16 +45,26 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     wl = np.array([dat[0] for dat in wdat])
     # sort them by wavelength
     sinds = np.argsort(wl)
+    ### print vac_wl, flux to ***.lineflux
     output = np.column_stack((wl[sinds], datflu[sinds]))
     np.savetxt(newfile, output, fmt=str("%4.6e"))
-    # save line luminosity in solar lums per Q
+    # print lines to ***.out_lines
+    # line luminosity in solar lums per Q
     line_wav = wl[sinds]
     line_flu = datflu[sinds]/lsun/(10.0**logQ)
     print_output = np.column_stack((line_wav, line_flu))
     np.savetxt(print_file, print_output, fmt=(str("%.6e"),str("%.6e")))
     # print to file
     print("Lines were printed to file {}".format(print_file))
-    cont_data = np.genfromtxt("{}{}{}.outwcont".format(dir_, model_prefix, modnum), skip_header=1)
+    ########
+    ### continuum
+    ########
+    outcontfl = "{}{}{}.outwcont".format(dir_, model_prefix, modnum)
+    incontfl = "{}{}{}.inicont".format(dir_, model_prefix, modnum)
+    print_file2 = "{}{}{}.contflux".format(dir_, model_prefix, modnum)
+    print_file = "{}{}{}.out_cont".format(dir_, model_prefix, modnum)
+    #
+    cont_data = np.genfromtxt(outcontfl, skip_header=1)
     # cont is nu L_nu / (4 pi R**2): Hz * (erg/s/Hz) * (1/cm**2)
     # [erg / s / cm^2 ] -> [ erg / s / Hz ]
     atten_0, diffuse_0  = cont_data[:,1], cont_data[:,2]
@@ -55,11 +75,11 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     ang = ang_0[::-1]
     nu = nu_0[::-1]
     # attenuated incident continuunm
-    atten_out = atten_in / nu * dist_fact / pow(10., logQ)/ lsun
+    atten_out = atten_in / nu * dist_fact / (10.**logQ) / lsun
     # diffuse continuum
-    diffuse_out = diffuse_in / nu * dist_fact / pow(10., logQ) / lsun
+    diffuse_out = diffuse_in / nu * dist_fact / (10.**logQ) / lsun
     
-    inidata = np.genfromtxt("{}{}{}.inicont".format(dir_, model_prefix, modnum), skip_header=1)
+    inidata = np.genfromtxt(incontfl, skip_header=1)
     iang_0 = inidata[:,0]
     inu_0 = c / iang_0
     inu = inu_0[::-1]
@@ -67,19 +87,23 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     incid_0 = inidata[:,1]
     incid_in = incid_0[::-1]
     #
-    incid_out = incid_in / inu * dist_fact / pow(10., logQ) / lsun
+    incid_out = incid_in / inu * dist_fact / (10.**logQ) / lsun
     # F_nu / (nu=c/lambda) per solar lum
-    #####
-    #####
-    print_file = "{}{}{}.out_cont".format(dir_, model_prefix, modnum)
-    print("The continuum was printed to file {}".format(print_file))
-    f = open(print_file, "w")
-    f.write("# lam (ang) incid (lsun/hz/Q) attenuated_incid (lsun/hz/Q) diffuse_cont (lsun/hz/Q)\n")
-    
+    f = open(print_file2, "w")
+    f.write("# lam (ang) incid (erg/s/cm2) attenuated_incid (erg/s/cm2) diffuse_cont (erg/s/cm2)\n")
     for i in range(len(ang)):
-        printstring = "{0:.6e} {1:.6e} {2:.6e} {3:.6e}\n".format(ang[i], incid_out[i], atten_out[i], diffuse_out[i])
+        printstring = "{0:.6e} {1:.6e} {2:.6e} {3:.6e}\n".format(ang[i], incid_in[i], atten_in[i], diffuse_in[i])
         f.write(printstring)
     f.close()
+    print("The full continuum was printed to file {}".format(print_file2))
+    #####
+    f = open(print_file, "w")
+    f.write("# lam (ang) diffuse_cont (lsun/hz/Q)\n")
+    for i in range(len(ang)):
+        printstring = "{0:.6e} {1:.6e}\n".format(ang[i], diffuse_out[i])
+        f.write(printstring)
+    f.close()
+    print("The diffuse continuum was printed to file {}".format(print_file))
     return
 
 

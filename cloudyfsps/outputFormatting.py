@@ -20,6 +20,10 @@ from .generalTools import air_to_vac
 #flux2
 #flux3
 
+###
+# reads from ZAU***.out_lines, ZAU***.out_cont
+# produces ZAU_**.lines, ZAU_**.cont
+###
 class writeFormattedOutput(object):
     #sp = fsps.StellarPopulation()
     #fsps_lam = sp.wavelengths
@@ -125,17 +129,14 @@ class writeFormattedOutput(object):
         # read lambda, incident flux, attenuated incident, diffuse cont
         mdata = np.genfromtxt(filename)
         lam = mdata[:,0]
-        fIF, fAI, fDC = mdata[:,1], mdata[:,2], mdata[:,3]
+        fDC = mdata[:,1]
         # cloudy has vac < 2000AA and air >2000A
         x = air_to_vac(lam)
+        y = fDC
         newx = self.fsps_lam
-        fluxs_out = [fIF, fAI, fDC]
-        fluxs_out = [fDC]
-        # interpolate them onto FSPS grid
-        for y in fluxs_out:
-            newy = UnivariateSpline(x, y)(newx)
-            y_str = " ".join(["{0:1.4}".format(yy) for yy in newy])
-            f.write(y_str+"\n")
+        newy = UnivariateSpline(x, y)(newx)
+        y_str = " ".join(["{0:1.4}".format(yy) for yy in newy])
+        f.write(y_str+"\n")
         return
     def printContLam(self, f):
         '''
