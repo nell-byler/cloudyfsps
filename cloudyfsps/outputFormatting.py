@@ -66,9 +66,9 @@ class writeFormattedOutput(object):
         line in the output file. converts all wavelengths to vacuum.
         '''
         #read in file containing wavelength info
-        linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda.dat")
-        data = np.genfromtxt(linefile)
-        data_vac = air_to_vac(data)
+        linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda_new.dat")
+        data_vac = np.genfromtxt(linefile)
+        #data_vac = air_to_vac(data) # new file is already in vac
         nlines = len(data)
         nmods = np.max(self.mod_num)
         #print header to file
@@ -120,7 +120,7 @@ class writeFormattedOutput(object):
         mdata = np.genfromtxt(filename)
         lam = mdata[:,0]
         fIF, fAI, fDC = mdata[:,1], mdata[:,2], mdata[:,3]
-        # cloudy has vac < 3000AA and air >3000A
+        # cloudy has vac < 2000AA and air >2000A
         x = air_to_vac(lam)
         newx = self.fsps_lam
         fluxs_out = [fIF, fAI, fDC]
