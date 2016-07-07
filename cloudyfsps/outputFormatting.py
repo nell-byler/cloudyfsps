@@ -51,6 +51,9 @@ class writeFormattedOutput(object):
             ddata[key] = data[i]
             self.__setattr__(key, data[i])
         self.__setattr__("modpars", ddata)
+        self.NZ = len(np.unique(self.logZ))
+        self.NA = len(np.unique(self.Age))
+        self.NU = len(np.unique(self.logU))
         return
     def doLineOut(self, **kwargs):
         '''
@@ -75,7 +78,7 @@ class writeFormattedOutput(object):
         nlines = len(data_vac)
         nmods = np.max(self.mod_num)
         #print header to file
-        head_str = "#{0} cols {1:.0f} rows logZ Age logU".format(nlines, nmods)
+        head_str = "#{0} cols {1:.0f} rows {2} logZ {3} Age {4} logU".format(nlines, nmods, self.NZ, self.NA, self.NU)
         f.write(head_str+"\n")
         #print lambda array
         p_str = " ".join(["{0:1.6e}".format(dat) for dat in data_vac])
@@ -148,7 +151,7 @@ class writeFormattedOutput(object):
         nlam = len(fsps_lam)
         nmods = np.max(self.mod_num)
         #print header to file
-        head_str = "#{0} cols {1:.0f} rows logZ Age logU".format(nlam, nmods)
+        head_str = "#{0} cols {1:.0f} rows {2} logZ {3} Age {4} logU".format(nlam, nmods, self.NZ, self.NA, self.NU)
         f.write(head_str+"\n")
         #print lambda array
         p_str = " ".join(["{0:1.6e}".format(lam) for lam in fsps_lam])
