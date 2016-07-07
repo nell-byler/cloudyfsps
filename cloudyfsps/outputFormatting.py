@@ -5,7 +5,7 @@ from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
 import numpy as np
-from scipy.interpolate import interp1d
+from scipy.interpolate import UnivariateSpline
 import pkg_resources
 import fsps
 import os
@@ -130,7 +130,7 @@ class writeFormattedOutput(object):
         fluxs_out = [fDC]
         # interpolate them onto FSPS grid
         for y in fluxs_out:
-            newy = interp1d(x, y)(newx)
+            newy = UnivariateSpline(x, y)(newx)
             y_str = " ".join(["{0:1.4}".format(yy) for yy in newy])
             f.write(y_str+"\n")
         return
