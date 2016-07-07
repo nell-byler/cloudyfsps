@@ -28,8 +28,11 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     line_names = [d[0] for d in dat]
     datflu = np.array([d[1] for d in dat])
     # non-ordered wavelengths
-    wavfile = pkg_resources.resource_filename(__name__, "data/shell_lambda.dat")
-    wl = np.genfromtxt(wavfile)
+    #wavfile = pkg_resources.resource_filename(__name__, "data/shell_lambda.dat")
+    #wl = np.genfromtxt(wavfile)
+    wavfile = pkg_resources.resource_filename(__name__, "data/ref_lines_vac.dat")
+    wdat = np.genfromtxt(wavfile, delimiter=',', dtype=None)
+    wl = np.array([dat[0] for dat in wdat])
     # sort them by wavelength
     sinds = np.argsort(wl)
     output = np.column_stack((wl[sinds], datflu[sinds]))

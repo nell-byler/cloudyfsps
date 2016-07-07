@@ -89,7 +89,7 @@ def cloudyInput(dir_, model_name, **kwargs):
         r_out = np.log10(pars['r_inner']*pc_to_cm)
     else:
         r_out = pars['r_inner']
-    linefile = pkg_resources.resource_filename(__name__, 'data/cloudy_lines.dat')
+    linefile = pkg_resources.resource_filename(__name__, 'data/cloudy_lines_new.dat')
     this_print('radius {0:.3f} log'.format(r_out))
     this_print('hden {0:.3f} log'.format(np.log10(pars['dens'])))
     this_print('sphere')
