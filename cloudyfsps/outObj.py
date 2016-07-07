@@ -117,21 +117,21 @@ class modObj(object):
     def load_lines(self, use_doublet=False, **kwargs):
         names, vacwavs = getEmis()
         self.lines = dict(names=names, wavs=vacwavs)
-        lines = {'Lya':1215.68,
-                 'Ha':6562.50,
+        lines = {'Lya':1215.67,
+                 'Ha':6564.60,
                  'HeI':5877.243,
                  'HeII':4687.015,
-                 'Hb':4861.36,
-                 'Hg':4340.49,
-                 'Hd':4101.76,
-                 'OIIIa':4959.00,
-                 'OIIIb':5007.00,
-                 'NIIa':6548.00,
-                 'NIIb':6584.00,
-                 'OII':3727.00,
-                 'SIIa':6716.00,
-                 'SIIb':6731.00,
-                 'OI':6300.00}
+                 'Hb':4862.71,
+                 'Hg':4341.692,
+                 'Hd':4102.892,
+                 'OIIIa':4960.295,
+                 'OIIIb':5008.240,
+                 'NIIa':6549.86,
+                 'NIIb':6585.27,
+                 'OII':3729.86,
+                 'SIIa':6718.294,
+                 'SIIb':6732.673,
+                 'OI':6302.046}
         line_info = np.genfromtxt(self.fl+'.lineflux')
         lam, flu = line_info[:,0], line_info[:,1]
         #lam_air, flu = line_info[:,0], line_info[:,1]
