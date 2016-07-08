@@ -8,6 +8,7 @@ import numpy as np
 import subprocess
 import pkg_resources
 from .generalTools import air_to_vac
+from scipy.interpolate import UnivariateSpline
 ###
 # ***.lin: [cloudy_ID, flux]
 # ***.lineflux: [sorted_vac_wl, flux]
@@ -23,7 +24,9 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     for formatting the output of a single cloudy job
     '''
     # model information
-    logZ, age, logU, logR, logQ, nH = modpars[1:7]
+    logZ, age, logU, logR, logQ, nH = modpars[0:6]
+    if logZ > 0.2:
+        print("WARNING WARNING WARNING")
     
     dist_fact = 4.0*np.pi*(10.0**logR)**2.0 # cm**2
     lsun = 3.846e33 # erg/s
@@ -63,44 +66,43 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     incontfl = "{}{}{}.inicont".format(dir_, model_prefix, modnum)
     print_file2 = "{}{}{}.contflux".format(dir_, model_prefix, modnum)
     print_file = "{}{}{}.out_cont".format(dir_, model_prefix, modnum)
-    #
+    # lam, atten_inc, diff_cont, diff_line
     cont_data = np.genfromtxt(outcontfl, skip_header=1)
     # cont is nu L_nu / (4 pi R**2): Hz * (erg/s/Hz) * (1/cm**2)
     # [erg / s / cm^2 ] -> [ erg / s / Hz ]
     atten_0, diffuse_0  = cont_data[:,1], cont_data[:,2]
     ang_0 = cont_data[:,0]
-    nu_0 = c / cont_data[:,0]
     # reverse arrays
     atten_in, diffuse_in = atten_0[::-1], diffuse_0[::-1]
     ang = ang_0[::-1]
-    nu = nu_0[::-1]
-    # attenuated incident continuunm
-    atten_out = atten_in / nu * dist_fact / (10.**logQ) / lsun
+    ang_v = air_to_vac(ang)
+    # interpolate
+    lamfile = pkg_resources.resource_filename(__name__, "data/fsps_lam.dat")
+    fsps_lam = np.genfromtxt(lamfile)
+    nu = c/fsps_lam
+    atten_y = interp1d(ang_v, atten_in)(fsps_lam)
+    diff_y = interp1d(ang_v, diffuse_in)(fsps_lam)
+    ##
     # diffuse continuum
-    diffuse_out = diffuse_in / nu * dist_fact / (10.**logQ) / lsun
-    
+    diffuse_out = diff_y / nu * dist_fact / (10.**logQ) / lsun
+    ##
     inidata = np.genfromtxt(incontfl, skip_header=1)
-    iang_0 = inidata[:,0]
-    inu_0 = c / iang_0
-    inu = inu_0[::-1]
-    iang = iang_0[::-1]
     incid_0 = inidata[:,1]
     incid_in = incid_0[::-1]
-    #
-    incid_out = incid_in / inu * dist_fact / (10.**logQ) / lsun
+    incid_y = interp1d(ang_v, incid_in)(fsps_lam)
     # F_nu / (nu=c/lambda) per solar lum
     f = open(print_file2, "w")
     f.write("# lam (ang) incid (erg/s/cm2) attenuated_incid (erg/s/cm2) diffuse_cont (erg/s/cm2)\n")
-    for i in range(len(ang)):
-        printstring = "{0:.6e} {1:.6e} {2:.6e} {3:.6e}\n".format(ang[i], incid_in[i], atten_in[i], diffuse_in[i])
+    for i in range(len(ang_v)):
+        printstring = "{0:.6e} {1:.6e} {2:.6e} {3:.6e}\n".format(ang_v[i], incid_y[i], atten_y[i], diffuse_y[i])
         f.write(printstring)
     f.close()
     print("The full continuum was printed to file {}".format(print_file2))
     #####
     f = open(print_file, "w")
     f.write("# lam (ang) diffuse_cont (lsun/hz/Q)\n")
-    for i in range(len(ang)):
-        printstring = "{0:.6e} {1:.6e}\n".format(ang[i], diffuse_out[i])
+    for i in range(len(ang_v)):
+        printstring = "{0:.6e} {1:.6e}\n".format(ang_v[i], diffuse_out[i])
         f.write(printstring)
     f.close()
     print("The diffuse continuum was printed to file {}".format(print_file))

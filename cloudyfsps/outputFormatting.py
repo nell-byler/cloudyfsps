@@ -5,11 +5,9 @@ from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
 import numpy as np
-from scipy.interpolate import UnivariateSpline
 import pkg_resources
 import fsps
 import os
-from .generalTools import air_to_vac
 #grid: 2 files: line, cont
 #columns: wavelengths
 #rows: models
@@ -41,8 +39,8 @@ class writeFormattedOutput(object):
         self.line_out = self.out_pr + ".lines"
         self.cont_out = self.out_pr + ".cont"
         self.loadModInfo() # load each model's parameters from prefix.pars
-        self.doLineOut() # print ordered emission line wavelengths + fluxes
-        self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
+        #self.doLineOut() # print ordered emission line wavelengths + fluxes
+        #self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
         return
     def loadModInfo(self, **kwargs):
         '''
@@ -66,7 +64,7 @@ class writeFormattedOutput(object):
         f = open(self.line_out, "w")
         self.printLineLam(f)
         for n in self.mod_num:
-            self.printLineFlu(f, n) 
+            self.printLineFlu(f, n.astype(int)) 
         f.close()
         print("lines: {0:.0f} models to file {1}".format(self.mod_num[-1], self.line_out))
         return
@@ -90,10 +88,10 @@ class writeFormattedOutput(object):
         return
     def printLineFlu(self, f, n):
         #write model parameters
-        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}\n".format(self.logZ[n-1], self.Age[n-1], self.logU[n-1])
-        f.write(tstr)
+        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}".format(self.logZ[n-1], self.Age[n-1], self.logU[n-1])
+        f.write(tstr+"\n")
         #read in and print emission line intensities (Lsun/Q)
-        nst = "{0:.0f}".format(n)
+        nst = "{0}".format(n)
         filename = self.file_pr+nst+".out_lines"
         lam, flu = np.genfromtxt(filename, unpack=True)
         I_str = ["{0:1.4e}".format(s) for s in flu]
@@ -104,7 +102,7 @@ class writeFormattedOutput(object):
         f = open(self.cont_out, "w")
         self.printContLam(f)
         for num in self.modpars['mod_num']:
-            iind = int(num)
+            iind = num.astype(int)
             pars = dict(logZ=self.logZ[iind-1],
                         Age=self.Age[iind-1],
                         nH=self.nH[iind-1],
@@ -119,23 +117,18 @@ class writeFormattedOutput(object):
         return
     def printContFlu(self, f, pars):
         #write model parameters
-        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}\n".format(pars["logZ"],
-                                                        pars["Age"],
-                                                        pars["logU"])
-        f.write(tstr)
+        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}".format(pars["logZ"],
+                                                   pars["Age"],
+                                                   pars["logU"])
+        f.write(tstr+"\n")
         #read in and print emission line intensities
-        nst = "{0:.0f}".format(pars["mod_num"])
+        nst = "{0}".format(pars["mod_num"])
         filename = self.file_pr+nst+".out_cont"
-        # read lambda, incident flux, attenuated incident, diffuse cont
+        # read lambda, diffuse cont
         mdata = np.genfromtxt(filename)
         lam = mdata[:,0]
-        fDC = mdata[:,1]
-        # cloudy has vac < 2000AA and air >2000A
-        x = air_to_vac(lam)
-        y = fDC
-        newx = self.fsps_lam
-        newy = UnivariateSpline(x, y)(newx)
-        y_str = " ".join(["{0:1.4}".format(yy) for yy in newy])
+        flu = mdata[:,1]        
+        y_str = " ".join(["{0:1.4}".format(y) for y in flu])
         f.write(y_str+"\n")
         return
     def printContLam(self, f):
@@ -150,9 +143,9 @@ class writeFormattedOutput(object):
         fsps_lam = np.genfromtxt(lamfile)
         self.__setattr__("fsps_lam", fsps_lam)
         nlam = len(fsps_lam)
-        nmods = np.max(self.mod_num)
+        nmods = np.max(self.mod_num).astype(int)
         #print header to file
-        head_str = "#{0} cols {1:.0f} rows {2} logZ {3} Age {4} logU".format(nlam, nmods, self.NZ, self.NA, self.NU)
+        head_str = "#{0} cols {1} rows {2} logZ {3} Age {4} logU".format(nlam, nmods, self.NZ, self.NA, self.NU)
         f.write(head_str+"\n")
         #print lambda array
         p_str = " ".join(["{0:1.6e}".format(lam) for lam in fsps_lam])

@@ -13,8 +13,8 @@ from .generalTools import calcQ, air_to_vac, getEmis
 from .astrodata import dopita, sdss, vanzee, kewley
 import pkg_resources
 
-c = 2.9979e18
-lsun = 3.846e33
+c = 2.9979e18 #ang/s
+lsun = 3.846e33 #erg/s
 planck = 6.626e-27
 pc_to_cm = 3.08568e18
 
@@ -166,11 +166,22 @@ class modObj(object):
         self.log_NII_OII = logify(self.NIIa+self.NIIb, self.OII)
         self.R23 = logHb(self.OII+self.OIIIa+self.OIIIb)
         return
-    def _load_cont(self, **kwargs):
-        cont_info = np.genfromtxt(self.fl+'.out_cont', skip_header=1)
+    def _load_cont(self, dist_corr=False, output_units=False, **kwargs):
+        cont_info = np.genfromtxt(self.fl+'.contflux', skip_header=1)
+        # erg / s / cm2
         self.lam, self.nebflu = cont_info[:,0], cont_info[:,3]
         self.incflu, self.attflu = cont_info[:,1], cont_info[:,2]
-        self.spec_Q = calcQ(self.lam, self.incflu*lsun*self.logQ, f_nu=True)
+        self.spec_Q = calcQ(self.lam, self.incflu, f_nu=True)
+        if dist_corr: # erg/s
+            self.nebflu *= self.dist_fact
+            self.attflu *= self.dist_fact
+            self.incflu *= self.dist_fact
+            self.spec_Q = calcQ(self.lam, self.incflu*c/self.lam, f_nu=True)
+        elif output_units: # Lsun/Hz
+            self.nebflu *= self.dist_fact / lsun * self.lam / c
+            self.attflu *= self.dist_fact / lsun * self.lam / c
+            self.incflu *= self.dist_fact / lsun * self.lam / c
+            self.spec_Q = calcQ(self.lam, self.incflu*lsun, f_nu=True)
         return
     def get_fsps_spec(self, **kwargs):
         sp = fsps.StellarPopulation(zcontinuous=1)
