@@ -8,7 +8,7 @@ import numpy as np
 import subprocess
 import pkg_resources
 from .generalTools import air_to_vac
-from scipy.interpolate import UnivariateSpline
+from scipy.interpolate import interp1d
 ###
 # ***.lin: [cloudy_ID, flux]
 # ***.lineflux: [sorted_vac_wl, flux]
