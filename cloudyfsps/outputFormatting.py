@@ -39,8 +39,8 @@ class writeFormattedOutput(object):
         self.line_out = self.out_pr + ".lines"
         self.cont_out = self.out_pr + ".cont"
         self.loadModInfo() # load each model's parameters from prefix.pars
-        #self.doLineOut() # print ordered emission line wavelengths + fluxes
-        #self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
+        self.doLineOut() # print ordered emission line wavelengths + fluxes
+        self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
         return
     def loadModInfo(self, **kwargs):
         '''
