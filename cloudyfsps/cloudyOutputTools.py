@@ -29,7 +29,7 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
         print("WARNING WARNING WARNING")
     
     dist_fact = 4.0*np.pi*(10.0**logR)**2.0 # cm**2
-    lsun = 3.846e33 # erg/s
+    lsun = 3.839e33 # erg/s
     c = 2.9979e18 #ang/s
     
     oldfile = "{}{}{}.lin".format(dir_, model_prefix, modnum)

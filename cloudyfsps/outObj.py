@@ -14,7 +14,7 @@ from .astrodata import dopita, sdss, vanzee, kewley
 import pkg_resources
 
 c = 2.9979e18 #ang/s
-lsun = 3.846e33 #erg/s
+lsun = 3.839e33 #erg/s
 planck = 6.626e-27
 pc_to_cm = 3.08568e18
 
