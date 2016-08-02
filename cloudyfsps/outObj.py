@@ -96,6 +96,7 @@ class modObj(object):
             self.fbhb = parline[8]
         except IndexError:
             self.fbhb = 0.0
+        
         self.logq = np.log10((10.0**self.logQ)/(np.pi*4.0*self.nH*(10.0**self.logR)**2.0))
         self.fl = '{}{}{}'.format(dir_, prefix, self.modnum)
         self.load_lines(use_doublet=use_doublet)
@@ -386,9 +387,9 @@ class modObj(object):
                 self.out['dust'] = line
         file_.close()
         self.dist_fact = 4.0*np.pi*(10.0**self.logR)**2.0
-        self.Phi0 = float(sextract(self.out['SED2'], 'Ion pht flx:'))
+        #self.Phi0 = float(sextract(self.out['SED2'], 'Ion pht flx:'))
         # Ion pht flx: phi(H) = Q/4piR2
-        self.clogQ = np.log10(self.Phi0*self.dist_fact)
+        #self.clogQ = np.log10(self.Phi0*self.dist_fact)
         #self.logU_Rs = float(sextract(self.out['INZ'], 'U(sp):', 'Q(ion):'))
         # Q(ion) is exiting
         self.Qarr = np.zeros(4)
@@ -402,7 +403,7 @@ class modObj(object):
             self.input_lum = True
         except:
             pass
-        self.Q0 = self.Qarr.sum()
+        self.Qh = self.Qarr.sum()
         try:
             self.Phiarr[0] = float(sextract(self.out['SED2'], 'phi(1.0-1.8):', 'phi(1.8-4.0):'))
             self.Phiarr[1] = float(sextract(self.out['SED2'], 'phi(1.8-4.0):', 'phi(4.0-20):'))
@@ -413,11 +414,11 @@ class modObj(object):
         except:
             pass
         self.Phi0 = self.Phiarr.sum()
-        if self.Q0 == 0.0:
+        if self.Qh == 0.0:
             self.Qarr = self.Phiarr*self.dist_fact
-            self.Q0 = self.Qarr.sum()
+            self.Qh = self.Qarr.sum()
         self.Qhe = self.Qarr[1::].sum()
-        self.QhQhe = np.log10(self.Q0) - np.log10(self.Qarr[1::].sum())
+        self.QhQhe = np.log10(self.Qh) - np.log10(self.Qhe)
         self.gasC = float(sextract(self.out['gascomp'], 'C :', 8))
         self.gasN = float(sextract(self.out['gascomp'], 'N :', 8))
         self.gasO = float(sextract(self.out['gascomp'], 'O :', 8))

@@ -67,7 +67,7 @@ class writeASCII:
         self.file.write("  %.8e\n" %self.nom_dict['conv2'])#units
         for chunk in grouper(4, modpars):
             if self.nom_dict['npar'] > 1:
-                self.file.write("  " + "  ".join("{0:>6.2e}{1:>6.2f}".format(x[0], x[1]) for x in chunk) + "\n")
+                self.file.write("  " + "  ".join("{0:>6.2e}{1:>6.2e}".format(x[0], x[1]) for x in chunk) + "\n")
             else:
                 self.file.write("  " + "  ".join("{0:>4.2e}".format(x) for x in chunk) + "\n")
     
@@ -76,7 +76,7 @@ class writeASCII:
         write array with 5 items per line in format 1.0000e+00
         '''
         for chunk in grouper(5, array):
-            self.file.write("  " + "  ".join("%1.4e" %x for x in chunk) + "\n")
+            self.file.write("  " + "  ".join("%1.7e" %x for x in chunk) + "\n")
     def write_body(self, lam, flu, modpars):
         self.write_data(lam)
         flu[(flu < 0.0)] = 0.0

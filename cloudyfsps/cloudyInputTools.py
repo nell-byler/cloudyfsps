@@ -70,7 +70,7 @@ def cloudyInput(dir_, model_name, **kwargs):
         pars['par1val'] = pars['age']
     if pars['par2'] == "logz":
         pars['par2val'] = pars['logZ']
-    this_print('table star "{0}" {1}={2:.2e} {3}={4:.2f}'.format(pars['cloudy_mod'], pars['par1'], pars['par1val'],pars['par2'], pars['par2val']))
+    this_print('table star "{0}" {1}={2:.2e} {3}={4:.2e}'.format(pars['cloudy_mod'], pars['par1'], pars['par1val'],pars['par2'], pars['par2val']))
     if pars['use_Q']:
         this_print('Q(H) = {0:.3f} log'.format(pars['logQ']))
     else:
@@ -169,7 +169,7 @@ def printParFile(dir_, mod_prefix, pars):
     for i in range(len(pars)):
         par = pars[i]
         if len(par) > 7:
-            pstr = "{0} {1:.2f} {2:.2e} {3:.2f} {4:.2f} {5:.2f} {6:.2f} {7:.2f} {8:.2f}\n".format(i+1, *par)
+            pstr = "{0} {1:.2f} {2:.2e} {3:.2f} {4:.2f} {5:.2f} {6:.2f} {7:.2f} {8:.2e}\n".format(i+1, *par)
         else:
             pstr = "{0} {1:.2f} {2:.2e} {3:.2f} {4:.2f} {5:.2f} {6:.2f} {7:.2f}\n".format(i+1, *par)
         f.write(pstr)
