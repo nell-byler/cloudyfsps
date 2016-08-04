@@ -300,7 +300,11 @@ class modObj(object):
             to_return = a/b
             np.seterr(all=None)
         return to_return
-    
+    def _vol_cum(self, a):
+        if a is None or self.dvff is None:
+            return None
+        else:
+            return (a*self.dvff).cumsum()
     def _vol_integ(self, a):
         if a is None or self.dvff is None:
             return None
@@ -343,6 +347,11 @@ class modObj(object):
         '''
         if self._i_emis(ref) is not None:
             return self.emis_full[self._i_emis(ref)]
+        else:
+            return None
+    def get_cumVol_emis(self, ref):
+        if self._i_emis(ref) is not None:
+            return 
         else:
             return None
     def get_emis_vol(self, ref):
