@@ -37,6 +37,14 @@ def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
         scalarMap.set_array(vals)
         return scalarMap
 
+def n_colors(n, **kwargs):
+    '''
+    n_colors(50, minv=0.5, maxv=1.0, cname='Blues')
+    '''
+    sM = get_colors(np.linspace(0.0, 1.0), **kwargs)
+    colors = [sM.to_rgba(v) for v in np.linspace(0.0, 1.0, n)]
+    return colors
+
 def sextract(text, par1=None, par2=None):
     '''
     to extract stuff from cloudy output
