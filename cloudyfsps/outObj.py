@@ -83,7 +83,8 @@ class modObj(object):
     '''
     '''
     def __init__(self, dir_, prefix, parline, read_out=False, read_rad=False,
-                 read_cont=False, use_doublet=False, read_emis=False, **kwargs):
+                 read_cont=False, use_doublet=False, read_emis=False,
+                 read_cool=False, **kwargs):
         '''
         this needs to be called from other class or given
         a line from a ".pars" file
@@ -122,6 +123,8 @@ class modObj(object):
             self._init_phys()
         if read_emis:
             self._init_emis()
+        if read_cool:
+            self._init_cool()
         return
     def load_lines(self, use_doublet=False, **kwargs):
         names, vacwavs = getEmis()
@@ -143,8 +146,6 @@ class modObj(object):
                  'OI':6302.046}
         line_info = np.genfromtxt(self.fl+'.lineflux')
         lam, flu = line_info[:,0], line_info[:,1]
-        #lam_air, flu = line_info[:,0], line_info[:,1]
-        #lam = air_to_vac(lam_air)
         for name, wav in lines.iteritems():
             matchind = np.argmin(np.abs(lam-wav))
             self.__setattr__(name, flu[matchind])
@@ -200,13 +201,15 @@ class modObj(object):
         self.__setattr__('fsps_spec', spec)
         self.__setattr__('fsps_Q', calcQ(lam, spec*lsun, f_nu=True))
         return
-    def _read_f(self, key, delimiter='\t', comments=';', names=True):
+    def _read_f(self, key, delimiter='\t', comments=';', names=True, **kwargs):
         '''
         self._read_f('.rad')
         '''
         file_ = self.fl+key
         try:
-            return np.genfromtxt(file_,delimiter='\t', comments=';', names=True)
+            return np.genfromtxt(file_,delimiter=delimiter,
+                                 comments=comments,
+                                 names=names, **kwargs)
         except IOError:
             return None
         
@@ -255,6 +258,8 @@ class modObj(object):
             trans_emis = lambda x: pow(10., x)
             for i, label in enumerate(self.emis_labels):
                 self.emis_full[i] = trans_emis(emis[label])
+            self.indHe = np.argmin(np.abs(mod.ion_arr['He'][1]-0.5))
+            self.indH = np.argmin(np.abs(self.ion_arr['H'][1]-0.5))
             return
     def _init_phys(self):
         '''
@@ -272,6 +277,15 @@ class modObj(object):
             self.nenH = self.ne_all*self.nH_all
             self.Te = self._dat[key]['Te']
             self.ff_all = self._dat[key]['fillfac']
+        return
+    def _init_cool(self):
+        key = 'cool'
+        self._dat[key] = self._read_f('.'+key, comments='#',
+                                      names=False, usecols=[0,1,2,3],
+                                      unpack=True)
+        if self._dat[key] is not None:
+            self.heat = self._dat[key][2,:]
+            self.cool = self._dat[key][3,:]
         return
     def _init_ele(self, key):
         '''
@@ -402,6 +416,12 @@ class modObj(object):
                 self.out['gascomp'] = line
             elif 'Dust to gas ratio' in line:
                 self.out['dust'] = line
+            elif 'ENERGY BUDGET' in line:
+                self.out['energy'] = line
+            elif 'Cooling:' in line:
+                self.out['cool'] = line
+            elif 'Heating:' in line:
+                self.out['heat'] = line
         file_.close()
         self.dist_fact = 4.0*np.pi*(10.0**self.logR)**2.0
         #self.Phi0 = float(sextract(self.out['SED2'], 'Ion pht flx:'))
@@ -436,6 +456,14 @@ class modObj(object):
             self.Qh = self.Qarr.sum()
         self.Qhe = self.Qarr[1::].sum()
         self.QhQhe = np.log10(self.Qh) - np.log10(self.Qhe)
+        self._set_lineCool()
+        try:
+            self.Heat_BF = float(sextract(sextract(self.out['heat'], 'BFH1', 14), ':', 5))
+        except:
+            self.Heat_BF = 0.0
+        self.Heat = float(sextract(self.out['energy'], 'Heat:', 'Coolg:'))
+        self.Cool = float(sextract(self.out['energy'], 'Coolg:', 'Error:'))
+        self.RecLin = float(sextract(self.out['energy'], 'Rec Lin:', 8))
         self.gasC = float(sextract(self.out['gascomp'], 'C :', 8))
         self.gasN = float(sextract(self.out['gascomp'], 'N :', 8))
         self.gasO = float(sextract(self.out['gascomp'], 'O :', 8))
@@ -443,6 +471,34 @@ class modObj(object):
             self.DGR = float(sextract(self.out['dust'], '(by mass):',',' ))
             self.Av_ex = float(sextract(self.out['dust'], 'AV(ext):', '(pnt)'))
             self.Av_pt = float(sextract(self.out['dust'], ' (pnt):'))
+        return
+    def _set_lineCool(self):
+        keys = ['HFBc', 'HFFc', 'Clin 912.000A:', 'N  2 6584.00A:',
+                ' S II 6731.00A:','S II 6716.00A:', 'TOTL 3727.00A:',
+                'S  3 9532.00A:', 'O  3 5007.00A:', 'O  3 4959.00A:']
+        keyattrs = ['HFBc', 'HFFc', 'Ly', 'NII', 'SIIb', 'SIIa',
+                    'O_3727', 'SIII', 'O_5007', 'O_4959']
+        self.cool_frac = {}
+        for key, keyattr in zip(keys, keyattrs):
+            if key[0] == 'H':
+                try:
+                    val = float(sextract(sextract(self.out['cool'],
+                                                  key, 14),
+                                         ':', 5))
+                except:
+                    val = 0.0
+            else:
+                try:
+                    val = float(sextract(self.out['cool'], key, 5))
+                except:
+                    val = 0.0
+            self.__setattr__('Cool_'+keyattr, val)
+        self.Cool_Otot = np.sum([self.Cool_O_3727,
+                                 self.Cool_O_5007,
+                                 self.Cool_O_4959])
+        self.Cool_Stot = np.sum([self.Cool_SIIa,
+                                 self.Cool_SIIb,
+                                 self.Cool_SIII])
         return
 
 class allmods(object):
@@ -508,7 +564,7 @@ class allmods(object):
     
     def makeBPT(self, ax=None, plot_data=True, line_ratio='NIIb',
                 gridnames=None, bpt_inds=None, axlabs=None,
-                plt_pars={}, **kwargs):
+                plt_pars={}, data_only=False, **kwargs):
         '''
         mo.makeBPT(ax=ax, const1='age', val1=0.5e6, const2=logR, val2=19.0,
                    const3='nH', val3=10.0)
@@ -547,6 +603,10 @@ class allmods(object):
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
+        if data_only:
+            vanzee.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax)
+            sdss.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax, **plt_pars)
+            return
         pd = {'const1':'age',
               'val1':0.5e6,
               'const2':'logR',
@@ -676,7 +736,8 @@ class allmods(object):
             Y*=1.0e-6
         return X,Y,Z
     def pxl_plot(self, xval='logZ', yval='age', zval='log_OIII_Hb',
-                 const='logU', cval=-2.0, ax=None, cname='CMRmap',**kwargs):
+                 const='logU', cval=-2.0, ax=None, cname='CMRmap',
+                 cmap=None, cbar_arr=None, **kwargs):
         '''
         mods.pxl_plot(xval='logZ', yval='age', zval='log_OIII_Hb',
                       const='logR', cval=18, clab='log R (cm)')
@@ -688,11 +749,17 @@ class allmods(object):
         if not calc_aspect:
             aspect = 'auto'
         masked_array = np.ma.array(Z, mask=np.isnan(Z))
-        cbar_arr = kwargs.get('cbar_arr', None)
+        
         if cbar_arr is None:
-            sM, cNorm = get_colors(masked_array, return_cNorm=True, set_bad_vals=True, cname=cname)
+            arr_in = cbarr
         else:
-            sM, cNorm = get_colors(cbar_arr, return_cNorm=True, set_bad_vals=True, cname=cname)
+            arr_in = masked_array
+        if cmap is not None:
+            sM, cNorm = get_colors(arr_in, return_cNorm=True,
+                                   set_bad_vals=True, cmap=cmap)
+        else:
+            sM, cNorm = get_colors(arr_in, return_cNorm=True,
+                                   set_bad_vals=True, cname=cname)
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)

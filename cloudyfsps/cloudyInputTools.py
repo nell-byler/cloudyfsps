@@ -29,7 +29,7 @@ def cloudyInput(dir_, model_name, **kwargs):
             "cloudy_mod":"FSPS_SPS.mod",
             "efrac":-1.0,
             "extras":"",
-            "extra_output":False,
+            "extra_output":True,
             "to_file":True,
             "verbose":False,
             "par1":"age",
@@ -121,6 +121,38 @@ save last element silicon ".ele_Si"
 save last element iron ".ele_Fe"
 save last hydrogen Lya ".H_lya"
 save last hydrogen ionization ".H_ion"
+save last lines emissivity ".emis"
+H  1 6562.85A
+H  1 4861.36A
+H  1 4340.49A
+He 1 3888.63A
+He 1 4471.47A
+He 1 5875.61A
+He 2 1640.00A
+O  1 6300.00A
+O  1 6363.00A
+O II 3729.00A
+O II 3726.00A
+O  3 5007.00A
+TOTL 4363.00A
+O  3 4959.00A
+O  3 51.8000m
+N  2 6584.00A
+N  2 6548.00A
+S II 6731.00A
+S II 6716.00A
+S  3 9069.00A
+S  3 9532.00A
+S  3 18.6700m
+S  4 10.5100m
+Ar 3 7135.00A
+Ar 3 9.00000m
+Ne 3 3869.00A
+Ne 2 12.8100m
+Ne 3 15.5500m
+C  3 1910.00A
+C  3 1907.00A
+end of lines
 '''
 
 def writeMake(dir_=None):
