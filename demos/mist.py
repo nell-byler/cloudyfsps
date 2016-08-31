@@ -46,8 +46,8 @@ def mist_ascii(fileout, **kwargs):
     # though different variables and more dimensions are possible.
     sp_dict = dict(zcontinuous=1,
                    imf_type=2,
-                   sfh=1,
-                   const=1.0,
+                   sfh=0,
+                   const=0.0,
                    sf_start=0.0)
     sp = fsps.StellarPopulation(**sp_dict)
     # all ages and Zs
@@ -74,7 +74,7 @@ def mist_ascii(fileout, **kwargs):
 # assumes you have $CLOUDY_EXE and $CLOUDY_DATA_PATH set as sys vars.
 
 # name of ascii file
-ascii_file = 'FSPS_MIST_CSFH.ascii'
+ascii_file = 'FSPS_MIST_SSP.ascii'
 
 # or if there is an already-compiled one you want to use, specify here
 compiled_ascii = '{}.mod'.format(ascii_file.split('.')[0])
@@ -97,14 +97,14 @@ if exec_write_ascii:
 #---------------------------------------------------------------------
 # local folder to read and write *.in, *.out files
 #mod_dir = '/home/oliver/research/emission/output_salp/'
-mod_dir = '/astro/users/ebyler/research/newem/output_mist_csfh/'
+mod_dir = '/astro/users/ebyler/research/newem/output_mist_ssp/'
 mod_prefix = 'ZAU'
 
 # GRID PARAMETERS FOR CLOUDY RUN
 #--------------
-ages = np.array([0.5e6, 1.0e6, 2.0e6, 3.0e6, 5.0e6, 7.0e6, 10.0e6, 20.e6, 50.e6])
+ages = np.array([0.5e6, 1.0e6, 2.0e6, 3.0e6, 5.0e6, 7.0e6, 10.0e6])
 logUs =  np.array([-4.0, -3.5, -3.0, -2.5, -2.0, -1.5, -1.0])
-logZs =  np.array([-2.0, -1.75, -1.5, -1.25, -1.0, -0.75, -0.50, -0.25, 0.0, 0.25])
+logZs =  np.array([-2.5, -1.5, -0.75, -0.50, -0.25, 0.0, 0.25, 0.5])
 
 #
 Rinners =  np.array([19.])
@@ -133,7 +133,7 @@ if exec_write_input:
                     set_name='dopita',
                     dust=False,
                     extra_output=True,
-                    extras='save last physical conditions ".phys"')
+                    extras='set WeakHeatCool 0.001\nsave last cooling each ".cool"')
     print('Wrote {} param files'.format(len(pars)))
 else:
     print('Skipping input writing.')
@@ -147,7 +147,7 @@ else:
 #print all the jobs you would like to run into myjobs.cfg
 #-----------------------------------------------------------------------
 #set up outfile and essential info
-outstr = 'mist_csfh'
+outstr = 'mist_ssp'
 jobfile = '/astro/users/ebyler/research/newem/condor/cloudy_{0}_jobs.cfg'.format(outstr)
 jobfolder = '/astro/users/ebyler/research/newem/condor/output_{0}/'.format(outstr)
 

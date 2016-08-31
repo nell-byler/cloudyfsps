@@ -258,7 +258,7 @@ class modObj(object):
             trans_emis = lambda x: pow(10., x)
             for i, label in enumerate(self.emis_labels):
                 self.emis_full[i] = trans_emis(emis[label])
-            self.indHe = np.argmin(np.abs(mod.ion_arr['He'][1]-0.5))
+            self.indHe = np.argmin(np.abs(self.ion_arr['He'][1]-0.5))
             self.indH = np.argmin(np.abs(self.ion_arr['H'][1]-0.5))
             return
     def _init_phys(self):
@@ -280,12 +280,33 @@ class modObj(object):
         return
     def _init_cool(self):
         key = 'cool'
-        self._dat[key] = self._read_f('.'+key, comments='#',
-                                      names=False, usecols=[0,1,2,3],
-                                      unpack=True)
+        self._dat[key] = self._read_f('.'+key)
         if self._dat[key] is not None:
-            self.heat = self._dat[key][2,:]
-            self.cool = self._dat[key][3,:]
+            attkeys = dict(cool_RecMet='hvFB', # heavy elem recomb cooling
+                           cool_ColMet='Hvin', # heavy elem collis ionization
+                           cool_FFC='FFcm', #F-F cooling (non e-)
+                           cool_H='H',
+                           cool_He='He',
+                           cool_N='N',
+                           cool_O='O',
+                           cool_S='S',
+                           cool_Ne='Ne',
+                           cool_C='C',
+                           cool_Ar='Ar',
+                           cool_Fe='Fe',
+                           cool_Al='Al',
+                           cool_Si='Si',
+                           cool_HminFB='Hfb')
+            self.cool = self._dat[key]['Ctotergcm3s']
+            self.Ctot = self._vol_integ(self.cool)
+            for att,keyname in attkeys.iteritems():
+                vals = self._dat[key][keyname]
+                self.__setattr__(att, vals)
+                self.__setattr__('frac_'+att, self._vol_integ(vals)/self.Ctot)
+            CE_names = self._dat[key].dtype.names[5:33]
+            self.cool_CE = np.sum([self._vol_integ(self._dat[key][elname]) for elname in CE_names])
+            self.frac_cool_CE = np.sum([self._vol_integ(self._dat[key][elname])/self.Ctot for elname in CE_names])
+            self.frac_cool_FF_FB = self.Cool_HFFc+self.Cool_HFBc
         return
     def _init_ele(self, key):
         '''
@@ -332,7 +353,11 @@ class modObj(object):
             return None
         else:
             return (a*self.dvff).sum()
-    
+    def _dV(self, a):
+        if a is None or self.dvff is None:
+            return None
+        else:
+            return (a*self.dvff)
     def _vol_mean(self, a, b=1.):
         return self._quiet_div(self._vol_integ(a*b), self._vol_integ(b))
     
@@ -381,6 +406,11 @@ class modObj(object):
         return integration of the emissivity on the volume
         '''
         return self._vol_integ(self.get_emis(ref))
+    def get_frac_emis(self, ref):
+        '''
+        emiss dV / tot emiss
+        '''
+        return self._dV(self.get_emis(ref))/self.get_emis_vol(ref)
     def get_emis_rad(self, ref):
         '''
         return integration of the emissivity on the radius
@@ -422,8 +452,15 @@ class modObj(object):
                 self.out['cool'] = line
             elif 'Heating:' in line:
                 self.out['heat'] = line
+            elif line[0:5] == ' HFBc':
+                self.out['HFBc'] = line
         file_.close()
         self.dist_fact = 4.0*np.pi*(10.0**self.logR)**2.0
+        try:
+            self.H_Rec_Lum = float(sextract(sextract(self.out['HFBc'], 'HFBc', 18), 9, 8))
+        except:
+            self.H_Rec_Lum = 0.0
+            #print(sextract(sextract(self.out['HFBc'], 'HFBc', 18), 9, 8))
         #self.Phi0 = float(sextract(self.out['SED2'], 'Ion pht flx:'))
         # Ion pht flx: phi(H) = Q/4piR2
         #self.clogQ = np.log10(self.Phi0*self.dist_fact)
@@ -563,7 +600,7 @@ class allmods(object):
     
     
     def makeBPT(self, ax=None, plot_data=True, line_ratio='NIIb',
-                gridnames=None, bpt_inds=None, axlabs=None,
+                gridnames=None, bpt_inds=None, axlabs=None, varsize=22,
                 plt_pars={}, data_only=False, **kwargs):
         '''
         mo.makeBPT(ax=ax, const1='age', val1=0.5e6, const2=logR, val2=19.0,
@@ -573,33 +610,33 @@ class allmods(object):
         or bpt_inds=['log_OIb_Ha', 'log_OIIIb_Hb']
         '''
         if axlabs is None:
-            xlabel = r'log [N II] $\lambda 6584$ / H$\alpha$'
-            ylabel = r'log [O III] $\lambda 5007$ / H$\beta$'
+            xlabel = r'\textbf{log [N II] $\lambda 6584$ / H$\alpha$}'
+            ylabel = r'\textbf{log [O III] $\lambda 5007$ / H$\beta$}'
         else:
             xlabel=axlabs[0]
             ylabel=ylabs[0]
         if bpt_inds is None:
-            xlabel = r'log [N II] $\lambda 6584$ / H$\alpha$'
-            ylabel = r'log [O III] $\lambda 5007$ / H$\beta$'
+            xlabel = r'\textbf{log [N II] $\lambda 6584$ / H$\alpha$}'
+            ylabel = r'\textbf{log [O III] $\lambda 5007$ / H$\beta$}'
             bpt_inds = ['log_NIIb_Ha', 'log_OIIIb_Hb']
             if line_ratio == 'NII':
-                xlabel = r'log [N II] $\lambda 6548,6584$ / H$\alpha$'
-                ylabel = r'log [O III] $\lambda 4959,5007$ / H$\beta$'
+                xlabel = r'\textbf{log [N II] $\lambda 6548,6584$ / H$\alpha$}'
+                ylabel = r'\textbf{log [O III] $\lambda 4959,5007$ / H$\beta$}'
                 bpt_inds = ['log_NII_Ha', 'log_OIII_Hb']
             if line_ratio == 'SII':
                 bpt_inds[0] = 'log_SII_Ha'
-                xlabel = r'log [S II] $\lambda 6716,6731$ / H$\alpha$'
+                xlabel = r'\textbf{log [S II] $\lambda 6716,6731$ / H$\alpha$}'
             if line_ratio == 'OI':
                 bpt_inds[0] = 'log_OI_Ha'
-                xlabel = r'log [O I] $\lambda 6300$ / H$\alpha$'
+                xlabel = r'\textbf{log [O I] $\lambda 6300$ / H$\alpha$}'
             if line_ratio == 'OII':
                 bpt_inds = ['log_NII_OII', 'log_OIII_OII']
-                ylabel = r'log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$'
-                xlabel = r'log [N II] $\lambda 6548,6584$ / [O II] $\lambda 3726,3727$'
+                ylabel = r'\textbf{log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$}'
+                xlabel = r'\textbf{log [N II] $\lambda 6548,6584$ / [O II] $\lambda 3726,3727$}'
             if line_ratio == 'R23':
                 bpt_inds = ['R23','log_OIII_OII']
-                ylabel = r'log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$'
-                xlabel = r'(log [O II] $\lambda 3726,3727$ + [O III] $\lambda 4959,5007$) / H$\beta$'
+                ylabel = r'\textbf{log [O III] $\lambda 4959,5007$ / [O II] $\lambda 3726,3727$}'
+                xlabel = r'\textbf{(log [O II] $\lambda 3726,3727$ + [O III] $\lambda 4959,5007$) / H$\beta$}'
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
@@ -674,11 +711,11 @@ class allmods(object):
             else:
                 ax.plot(Zx[i,:], Zy[i,:], color=color, lw=lw, alpha=alpha,
                         label='__nolegend__')
-        row_labs = [(Zx[i,0], Zy[i,0], '{0:.1f}'.format(float(np.unique(Y[i,:])))) for i in range(gshape[0])]
+        row_labs = [(Zx[i,0], Zy[i,0], r'${0:.1f}$'.format(float(np.unique(Y[i,:])))) for i in range(gshape[0])]
         for i in range(ncols):
             ax.plot(Zx[:,i], Zy[:,i], color=color, lw=lw, alpha=alpha,
                     label='__nolegend__')
-        col_labs = [(Zx[0, i], Zy[0, i], '{0:.1f}'.format(float(np.unique(X[:,i])))) for i in range(gshape[1])]
+        col_labs = [(Zx[0, i], Zy[0, i], r'${0:.1f}$'.format(float(np.unique(X[:,i])))) for i in range(gshape[1])]
         
         var_label = kwargs.get('var_label', '__nolegend__')
         if var_label:
@@ -686,26 +723,26 @@ class allmods(object):
                 ax.annotate(lab[-1],
                             xy=(lab[0], lab[1]), xycoords='data',
                             xytext=(0, -10), textcoords='offset points',
-                            size=22,
+                            size=varsize,
                             horizontalalignment='left',
                             verticalalignment='top')
-            ax.annotate(r'log Z/Z$_{\odot}$',
+            ax.annotate(r'$\log \mathrm{Z}/\mathrm{Z}_{\odot}$',
                         xy=(col_labs[2][0], col_labs[2][1]),
                         xycoords='data', xytext=(0, -50),
-                        textcoords='offset points', size=22,
+                        textcoords='offset points', size=varsize,
                         horizontalalignment='left',
                         verticalalignment='top')
             for lab in row_labs:
                 ax.annotate(lab[-1],
                             xy=(lab[0], lab[1]), xycoords='data',
                             xytext=(-10, 0), textcoords='offset points',
-                            size=22,
+                            size=varsize,
                             horizontalalignment='right',
                             verticalalignment='bottom')
-            ax.annotate(r'log U$_0$',
+            ax.annotate(r'$\log \mathcal{U}_0$',
                         xy=(row_labs[1][0], row_labs[1][1]),
                         xycoords='data', xytext=(-50, 15),
-                        textcoords='offset points', size=22,
+                        textcoords='offset points', size=varsize,
                         horizontalalignment='right',
                         verticalalignment='bottom')
         plt.legend(numpoints=1)
@@ -737,7 +774,7 @@ class allmods(object):
         return X,Y,Z
     def pxl_plot(self, xval='logZ', yval='age', zval='log_OIII_Hb',
                  const='logU', cval=-2.0, ax=None, cname='CMRmap',
-                 cmap=None, cbar_arr=None, **kwargs):
+                 cmap=None, sM=None, cNorm=None, cb_arr=None, **kwargs):
         '''
         mods.pxl_plot(xval='logZ', yval='age', zval='log_OIII_Hb',
                       const='logR', cval=18, clab='log R (cm)')
@@ -749,23 +786,24 @@ class allmods(object):
         if not calc_aspect:
             aspect = 'auto'
         masked_array = np.ma.array(Z, mask=np.isnan(Z))
-        
-        if cbar_arr is None:
-            arr_in = cbarr
-        else:
-            arr_in = masked_array
-        if cmap is not None:
-            sM, cNorm = get_colors(arr_in, return_cNorm=True,
-                                   set_bad_vals=True, cmap=cmap)
-        else:
-            sM, cNorm = get_colors(arr_in, return_cNorm=True,
-                                   set_bad_vals=True, cname=cname)
+        if (sM is None) or (cNorm is None):
+            if cb_arr is not None:
+                arr_in = cb_arr
+            else:
+                arr_in = masked_array
+            if cmap is not None:
+                sM, cNorm = get_colors(arr_in, return_cNorm=True,
+                                       set_bad_vals=True, cmap=cmap)
+            else:
+                sM, cNorm = get_colors(arr_in, return_cNorm=True,
+                                       set_bad_vals=True, cname=cname)
+            cmap = plt.get_cmap(cname)
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
         pf = ax.imshow(Z, norm=cNorm, interpolation='nearest', origin='lower',
                        extent=extent, aspect=aspect,
-                       cmap=cname)
+                       cmap=cmap)
         xlab = kwargs.get('xlab', None)
         ylab = kwargs.get('ylab', None)
         clab = kwargs.get('clab', None)
