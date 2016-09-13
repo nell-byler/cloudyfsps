@@ -15,7 +15,7 @@ def plot_bpt(var_label, ax=None, line_ratio='NII', **kwargs):
     '''
     auto_corr =  kwargs.get('auto_corr', True)
     if var_label:
-        lab = 'Van Zee (1998)'
+        lab = kwargs.get('lab', 'Van Zee (1998)')
     else:
         lab = '__nolegend__'
     linefile = pkg_resources.resource_filename(__name__, "data/vanzee_lines.dat")

@@ -19,7 +19,7 @@ planck = 6.626e-27
 pc_to_cm = 3.08568e18
 
 def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
-               set_bad_vals=False, return_cNorm=False):
+               set_bad_vals=False, return_cNorm=False, logNorm=False):
     '''
     sM = get_colors(arr, cname='jet', minv=0.0, maxv=1.0)
     sM = get_colors(arr, cmap=cubehelix.cmap())
@@ -29,7 +29,10 @@ def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
     new_cmap = mpl_colors.LinearSegmentedColormap.from_list('trunc({0}, {1:.2f}, {2:.2f})'.format(cmap.name, minv, maxv), cmap(np.linspace(minv, maxv, 100)))
     if set_bad_vals:
         new_cmap.set_bad('white', alpha=1.0)
-    cNorm = mpl_colors.Normalize(vmin=vals.min(), vmax=vals.max())
+    if logNorm:
+        cNorm = mpl_colors.LogNorm(vmin=vals.min(), vmax=vals.max())
+    else:
+        cNorm = mpl_colors.Normalize(vmin=vals.min(), vmax=vals.max())
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=new_cmap)
     if return_cNorm:
         return scalarMap, cNorm
@@ -641,7 +644,7 @@ class allmods(object):
             fig = plt.figure()
             ax = fig.add_subplot(111)
         if data_only:
-            vanzee.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax)
+            vanzee.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax, **plt_pars)
             sdss.plot_bpt(plot_data, line_ratio=line_ratio, ax=ax, **plt_pars)
             return
         pd = {'const1':'age',
@@ -774,7 +777,8 @@ class allmods(object):
         return X,Y,Z
     def pxl_plot(self, xval='logZ', yval='age', zval='log_OIII_Hb',
                  const='logU', cval=-2.0, ax=None, cname='CMRmap',
-                 cmap=None, sM=None, cNorm=None, cb_arr=None, **kwargs):
+                 cmap=None, sM=None, cNorm=None, cb_arr=None,
+                 no_cbar=False, **kwargs):
         '''
         mods.pxl_plot(xval='logZ', yval='age', zval='log_OIII_Hb',
                       const='logR', cval=18, clab='log R (cm)')
@@ -812,11 +816,13 @@ class allmods(object):
             ylab = yval
         ax.set_xlabel(xlab)
         ax.set_ylabel(ylab)
-        cb = plt.colorbar(pf, ax=ax)
-        if clab is not None:
-            cb.set_label(clab)
-        plt.draw()
-        return ax
+        if no_cbar:
+            return pf
+        else:
+            cb = plt.colorbar(pf, ax=ax)
+            if clab is not None:
+                cb.set_label(clab)
+            return ax
 
 def nice_lines(key):
     lines = {'ha':[6562.50, r'H\alpha', r'\lambda6563'],
