@@ -87,7 +87,7 @@ class modObj(object):
     '''
     def __init__(self, dir_, prefix, parline, read_out=False, read_rad=False,
                  read_cont=False, use_doublet=False, read_emis=False,
-                 read_cool=False, **kwargs):
+                 read_heat=False, read_cool=False, **kwargs):
         '''
         this needs to be called from other class or given
         a line from a ".pars" file
@@ -126,6 +126,8 @@ class modObj(object):
             self._init_phys()
         if read_emis:
             self._init_emis()
+        if read_heat:
+            self._init_heat()
         if read_cool:
             self._init_cool()
         return
