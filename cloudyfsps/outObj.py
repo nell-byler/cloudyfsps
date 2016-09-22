@@ -311,6 +311,39 @@ class modObj(object):
             self.frac_cool_CE = np.sum([self._vol_integ(self._dat[key][elname])/self.Ctot for elname in CE_names])
             self.frac_cool_FF_FB = self.Cool_HFFc+self.Cool_HFBc
         return
+    def _init_heat(self):
+        htots, outfs = [], []
+        heat_labs = []
+        fname = self.fl+'.heat'
+        file_ = open(fname, 'r')
+        for line in file_:
+            if line[0] == '#':
+                continue
+            line = line.split('\n')[0]
+            lps = line.split('\t')
+            htots.append(lps[2])
+            x = lps[4::]
+            labs = x[0::2]
+            fracs = x[1::2]
+            od = {}
+            [od.__setitem__(key, float(val)) for key, val in zip(labs,fracs)]
+            outfs.append(od)
+            for lab in labs:
+                if lab not in heat_labs:
+                    heat_labs.append(lab)
+        hf = {}
+        [hf.__setitem__(lab,
+                        np.array([outf[lab]
+                                  if lab in outf.keys()
+                                  else 0.0 for outf in outfs]))
+         for lab in heat_labs]
+        Htots = np.array([float(htot) for htot in htots])
+        Htot = self._vol_integ(Htots)
+        hr = {}
+        for key, arr in hf.iteritems():
+            hr.__setitem__(key, np.sum(self._vol_integ(arr*Htots))/Htot)
+        self.__setattr__('heatfracs', hr)
+        return
     def _init_ele(self, key):
         '''
         keys = [H, He, C, N, O, S, Si, Fe]
