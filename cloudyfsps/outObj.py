@@ -877,3 +877,7 @@ def calc_dim(X,Y,Z):
     dx = (extent[1] - extent[0]) / float(Z.shape[1])
     dy = (extent[3] - extent[2]) / float(Z.shape[0])
     return extent, dx/dy
+
+def add_dopita(**kwargs):
+    dopita.plot_bpt(**kwargs)
+    return
