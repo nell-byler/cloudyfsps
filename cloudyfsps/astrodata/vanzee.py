@@ -51,6 +51,11 @@ def plot_bpt(var_label, ax=None, line_ratio='NII', **kwargs):
         yerr = calc_err(OIII, e_OIII, OII, e_OII)
         x = np.log10(OII + OIII)
         xerr = e_OIII/(OIII*np.log(10))
+    if line_ratio == 'NeIII':
+        y = np.log10(NeIII/OII)
+        yerr = calc_err(NeIII, e_NeIII, OII, e_OII)
+        x = np.log10(OII + OIII)
+        xerr = e_OIII/(OIII*np.log(10))
     if ax is None:
         ax = plt.gca()
     ax.errorbar(x,y,xerr=xerr, yerr=yerr,

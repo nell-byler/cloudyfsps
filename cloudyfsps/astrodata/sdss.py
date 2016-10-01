@@ -5,10 +5,12 @@ from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 __all__ = ["plot_bpt"]
 import numpy as np
-import matplotlib.pyplot as plt
 import pkg_resources
 from .kewley import (NII_OIII_agn_lim, NII_OIII_sf_lim,
                      OI_OIII_agn_lim, SII_OIII_agn_lim)
+import matplotlib.pyplot as plt
+import matplotlib.colors as mpl_colors
+from matplotlib import cm as cmx
 
 def load_spec():
     linefile = pkg_resources.resource_filename(__name__, "data/sdss_data_ls.npz")
@@ -51,13 +53,17 @@ def get_line_ratio(data, line_ratio, **kwargs):
         xratio = 'R23'
         yratio = 'log_OIII_OII'
     else:
-        xratio = 'log_{}_Ha'.format(line_ratio)
-        if (line_ratio[-1] == 'b' or line_ratio[-1] == 'a'):
+        if line_ratio == 'OI':
+            xratio = 'log_OIa_Ha'
             yratio = 'log_OIIIb_Hb'
         else:
-            yratio = 'log_OIII_Hb'
-        if both_OIII:
-            yratio = 'log_OIII_Hb'
+            xratio = 'log_{}_Ha'.format(line_ratio)
+            if (line_ratio[-1] == 'b' or line_ratio[-1] == 'a'):
+                yratio = 'log_OIIIb_Hb'
+            else:
+                yratio = 'log_OIII_Hb'
+            if both_OIII:
+                yratio = 'log_OIII_Hb'
     return xratio, yratio
 
 def plot_bpt(var_label, ax=None, color_code=False, line_ratio='NIIb', **kwargs):
@@ -73,6 +79,7 @@ def plot_bpt(var_label, ax=None, color_code=False, line_ratio='NIIb', **kwargs):
     
     data = load_spec()
     lineindex_cln = 'lineindex_cln'
+    il = np.where((data['lineindex_cln'] == 4) | (data['lineindex_cln'] == 5))
     xratio, yratio = get_line_ratio(data, line_ratio, **kwargs)
     
     if ax is None:
@@ -82,17 +89,18 @@ def plot_bpt(var_label, ax=None, color_code=False, line_ratio='NIIb', **kwargs):
         color_by = kwargs.get('color_by', 'bpt')
         if color_by == 'bpt':
             ax.scatter(data[xratio], data[yratio],
-                       c=data[lineindex_cln], s=9, lw=0,
+                       c=data[lineindex_cln][il], s=9, lw=0,
                        label=lab)
         elif color_by == 'HaHb':
             gi, = np.where(data[color_by] <= 15.)
-            sM = get_colors(data[color_by][gi], cname='gist_heat')
+            sM = retColors(data[color_by][gi], cname='gist_heat')
             for g in gi:
                 if g == gi[0]:
                     plab = lab
                 else:
                     plab = '__nolegend__'
-                ax.plot(data[xratio][g], data[yratio][g], color=sM.to_rgba(data[color_by][g]),
+                ax.plot(data[xratio][g], data[yratio][g],
+                        color=sM.to_rgba(data[color_by][g]),
                         marker='.', markersize=6, label=plab)
                 fig = plt.gcf()
             cb = fig.colorbar(sM)
@@ -117,8 +125,9 @@ def plot_bpt(var_label, ax=None, color_code=False, line_ratio='NIIb', **kwargs):
         ax.set_ylim(-2.0, 1.0)
         ax.set_xlim(-1.3, 1.3)
     return
-def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
-               set_bad_vals=False, return_cNorm=False):
+
+def retColors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
+               set_bad_vals=False, return_cNorm=False, logNorm=False):
     '''
     sM = get_colors(arr, cname='jet', minv=0.0, maxv=1.0)
     sM = get_colors(arr, cmap=cubehelix.cmap())
@@ -128,7 +137,10 @@ def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
     new_cmap = mpl_colors.LinearSegmentedColormap.from_list('trunc({0}, {1:.2f}, {2:.2f})'.format(cmap.name, minv, maxv), cmap(np.linspace(minv, maxv, 100)))
     if set_bad_vals:
         new_cmap.set_bad('white', alpha=1.0)
-    cNorm = mpl_colors.Normalize(vmin=vals.min(), vmax=vals.max())
+    if logNorm:
+        cNorm = mpl_colors.LogNorm(vmin=vals.min(), vmax=vals.max())
+    else:
+        cNorm = mpl_colors.Normalize(vmin=vals.min(), vmax=vals.max())
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=new_cmap)
     if return_cNorm:
         return scalarMap, cNorm

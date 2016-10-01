@@ -3,7 +3,7 @@
 
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
-
+__all__ = ["getColors", "nColors", "allmods"]
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpl_colors
@@ -18,11 +18,11 @@ lsun = 3.839e33 #erg/s
 planck = 6.626e-27
 pc_to_cm = 3.08568e18
 
-def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
+def getColors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
                set_bad_vals=False, return_cNorm=False, logNorm=False):
     '''
-    sM = get_colors(arr, cname='jet', minv=0.0, maxv=1.0)
-    sM = get_colors(arr, cmap=cubehelix.cmap())
+    sM = getColors(arr, cname='jet', minv=0.0, maxv=1.0)
+    sM = getColors(arr, cmap=cubehelix.cmap())
     '''
     if cmap is None:
         cmap = plt.get_cmap(cname)
@@ -40,11 +40,11 @@ def get_colors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
         scalarMap.set_array(vals)
         return scalarMap
 
-def n_colors(n, **kwargs):
+def nColors(n, **kwargs):
     '''
     n_colors(50, minv=0.5, maxv=1.0, cname='Blues')
     '''
-    sM = get_colors(np.linspace(0.0, 1.0), **kwargs)
+    sM = getColors(np.linspace(0.0, 1.0), **kwargs)
     colors = [sM.to_rgba(v) for v in np.linspace(0.0, 1.0, n)]
     return colors
 
@@ -138,6 +138,7 @@ class modObj(object):
                  'Ha':6564.60,
                  'HeI':5877.243,
                  'HeII':4687.015,
+                 'HeIIu':1640.42,
                  'Hb':4862.71,
                  'Hg':4341.692,
                  'Hd':4102.892,
@@ -145,10 +146,15 @@ class modObj(object):
                  'OIIIb':5008.240,
                  'NIIa':6549.86,
                  'NIIb':6585.27,
-                 'OII':3729.86,
+                 'OIIa':3727.10,
+                 'OIIb':3729.86,
                  'SIIa':6718.294,
                  'SIIb':6732.673,
-                 'OI':6302.046}
+                 'OI':6302.046,
+                 'NeIIIb':3869.86,
+                 'NeIIIa':3968.59,
+                 'SIII':6313.81,
+                 'ArIII':7137.77}
         line_info = np.genfromtxt(self.fl+'.lineflux')
         lam, flu = line_info[:,0], line_info[:,1]
         for name, wav in lines.iteritems():
@@ -173,13 +179,13 @@ class modObj(object):
         self.log_OIIIa_Hb = logHb(self.OIIIa)
         self.log_OIIIb_Hb = logHb(self.OIIIb)
         #
-        self.log_OIII_OII = logify(self.OIIIa+self.OIIIb, self.OII)
-        self.log_OIIIa_OII = logify(self.OIIIa, self.OII)
-        self.log_OIIIb_OII = logify(self.OIIIb, self.OII)
+        self.log_OIII_OII = logify(self.OIIIa+self.OIIIb, self.OIIa+self.OIIb)
+        self.log_OIIIa_OII = logify(self.OIIIa, self.OIIa+self.OIIb)
+        self.log_OIIIb_OII = logify(self.OIIIb, self.OIIa+self.OIIb)
         #
         self.log_OI_Ha = logHa(self.OI)
-        self.log_NII_OII = logify(self.NIIa+self.NIIb, self.OII)
-        self.R23 = logHb(self.OII+self.OIIIa+self.OIIIb)
+        self.log_NII_OII = logify(self.NIIa+self.NIIb, self.OIIa+self.OIIb)
+        self.R23 = logHb(self.OIIa+self.OIIb+self.OIIIa+self.OIIIb)
         return
     def _load_cont(self, dist_corr=False, output_units=False, **kwargs):
         cont_info = np.genfromtxt(self.fl+'.contflux', skip_header=1)
@@ -831,11 +837,11 @@ class allmods(object):
             else:
                 arr_in = masked_array
             if cmap is not None:
-                sM, cNorm = get_colors(arr_in, return_cNorm=True,
-                                       set_bad_vals=True, cmap=cmap)
+                sM, cNorm = getColors(arr_in, return_cNorm=True,
+                                      set_bad_vals=True, cmap=cmap)
             else:
-                sM, cNorm = get_colors(arr_in, return_cNorm=True,
-                                       set_bad_vals=True, cname=cname)
+                sM, cNorm = getColors(arr_in, return_cNorm=True,
+                                      set_bad_vals=True, cname=cname)
             cmap = plt.get_cmap(cname)
         if ax is None:
             fig = plt.figure()
