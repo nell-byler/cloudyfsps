@@ -35,7 +35,9 @@ def cloudyInput(dir_, model_name, **kwargs):
             "par1":"age",
             "par1val":5.0e6,
             "par2":"logz",
-            "par2val":0.0
+            "par2val":0.0,
+            "maxStellar":None,
+            "use_extended_lines":False
             }
     for key, value in kwargs.iteritems():
         pars[key] = value
@@ -70,6 +72,11 @@ def cloudyInput(dir_, model_name, **kwargs):
         pars['par1val'] = pars['age']
     if pars['par2'] == "logz":
         pars['par2val'] = pars['logZ']
+        if pars['maxStellar'] is not None:
+            if pars['logZ'] > pars['maxStellar']:
+                pars['par2val'] = pars['maxStellar']
+            else:
+                pars['par2val'] = pars['logZ']
     this_print('table star "{0}" {1}={2:.2e} {3}={4:.2e}'.format(pars['cloudy_mod'], pars['par1'], pars['par1val'],pars['par2'], pars['par2val']))
     if pars['use_Q']:
         this_print('Q(H) = {0:.3f} log'.format(pars['logQ']))
@@ -89,7 +96,10 @@ def cloudyInput(dir_, model_name, **kwargs):
         r_out = np.log10(pars['r_inner']*pc_to_cm)
     else:
         r_out = pars['r_inner']
-    linefile = pkg_resources.resource_filename(__name__, 'data/cloudy_lines_new.dat')
+    if pars['use_extended_lines']:
+        linefile = pkg_resources.resource_filename(__name__,'data/cloudy_lines_extended.dat')
+    else:
+        linefile = pkg_resources.resource_filename(__name__, 'data/cloudy_lines_new.dat')
     this_print('radius {0:.3f} log'.format(r_out))
     this_print('hden {0:.3f} log'.format(np.log10(pars['dens'])))
     this_print('sphere')

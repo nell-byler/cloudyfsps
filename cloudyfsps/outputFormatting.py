@@ -25,7 +25,8 @@ import os
 class writeFormattedOutput(object):
     #sp = fsps.StellarPopulation()
     #fsps_lam = sp.wavelengths
-    def __init__(self, dir_, mod_prefix, mod_suffix, **kwargs):
+    def __init__(self, dir_, mod_prefix, mod_suffix,
+                 use_extended_lines=False,**kwargs):
         '''
         writeFormattedOutput(mod_dir, 'ZAU', 'BPASS')
         '''
@@ -39,7 +40,7 @@ class writeFormattedOutput(object):
         self.line_out = self.out_pr + ".lines"
         self.cont_out = self.out_pr + ".cont"
         self.loadModInfo() # load each model's parameters from prefix.pars
-        self.doLineOut() # print ordered emission line wavelengths + fluxes
+        self.doLineOut(use_extended_lines=use_extended_lines) # print ordered emission line wavelengths + fluxes
         self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
         return
     def loadModInfo(self, **kwargs):
@@ -68,13 +69,16 @@ class writeFormattedOutput(object):
         f.close()
         print("lines: {0:.0f} models to file {1}".format(self.mod_num[-1], self.line_out))
         return
-    def printLineLam(self, f):
+    def printLineLam(self, f, use_extended_lines=False):
         '''
         prints the wavelength array for the emission lines as the second
         line in the output file. converts all wavelengths to vacuum.
         '''
         #read in file containing wavelength info
-        linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda_new.dat")
+        if use_extended_lines:
+            linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda_extended.dat")
+        else:
+            linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda_new.dat")
         data_vac = np.genfromtxt(linefile)
         #data_vac = air_to_vac(data) # new file is already in vac
         nlines = len(data_vac)

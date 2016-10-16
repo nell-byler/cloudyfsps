@@ -131,6 +131,13 @@ class modObj(object):
         if read_cool:
             self._init_cool()
         return
+    def add_lines(self, lines):
+        line_info = np.genfromtxt(self.fl+'.lineflux')
+        lam, flu = line_info[:,0], line_info[:,1]
+        for name, wav in lines.iteritems():
+            matchind = np.argmin(np.abs(lam-wav))
+            self.__setattr__(name, flu[matchind])
+        return
     def load_lines(self, use_doublet=False, **kwargs):
         names, vacwavs = getEmis()
         self.lines = dict(names=names, wavs=vacwavs)
@@ -641,8 +648,12 @@ class allmods(object):
             except AttributeError:
                 continue
         return
-    
-    
+    def add_lines(self, linedict={}):
+        '''
+        self.add_lines(linedict={'O3':1666.0})
+        '''
+        [mod.add_lines(linedict) for mod in self.mods]
+        return
     def makeBPT(self, ax=None, plot_data=True, line_ratio='NIIb',
                 gridnames=None, bpt_inds=None, axlabs=None, varsize=22,
                 plt_pars={}, data_only=False, **kwargs):

@@ -19,7 +19,7 @@ from scipy.interpolate import interp1d
 # ***.contflux: [wl, incid_out, atten_out, diffuse_out]
 # ***.out_cont: [ang, diffuse_out]
 ###
-def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
+def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=False, **kwargs):
     '''
     for formatting the output of a single cloudy job
     '''
@@ -43,7 +43,12 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     # non-ordered wavelengths
     #wavfile = pkg_resources.resource_filename(__name__, "data/shell_lambda.dat")
     #wl = np.genfromtxt(wavfile)
-    wavfile = pkg_resources.resource_filename(__name__, "data/ref_lines_vac.dat")
+    if use_extended_lines:
+        wavfile = pkg_resources.resource_filename(__name__,
+                                                  "data/ref_lines_extended.dat")
+    else:
+        wavfile = pkg_resources.resource_filename(__name__,
+                                                  "data/ref_lines_vac.dat")
     wdat = np.genfromtxt(wavfile, delimiter=',', dtype=None)
     wl = np.array([dat[0] for dat in wdat])
     # sort them by wavelength
@@ -109,7 +114,7 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, **kwargs):
     return
 
 
-def formatAllOutput(dir_, mod_prefix):
+def formatAllOutput(dir_, mod_prefix, use_extended_lines=False):
     '''
     for formatting output after running a batch of cloudy jobs
     '''
@@ -118,5 +123,5 @@ def formatAllOutput(dir_, mod_prefix):
         return data[np.int(modnum)-1, 1:]
     for modnum in data[:,0]:
         mnum = np.int(modnum)
-        formatCloudyOutput(dir_, mod_prefix, mnum, get_pars(mnum))
+        formatCloudyOutput(dir_, mod_prefix, mnum, get_pars(mnum), use_extended_lines=use_extended_lines)
     return
