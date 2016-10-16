@@ -63,7 +63,7 @@ class writeFormattedOutput(object):
         prints line fluxes to prefix00.lines file
         '''
         f = open(self.line_out, "w")
-        self.printLineLam(f)
+        self.printLineLam(f, **kwargs)
         for n in self.mod_num:
             self.printLineFlu(f, n.astype(int)) 
         f.close()
