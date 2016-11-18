@@ -76,9 +76,9 @@ class writeFormattedOutput(object):
         '''
         #read in file containing wavelength info
         if use_extended_lines:
-            linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda_extended.dat")
+            linefile = pkg_resources.resource_filename(__name__, "data/orderedLinesEXT.dat")
         else:
-            linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda_new.dat")
+            linefile = pkg_resources.resource_filename(__name__, "data/orderedLines.dat")
         data_vac = np.genfromtxt(linefile)
         #data_vac = air_to_vac(data) # new file is already in vac
         nlines = len(data_vac)
@@ -143,7 +143,7 @@ class writeFormattedOutput(object):
         # fsps_lam_1 fsps_lam_2 .... fsps_lam_n
         '''
         #grab fsps wavelength info
-        lamfile = pkg_resources.resource_filename(__name__, "data/fsps_lam.dat")
+        lamfile = pkg_resources.resource_filename(__name__, "data/FSPSlam.dat")
         fsps_lam = np.genfromtxt(lamfile)
         self.__setattr__("fsps_lam", fsps_lam)
         nlam = len(fsps_lam)
@@ -215,9 +215,9 @@ class writeAltFormattedOutput(object):
         '''
         #read in file containing wavelength info
         if use_extended_lines:
-            linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda_extended.dat")
+            linefile = pkg_resources.resource_filename(__name__, "data/orderedLinesEXT.dat")
         else:
-            linefile = pkg_resources.resource_filename(__name__, "data/ordered_lambda_new.dat")
+            linefile = pkg_resources.resource_filename(__name__, "data/orderedLines.dat")
         data_vac = np.genfromtxt(linefile)
         #data_vac = air_to_vac(data) # new file is already in vac
         nlines = len(data_vac)
@@ -282,7 +282,7 @@ class writeAltFormattedOutput(object):
         # fsps_lam_1 fsps_lam_2 .... fsps_lam_n
         '''
         #grab fsps wavelength info
-        lamfile = pkg_resources.resource_filename(__name__, "data/fsps_lam.dat")
+        lamfile = pkg_resources.resource_filename(__name__, "data/FSPSlam.dat")
         fsps_lam = np.genfromtxt(lamfile)
         self.__setattr__("fsps_lam", fsps_lam)
         nlam = len(fsps_lam)

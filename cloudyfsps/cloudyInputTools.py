@@ -97,9 +97,9 @@ def cloudyInput(dir_, model_name, **kwargs):
     else:
         r_out = pars['r_inner']
     if pars['use_extended_lines']:
-        linefile = pkg_resources.resource_filename(__name__,'data/cloudy_lines_extended.dat')
+        linefile = pkg_resources.resource_filename(__name__,'data/cloudyLinesEXT.dat')
     else:
-        linefile = pkg_resources.resource_filename(__name__, 'data/cloudy_lines_new.dat')
+        linefile = pkg_resources.resource_filename(__name__, 'data/cloudyLines.dat')
     this_print('radius {0:.3f} log'.format(r_out))
     this_print('hden {0:.3f} log'.format(np.log10(pars['dens'])))
     this_print('sphere')
