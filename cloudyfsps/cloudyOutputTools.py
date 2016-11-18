@@ -41,14 +41,12 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     #line_names = [d[0] for d in dat]
     datflu = np.array([d[1] for d in dat])
     # non-ordered wavelengths
-    #wavfile = pkg_resources.resource_filename(__name__, "data/shell_lambda.dat")
-    #wl = np.genfromtxt(wavfile)
     if use_extended_lines:
         wavfile = pkg_resources.resource_filename(__name__,
-                                                  "data/ref_lines_extended.dat")
+                                                  "data/refLinesEXT.dat")
     else:
         wavfile = pkg_resources.resource_filename(__name__,
-                                                  "data/ref_lines_vac.dat")
+                                                  "data/refLines.dat")
     wdat = np.genfromtxt(wavfile, delimiter=',', dtype=None)
     wl = np.array([dat[0] for dat in wdat])
     # sort them by wavelength
@@ -82,7 +80,7 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     ang = ang_0[::-1]
     ang_v = air_to_vac(ang)
     # interpolate
-    lamfile = pkg_resources.resource_filename(__name__, "data/fsps_lam.dat")
+    lamfile = pkg_resources.resource_filename(__name__, "data/FSPSlam.dat")
     fsps_lam = np.genfromtxt(lamfile)
     nu = c/fsps_lam
     atten_y = interp1d(ang_v, atten_in, fill_value=0.0, bounds_error=False)(fsps_lam)
