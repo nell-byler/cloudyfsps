@@ -298,7 +298,12 @@ class modObj(object):
         return
     def _init_cool(self):
         key = 'cool'
-        self._dat[key] = self._read_f('.'+key)
+        try:
+            self._dat[key] = self._read_f('.'+key, comments='#')
+        except:
+            self._dat[key] = None
+            print("ERROR")
+            print(self.fl)
         if self._dat[key] is not None:
             attkeys = dict(cool_RecMet='hvFB', # heavy elem recomb cooling
                            cool_ColMet='Hvin', # heavy elem collis ionization
@@ -873,7 +878,8 @@ class allmods(object):
         else:
             cb = plt.colorbar(pf, ax=ax)
             if clab is not None:
-                cb.set_label(clab)
+                clab_size=kwargs.get('clab_size', 14)
+                cb.set_label(clab, size=clab_size)
             return ax
 
 def nice_lines(key):
