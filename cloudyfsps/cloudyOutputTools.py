@@ -19,7 +19,7 @@ from scipy.interpolate import interp1d
 # ***.contflux: [wl, incid_out, atten_out, diffuse_out]
 # ***.out_cont: [ang, diffuse_out]
 ###
-def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=False, **kwargs):
+def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=False, write_line_lum=False, **kwargs):
     '''
     for formatting the output of a single cloudy job
     '''
@@ -57,7 +57,11 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     # print lines to ***.out_lines
     # line luminosity in solar lums per Q
     line_wav = wl[sinds]
-    line_flu = datflu[sinds]/lsun/(10.0**logQ)
+    if write_line_lum:
+        conv = 1.0
+    else:
+        conv = 1./lsun/(10.**logQ)
+    line_flu = datflu[sinds]*conv
     print_output = np.column_stack((line_wav, line_flu))
     np.savetxt(print_file, print_output, fmt=(str("%.6e"),str("%.6e")))
     # print to file
@@ -112,7 +116,7 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     return
 
 
-def formatAllOutput(dir_, mod_prefix, use_extended_lines=False):
+def formatAllOutput(dir_, mod_prefix, use_extended_lines=False, write_line_lum=False):
     '''
     for formatting output after running a batch of cloudy jobs
     '''
@@ -121,5 +125,5 @@ def formatAllOutput(dir_, mod_prefix, use_extended_lines=False):
         return data[np.int(modnum)-1, 1:]
     for modnum in data[:,0]:
         mnum = np.int(modnum)
-        formatCloudyOutput(dir_, mod_prefix, mnum, get_pars(mnum), use_extended_lines=use_extended_lines)
+        formatCloudyOutput(dir_, mod_prefix, mnum, get_pars(mnum), use_extended_lines=use_extended_lines, write_line_lum=write_line_lum)
     return
