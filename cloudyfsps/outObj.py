@@ -835,17 +835,14 @@ class allmods(object):
     def pxl_plot(self, xval='logZ', yval='age', zval='log_OIII_Hb',
                  const='logU', cval=-2.0, ax=None, cname='CMRmap',
                  cmap=None, sM=None, cNorm=None, cb_arr=None,
-                 no_cbar=False, **kwargs):
+                 no_cbar=False, show_grid=False,
+                 xlabels=None, ylabels=None,**kwargs):
         '''
         mods.pxl_plot(xval='logZ', yval='age', zval='log_OIII_Hb',
                       const='logR', cval=18, clab='log R (cm)')
         '''
         X, Y, Z = self.group_mods(xval=xval, yval=yval, zval=zval,
                                   const=const, cval=cval, **kwargs)
-        extent, aspect = calc_dim(X, Y, Z)
-        calc_aspect = kwargs.get('calc_aspect', True)
-        if not calc_aspect:
-            aspect = 'auto'
         masked_array = np.ma.array(Z, mask=np.isnan(Z))
         if (sM is None) or (cNorm is None):
             if cb_arr is not None:
@@ -863,8 +860,18 @@ class allmods(object):
             fig = plt.figure()
             ax = fig.add_subplot(111)
         pf = ax.imshow(Z, norm=cNorm, interpolation='nearest', origin='lower',
-                       extent=extent, aspect=aspect,
                        cmap=cmap)
+        xCenters, yCenters = X[0], Y[:,0]
+        if xlabels is None:
+            xlabels = ['{0:.1f}'.format(x) for x in xCenters]
+        if ylabels is None:
+            ylabels = ['{0:.0f}'.format(y*1.e-6) for y in yCenters]
+        for axis, labels in zip([ax.xaxis, ax.yaxis], [xlabels, ylabels]):
+            locs = np.arange(len(labels))
+            axis.set_ticks(locs + 0.5, minor=True)
+            axis.set(ticks=locs, ticklabels=labels)
+        if show_grid:
+            ax.grid(True, which='minor')
         xlab = kwargs.get('xlab', None)
         ylab = kwargs.get('ylab', None)
         clab = kwargs.get('clab', None)
