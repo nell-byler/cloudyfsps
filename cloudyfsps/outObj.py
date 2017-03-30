@@ -510,6 +510,8 @@ class modObj(object):
                 self.out['heat'] = line
             elif line[0:5] == ' HFBc':
                 self.out['HFBc'] = line
+            elif 'The geometry is' in line:
+                self.out['geometry'] = line
         file_.close()
         self.dist_fact = 4.0*np.pi*(10.0**self.logR)**2.0
         try:
@@ -520,7 +522,7 @@ class modObj(object):
         #self.Phi0 = float(sextract(self.out['SED2'], 'Ion pht flx:'))
         # Ion pht flx: phi(H) = Q/4piR2
         #self.clogQ = np.log10(self.Phi0*self.dist_fact)
-        #self.logU_Rs = float(sextract(self.out['INZ'], 'U(sp):', 'Q(ion):'))
+        self.strom_logU = float(sextract(self.out['INZ'], 'U(sp):', 'Q(ion):'))
         # Q(ion) is exiting
         self.Qarr = np.zeros(4)
         self.Phiarr = np.zeros(4)
@@ -835,7 +837,7 @@ class allmods(object):
     def pxl_plot(self, xval='logZ', yval='age', zval='log_OIII_Hb',
                  const='logU', cval=-2.0, ax=None, cname='CMRmap',
                  cmap=None, sM=None, cNorm=None, cb_arr=None,
-                 no_cbar=False, show_grid=False,
+                 no_cbar=False, show_grid=False, aspect='auto',
                  xlabels=None, ylabels=None,**kwargs):
         '''
         mods.pxl_plot(xval='logZ', yval='age', zval='log_OIII_Hb',
@@ -859,13 +861,15 @@ class allmods(object):
         if ax is None:
             fig = plt.figure()
             ax = fig.add_subplot(111)
-        pf = ax.imshow(Z, norm=cNorm, interpolation='nearest', origin='lower',
+        pf = ax.imshow(Z, norm=cNorm, aspect=aspect,
+                       interpolation='nearest', origin='lower',
                        cmap=cmap)
-        xCenters, yCenters = X[0], Y[:,0]
+        xCenters = X[0]
+        yCenters = Y[:,0]
         if xlabels is None:
             xlabels = ['{0:.1f}'.format(x) for x in xCenters]
         if ylabels is None:
-            ylabels = ['{0:.0f}'.format(y*1.e-6) for y in yCenters]
+            ylabels = ['{0:.1f}'.format(y) for y in yCenters]
         for axis, labels in zip([ax.xaxis, ax.yaxis], [xlabels, ylabels]):
             locs = np.arange(len(labels))
             axis.set_ticks(locs + 0.5, minor=True)
