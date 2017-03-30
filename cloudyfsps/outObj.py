@@ -19,14 +19,15 @@ planck = 6.626e-27
 pc_to_cm = 3.08568e18
 
 def getColors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
-               set_bad_vals=False, return_cNorm=False, logNorm=False):
+              set_bad_vals=False, return_cNorm=False,
+              logNorm=False, Ncol=100, return_cmap=False):
     '''
     sM = getColors(arr, cname='jet', minv=0.0, maxv=1.0)
-    sM = getColors(arr, cmap=cubehelix.cmap())
+    sM,cNorm = getColors(arr, cmap=cubehelix.cmap(), return_cNorm=True)
     '''
     if cmap is None:
         cmap = plt.get_cmap(cname)
-    new_cmap = mpl_colors.LinearSegmentedColormap.from_list('trunc({0}, {1:.2f}, {2:.2f})'.format(cmap.name, minv, maxv), cmap(np.linspace(minv, maxv, 100)))
+    new_cmap = mpl_colors.LinearSegmentedColormap.from_list('trunc({0}, {1:.2f}, {2:.2f})'.format(cmap.name, minv, maxv), cmap(np.linspace(minv, maxv, Ncol)))
     if set_bad_vals:
         new_cmap.set_bad('white', alpha=1.0)
     if logNorm:
@@ -36,6 +37,10 @@ def getColors(vals, cname='CMRmap', minv=0.05, maxv=0.8, cmap=None,
     scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=new_cmap)
     if return_cNorm:
         return scalarMap, cNorm
+    if return_cmap:
+        color_list = new_cmap(np.linspace(minv, maxv, Ncol))
+        cmap_name = new_cmap.name+str(Ncol)
+        return new_cmap.from_list(cmap_name, color_list, Ncol)
     else:
         scalarMap.set_array(vals)
         return scalarMap
