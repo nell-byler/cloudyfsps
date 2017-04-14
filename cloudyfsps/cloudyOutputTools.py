@@ -115,7 +115,6 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     print("The diffuse continuum was printed to file {}".format(print_file))
     return
 
-
 def formatAllOutput(dir_, mod_prefix, use_extended_lines=False, write_line_lum=False):
     '''
     for formatting output after running a batch of cloudy jobs

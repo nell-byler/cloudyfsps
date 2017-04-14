@@ -8,6 +8,7 @@ import numpy as np
 import pkg_resources
 import fsps
 import os
+import linecache
 #grid: 2 files: line, cont
 #columns: wavelengths
 #rows: models
@@ -26,7 +27,7 @@ class writeFormattedOutput(object):
     #sp = fsps.StellarPopulation()
     #fsps_lam = sp.wavelengths
     def __init__(self, dir_, mod_prefix, mod_suffix,
-                 use_extended_lines=False,**kwargs):
+                 use_extended_lines=False, more_info=False,**kwargs):
         '''
         writeFormattedOutput(mod_dir, 'ZAU', 'BPASS')
         '''
@@ -39,9 +40,13 @@ class writeFormattedOutput(object):
         # each model's final info will be in prefix00.lines, prefix00.cont
         self.line_out = self.out_pr + ".lines"
         self.cont_out = self.out_pr + ".cont"
-        self.loadModInfo() # load each model's parameters from prefix.pars
-        self.doLineOut(use_extended_lines=use_extended_lines) # print ordered emission line wavelengths + fluxes
-        self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
+        # load each model's parameters from prefix.pars
+        self.loadModInfo()
+        # print ordered emission line wavelengths + fluxes
+        self.doLineOut(use_extended_lines=use_extended_lines,
+                       more_info=more_info)
+        # interp and print neb cont onto FSPS wavelenth arr
+        self.doContOut()
         return
     def loadModInfo(self, **kwargs):
         '''
@@ -58,14 +63,14 @@ class writeFormattedOutput(object):
         self.NA = len(np.unique(self.Age))
         self.NU = len(np.unique(self.logU))
         return
-    def doLineOut(self, **kwargs):
+    def doLineOut(self, more_info=False, **kwargs):
         '''
         prints line fluxes to prefix00.lines file
         '''
         f = open(self.line_out, "w")
         self.printLineLam(f, **kwargs)
         for n in self.mod_num:
-            self.printLineFlu(f, n.astype(int)) 
+            self.printLineFlu(f, n.astype(int), more_info=more_info) 
         f.close()
         print("lines: {0:.0f} models to file {1}".format(self.mod_num[-1], self.line_out))
         return
@@ -90,10 +95,13 @@ class writeFormattedOutput(object):
         p_str = " ".join(["{0:1.6e}".format(dat) for dat in data_vac])
         f.write(p_str+"\n")
         return
-    def printLineFlu(self, f, n):
+    def printLineFlu(self, f, n, more_info=False):
         #write model parameters
-        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}".format(self.logZ[n-1], self.Age[n-1], self.logU[n-1])
-        f.write(tstr+"\n")
+        if more_info:
+            tstr = linecache.getline(self.file_pr+'.pars', n)
+        else:
+            tstr = "{0:2.4e} {1:2.4e} {2:2.4e}\n".format(self.logZ[n-1], self.Age[n-1], self.logU[n-1])
+        f.write(tstr)
         #read in and print emission line intensities (Lsun/Q)
         nst = "{0}".format(n)
         filename = self.file_pr+nst+".out_lines"
@@ -165,7 +173,7 @@ class writeAltFormattedOutput(object):
     #sp = fsps.StellarPopulation()
     #fsps_lam = sp.wavelengths
     def __init__(self, dir_, mod_prefix, mod_suffix,
-                 use_extended_lines=False,**kwargs):
+                 use_extended_lines=False, more_info=False,**kwargs):
         '''
         writeFormattedOutput(mod_dir, 'ZAU', 'BPASS')
         '''
@@ -179,7 +187,9 @@ class writeAltFormattedOutput(object):
         self.line_out = self.out_pr + ".lines"
         self.cont_out = self.out_pr + ".cont"
         self.loadModInfo() # load each model's parameters from prefix.pars
-        self.doLineOut(use_extended_lines=use_extended_lines) # print ordered emission line wavelengths + fluxes
+        # print ordered emission line wavelengths + fluxes
+        self.doLineOut(use_extended_lines=use_extended_lines,
+                       more_info=more_info)
         self.doContOut() # interp and print neb cont onto FSPS wavelenth arr
         return
     def loadModInfo(self, **kwargs):
@@ -197,14 +207,14 @@ class writeAltFormattedOutput(object):
         self.NA = len(np.unique(self.Age))
         self.NU = len(np.unique(self.logU))
         return
-    def doLineOut(self, **kwargs):
+    def doLineOut(self, more_info=False, **kwargs):
         '''
         prints line fluxes to prefix00.lines file
         '''
         f = open(self.line_out, "w")
         self.printLineLam(f, **kwargs)
         for n in self.mod_num:
-            self.printLineFlu(f, n.astype(int)) 
+            self.printLineFlu(f, n.astype(int), more_info=more_info) 
         f.close()
         print("lines: {0:.0f} models to file {1}".format(self.mod_num[-1], self.line_out))
         return
@@ -229,10 +239,14 @@ class writeAltFormattedOutput(object):
         p_str = " ".join(["{0:1.6e}".format(dat) for dat in data_vac])
         f.write(p_str+"\n")
         return
-    def printLineFlu(self, f, n):
+    def printLineFlu(self, f, n, more_info=False):
         #write model parameters
-        tstr = "{0:2.4e} {1:2.4e} {2:2.4e}".format(self.zmet[n-1], self.Age[n-1], self.logU[n-1])
-        f.write(tstr+"\n")
+        if more_info:
+            tstr = linecache.getline(self.file_pr+'.pars', n)
+            f.write(tstr)
+        else:
+            tstr = "{0:2.4e} {1:2.4e} {2:2.4e}".format(self.zmet[n-1], self.Age[n-1], self.logU[n-1])
+            f.write(tstr+"\n")
         #read in and print emission line intensities (Lsun/Q)
         nst = "{0}".format(n)
         filename = self.file_pr+nst+".out_lines"

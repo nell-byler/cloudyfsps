@@ -37,7 +37,8 @@ def cloudyInput(dir_, model_name, **kwargs):
             "par2":"logz",
             "par2val":0.0,
             "maxStellar":None,
-            "use_extended_lines":False
+            "use_extended_lines":False,
+            "geometry":"sphere"
             }
     for key, value in kwargs.iteritems():
         pars[key] = value
@@ -102,7 +103,7 @@ def cloudyInput(dir_, model_name, **kwargs):
         linefile = pkg_resources.resource_filename(__name__, 'data/cloudyLines.dat')
     this_print('radius {0:.3f} log'.format(r_out))
     this_print('hden {0:.3f} log'.format(np.log10(pars['dens'])))
-    this_print('sphere')
+    this_print('{}'.format(pars['geometry']))
     this_print('cosmic ray background')
     this_print('iterate to convergence max=5')
     this_print('stop temperature 100.0')
@@ -241,6 +242,7 @@ def writeParamFiles(**kwargs):
                 "cloudy_mod":"FSPS_SPS.mod",
                 "verbose":False,
                 "efracs":np.array([-1.0]),
+                "geometry":"sphere",
                 "write_makefile":False,
                 "extras":"",
                 "extra_output":False}
@@ -274,6 +276,7 @@ def writeParamFiles(**kwargs):
                     re_z=nom_dict["re_z"],
                     cloudy_mod=nom_dict["cloudy_mod"],
                     verbose=nom_dict["verbose"],
+                    geometry=nom_dict["geometry"],
                     extras=nom_dict["extras"],
                     extra_output=nom_dict["extra_output"])
     #--------------------------------------------
