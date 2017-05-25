@@ -12,7 +12,7 @@ def getNebAbunds(set_name, logZ, dust=True, re_z=False):
     neb_abund.get_abunds(set_name, logZ, dust=True, re_z=False)
     set_name must be 'dopita', 'newdopita', 'cl01' or 'yeh'
     '''
-    allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh', 'varyNO']
+    allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh', 'varyNO', 'gutkin']
     if set_name in allowed_names:
         return eval('{}({}, dust={}, re_z={})'.format(set_name, logZ, dust, re_z))
     else:
@@ -132,6 +132,42 @@ class newdopita(abundSet):
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
 
+class gutkin(abundSet):
+    solar = 'GASS10'
+    def __init__(self, logZ, dust=True, re_z=False):
+        '''
+        Gutkin+2016
+            PARSEC metallicity (Bressan+2012)
+            based on Grevesse+Sauvel (1998) and Caffau+2011
+        '''
+        if dust:
+            self.grains = 'no grains\ngrains ISM'
+        else:
+            self.grains = 'no grains'
+        self.re_z=re_z
+        abundSet.__init__(self, 'gutkin', logZ)
+        
+    def calcSpecial(self):
+        def calc_He(logZ):
+            Z = (10.**logZ)*0.01524
+            Y = 0.2485 + 1.7756*Z
+            X = 1. - Y - Z
+            return np.log10(Y/X/4.)
+        def calc_CNO(logZ):
+            O = self.abund_0['O'] + logZ
+            N = float(0.41 * O)*(10.**-1.6 + 10.**(2.33 + O))
+            C = self.abund_0['C'] + logZ
+            return C, N, O
+        self.__setattr__('He', calc_He(self.logZ))
+        C, N, O = calc_CNO(self.logZ)
+        [self.__setattr__(key, val)
+         for key, val in zip(['C', 'N', 'O'], [C, N, O])]
+        return
+    def calcFinal(self):
+        [self.__setattr__(key, val)
+         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+        return
+
 class varyNO(abundSet):
     solar = 'GASS10'
     def __init__(self, logZ, dust=True, re_z=False):
@@ -169,6 +205,7 @@ class varyNO(abundSet):
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
 
+
 def load_abund(set_name):
     if set_name == 'dopita':
         adict = dict(He = -1.01,
@@ -198,6 +235,36 @@ def load_abund(set_name):
                      Ca = -5.66,
                      Fe = -4.50,
                      Ni = -5.78)
+    elif set_name == 'gutkin':
+        adict = dict(He = −1.01,
+                     Li = −10.99,
+                     Be = −10.63,
+                     B = −9.47,
+                     C = −3.53,
+                     N = −4.32,
+                     O = −3.17,
+                     F = −7.47,
+                     Ne = −4.01,
+                     Na = −5.70,
+                     Mg = −4.45,
+                     Al = −5.56,
+                     Si = −4.48,
+                     P = −6.57,
+                     S = −4.87,
+                     Cl = −6.53,
+                     Ar = −5.63,
+                     K = −6.92,
+                     Ca = −5.67,
+                     Sc = −8.86,
+                     Ti = −7.01,
+                     V = −8.03,
+                     Cr = −6.36,
+                     Mn = −6.64,
+                     Fe = −4.51,
+                     Co = −7.11,
+                     Ni = −5.78,
+                     Cu = −7.82,
+                     Zn = −7.43)
     return adict
 	
 
@@ -229,4 +296,17 @@ def load_depl(set_name):
                      Ca = -2.52,	
                      Fe = -1.31,	
                      Ni = -2.00)
+    elif set_name == 'gutkin':
+        ddict = dict(He = 0.00,
+                     Li = -0.8,
+                     C = -0.30,
+                     O = -0.15,
+                     Na = -0.60,
+                     Mg = -0.70,
+                     Al = -1.70,
+                     Si = -1.00,
+                     Cl = -0.30,
+                     Ca = -2.52,
+                     Fe = -2.00,
+                     Ni = -1.40)
     return ddict
