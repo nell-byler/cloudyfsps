@@ -120,10 +120,21 @@ def name_to_sym(val=None):
                      argon="Ar",
                      calcium="Ca",
                      iron="Fe",
+                     fluorine="F",
                      sodium="Na",
                      aluminum="Al",
                      chlorine="Cl",
-                     nickel="Ni")
+                     nickel="Ni",
+                     phosphorus="P",
+                     scandium="Sc",
+                     potassium="K",
+                     titanium="Ti",
+                     vanadium="V",
+                     chromium="Cr",
+                     cobalt="Co",
+                     copper="Cu",
+                     manganese="Mn",
+                     zinc="Zn")
     if val is None:
         return elem_keys
     else:
@@ -144,10 +155,21 @@ def sym_to_name(val=None):
                      Ar="argon",
                      Ca="calcium",
                      Fe="iron",
+                     F="fluorine",
                      Na="sodium",
                      Al="aluminum",
                      Cl="chlorine",
-                     Ni="nickel")
+                     Ni="nickel",
+                     P="phosphorus",
+                     Sc="scandium",
+                     K="potassium",
+                     Ti="titanium",
+                     V="vanadium",
+                     Cr="chromium",
+                     Co="cobalt",
+                     Cu="copper",
+                     Mn="manganese",
+                     Zn="zinc")
     if val is None:
         return elem_keys
     else:
