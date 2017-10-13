@@ -17,6 +17,7 @@ def cloudyInput(dir_, model_name, **kwargs):
     '''
     pars = {"age":1.0e6, #age in years
             "logZ": -0.5, #logZ/Zsol (-2.0 to 0.2)
+            "gas_logZ":None,
             "logQ":47.0,
             "logU":-2.0, #log of ionization parameter
             "dens":100.0, # number density of hydrogen
@@ -57,12 +58,12 @@ def cloudyInput(dir_, model_name, **kwargs):
                 if eol: to_print += "\n"
                 f.write(to_print)
     #-----------------------------------------------------
+    if pars["gas_logZ"] is None:
+        pars["gas_logZ"] = pars["logZ"]
     abunds = getNebAbunds(pars["set_name"],
-                          pars["logZ"],
+                          pars["gas_logZ"],
                           dust=pars["dust"],
                           re_z=pars["re_z"])
-    if pars["set_name"] == 'varyNO':
-        pars["logZ"] = 0.0
     this_print('////////////////////////////////////')
     this_print('title {0}'.format(model_name.split('/')[-1]))
     this_print('////////////////////////////////////')
@@ -86,9 +87,9 @@ def cloudyInput(dir_, model_name, **kwargs):
     ####
     this_print(abunds.solarstr)
     if pars['dust']:
-        this_print('metals grains {0:.2f} log'.format(pars['logZ']))
+        this_print('metals grains {0:.2f} log'.format(pars['gas_logZ']))
     else:
-        this_print('metals {0:.2f} log'.format(pars['logZ']))
+        this_print('metals {0:.2f} log'.format(pars['gas_logZ']))
     for line in abunds.elem_strs:
         this_print(line)
     ####
