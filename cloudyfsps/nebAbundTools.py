@@ -13,7 +13,7 @@ def getNebAbunds(set_name, logZ, dust=True, re_z=False):
     set_name must be 'dopita', 'newdopita', 'cl01' or 'yeh'
     '''
     allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh',
-                     'varyNO', 'gutkin', 'UVbyler']
+                     'varyNO', 'gutkin', 'UVbyler', 'varyCO']
     if set_name in allowed_names:
         return eval('{}({}, dust={}, re_z={})'.format(set_name, logZ, dust, re_z))
     else:
