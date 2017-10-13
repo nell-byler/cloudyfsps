@@ -167,6 +167,43 @@ class UVbyler(abundSet):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
+class varyCO(abundSet):
+    solar = 'GASS10'
+    def __init__(self, logZ, dust=True, re_z=False):
+        '''
+        Abundances from Dopita (2013)
+            Solar Abundances from Grevasse 2010 - z= 0.013
+            includes smooth polynomial for N/O relationship
+            functional form for He(z)
+            new depletion factors
+            ISM grains
+        '''
+        if dust:
+            self.grains = 'no grains\ngrains ISM'
+        else:
+            self.grains = 'no grains'
+        self.re_z=re_z
+        abundSet.__init__(self, 'newdopita', logZ)
+        
+    def calcSpecial(self):
+        def calc_He(logZ):
+            return np.log10(0.0737 + (0.024*(10.0**logZ)))
+        def calc_CNO(logZ):
+            O = self.abund_0['O'] + logZ
+            C = np.log10((1.0*10.**O)*(10.**-1.1 + 10.**(2.96 + O)))
+            N = np.log10((1.0*10.**O)*(10.**-1.8 + 10.**(2.2 + O)))
+            O = self.abund_0['O']
+            return C, N, O
+        self.__setattr__('He', calc_He(self.logZ))
+        C, N, O = calc_CNO(self.logZ)
+        [self.__setattr__(key, val + self.depl[key])
+         for key, val in zip(['C', 'N', 'O'], [C, N, O])]
+        return
+    def calcFinal(self):
+        [self.__setattr__(key, val+self.logZ+self.depl[key])
+         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+        return
+
 class gutkin(abundSet):
     solar = 'GASS10'
     def __init__(self, logZ, dust=True, re_z=False):
