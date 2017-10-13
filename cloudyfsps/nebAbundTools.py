@@ -12,7 +12,8 @@ def getNebAbunds(set_name, logZ, dust=True, re_z=False):
     neb_abund.get_abunds(set_name, logZ, dust=True, re_z=False)
     set_name must be 'dopita', 'newdopita', 'cl01' or 'yeh'
     '''
-    allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh', 'varyNO', 'gutkin']
+    allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh',
+                     'varyNO', 'gutkin', 'UVbyler']
     if set_name in allowed_names:
         return eval('{}({}, dust={}, re_z={})'.format(set_name, logZ, dust, re_z))
     else:
@@ -131,7 +132,41 @@ class newdopita(abundSet):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
-
+class UVbyler(abundSet):
+    solar = 'GASS10'
+    def __init__(self, logZ, dust=True, re_z=False):
+        '''
+        Abundances from Dopita (2013)
+            Solar Abundances from Grevasse 2010 - z= 0.013
+            includes smooth polynomial for N/O relationship
+            functional form for He(z)
+            new depletion factors
+            ISM grains
+        '''
+        if dust:
+            self.grains = 'no grains\ngrains ISM'
+        else:
+            self.grains = 'no grains'
+        self.re_z=re_z
+        abundSet.__init__(self, 'newdopita', logZ)
+        
+    def calcSpecial(self):
+        def calc_He(logZ):
+            return np.log10(0.0737 + (0.024*(10.0**logZ)))
+        def calc_CNO(logZ):
+            O = self.abund_0['O'] + logZ
+            C = np.log10((1.0*10.**O)*(10.**-1.1 + 10.**(2.96 + O)))
+            N = np.log10((1.0*10.**O)*(10.**-1.8 + 10.**(2.2 + O)))
+            return C, N, O
+        self.__setattr__('He', calc_He(self.logZ))
+        C, N, O = calc_CNO(self.logZ)
+        [self.__setattr__(key, val + self.depl[key])
+         for key, val in zip(['C', 'N', 'O'], [C, N, O])]
+        return
+    def calcFinal(self):
+        [self.__setattr__(key, val+self.logZ+self.depl[key])
+         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+        return
 class gutkin(abundSet):
     solar = 'GASS10'
     def __init__(self, logZ, dust=True, re_z=False):
@@ -235,6 +270,22 @@ def load_abund(set_name):
                      Ca=-5.66,
                      Fe=-4.50,
                      Ni=-5.78)
+    elif set_name == 'UVbyler':
+        adict = dict(He=-1.01,
+                     C=-3.57,
+                     N=-4.60,
+                     O=-3.31,
+                     Ne=-4.07,
+                     Na=-5.75,
+                     Mg=-4.40,
+                     Al=-5.55,
+                     Si=-4.49,
+                     S=-4.86,
+                     Cl=-6.63,
+                     Ar=-5.60,
+                     Ca=-5.66,
+                     Fe=-4.50,
+                     Ni=-5.78)
     elif set_name == 'gutkin':
         adict = dict(He=-1.01,
                      C=-3.53,
@@ -277,6 +328,22 @@ def load_depl(set_name):
                      Ca = -2.52,
                      Fe = -2.0)
     elif set_name == 'newdopita':
+        ddict = dict(He=0.00,
+                     C=-0.30,
+                     N=-0.05,
+                     O=-0.07,
+                     Ne=0.00,
+                     Na=-1.00,
+                     Mg=-1.08,
+                     Al=-1.39,
+                     Si=-0.81,
+                     S=0.00,
+                     Cl=-1.00,
+                     Ar=0.00,
+                     Ca=-2.52,
+                     Fe=-1.31,
+                     Ni=-2.00)
+    elif set_name == 'UVbyler':
         ddict = dict(He=0.00,
                      C=-0.30,
                      N=-0.05,
