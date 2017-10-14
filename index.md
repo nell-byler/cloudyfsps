@@ -1,6 +1,14 @@
-# About cloudyFSPS
+# Using the pre-computed FSPS tables in Cloudy
 
-cloudyFSPS uses Flexible Stellar Population Synthesis (FSPS) models as the ionizing source input to Cloudy. The package can be used to:
+As described in [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B), I have generated tables of FSPS stellar SEDs for anyone to use within Cloudy. Instructions for usage and downloads can be found [here](https://nell-byler.github.io/cloudyfsps/tables.html).
+
+# About cloudyFSPS
+The pre-computed tables are run for specific stellar libraries, evolutionary tracks, IMF, etc. 
+In spirit of maintaining the "flexible" part of FSPS, you can generate grids of stellar SEDs in the proper Cloudy-readable ascii file format for *any* combination of FSPS parameters using cloudyFSPS.
+
+## [Installation and Usage](https://nell-byler.github.io/cloudyfsps/installation.html)
+
+The cloudyFSPS package can be used to:
 
 * Generate and format FSPS models and compile them for use as ionizing sources (Stellar SED grids) within Cloudy.
 
@@ -17,9 +25,4 @@ cloudyFSPS uses Flexible Stellar Population Synthesis (FSPS) models as the ioniz
   generated using astroML). Comparisons with MAPPINGSIII models from
   Dopita+2013.
 
-## [Installation and Usage](https://nell-byler.github.io/cloudyfsps/installation.html)
-For instructions on how to install and use cloudyFSPS.
 
-# Using the pre-computed FSPS stellar SEDs in Cloudy
-
-As described in [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B), I have generated tables of FSPS stellar SEDs for anyone to use within Cloudy. Instructions for usage and downloads can be found [here](https://nell-byler.github.io/cloudyfsps/tables.html).
