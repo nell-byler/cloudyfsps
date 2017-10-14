@@ -30,3 +30,6 @@ git clone https://github.com/nell-byler/cloudyfsps.git
 cd cloudyfsps 
 python setup.py install 
 ```
+
+#### Basic usage:
+Generate stellar SEDs from FSPS SSPs and compile them for use within Cloudy using [generateCloudyBinaryFile.py](demos/generateCloudyBinaryFile.py), then generate a grid of Cloudy input models with [exampleCloudyGrid.py](demos/exampleCloudyGrid.py).
