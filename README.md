@@ -18,8 +18,8 @@ Python interface between FSPS and Cloudy.
 
 #### Prerequisites:
 Cloudy (http://www.nublado.org/)  
-FSPS (https://github.com/cconroy20/fsps) 
-python-fsps (https://github.com/dfm/python-fsps) 
+FSPS (https://github.com/cconroy20/fsps)  
+python-fsps (https://github.com/dfm/python-fsps)  
 
 You must have the following system variables set: 
 `$SPS_HOME`, `$CLOUDY_EXE`, `$CLOUDY_DATA_PATH`
