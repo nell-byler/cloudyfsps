@@ -119,17 +119,16 @@ pars = np.array([(Z, a, U, R, calcForLogQ(logU=U, Rinner=10.0**R, nh=n), n, -1.0
                  for n in nhs
                  for fb in fbhb_fracs])
 
-input_dict = {"r_in_pc":False,
-              "set_name":"dopita",
-              "dust":True,
-              "re_z":False,
-              "cloudy_mod":compiled_ascii,
-              "extras":'save last physical conditions ".phys"',
-              "extra_output":True,
-              "to_file":True,
-              "verbose":False,
-              "par1":"age",
-              "par2":"fbhb"
+input_dict = {"r_in_pc":False, # the inner radius is in cm
+              "set_name":"dopita", # abundances from Dopita+2001
+              "dust":True, # include dust grains in the nebula
+              "cloudy_mod":compiled_ascii, # ionizing spectrum file
+              "extras":'save last physical conditions ".phys"', # output
+              "extra_output":True, # each run will produce lots of files
+              "to_file":True, # write these parameters to file
+              "verbose":False, # don't print it to the screen
+              "par1":"age", # the ascii file parameter #1
+              "par2":"fbhb" # the ascii file parameter #2
               }
 
 print("{} models".format(len(pars)))
