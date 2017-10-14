@@ -1,8 +1,8 @@
 # cloudyfsps
-===
+
 Python interface between FSPS and Cloudy.
 
-* Compile FSPS models for use as ionizing sources within Cloudy.
+* Compile FSPS models for use as ionizing sources (Stellar SED grids) within Cloudy.
 
 * Generate Cloudy input files, single-parameter or grids of parameters.
 
@@ -16,10 +16,17 @@ Python interface between FSPS and Cloudy.
   generated using astroML). Comparisons with MAPPINGSIII models from
   Dopita (2013).
 
-Must have:
-Cloudy (http://www.nublado.org/), 
-FSPS (https://github.com/cconroy20/fsps),
-python-fsps (https://github.com/dfm/python-fsps)
+#### Prerequisites:
+Cloudy (http://www.nublado.org/)  
+FSPS (https://github.com/cconroy20/fsps) 
+python-fsps (https://github.com/dfm/python-fsps) 
 
-and relies on the following system variables:
-$SPS_HOME, $CLOUDY_EXE
+You must have the following system variables set: 
+`$SPS_HOME`, `$CLOUDY_EXE`, `$CLOUDY_DATA_PATH`
+
+#### To install:
+```
+git clone https://github.com/nell-byler/cloudyfsps.git 
+cd cloudyfsps 
+python setup.py install 
+```
