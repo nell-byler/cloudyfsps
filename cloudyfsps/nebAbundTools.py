@@ -55,7 +55,7 @@ class dopita(abundSet):
     solar = 'old solar 84'
     def __init__(self, logZ, dust=True, re_z=False):
         '''
-        Dopita (2003) uses old solar abundances = 0.019
+        Dopita+2001: old solar abundances = 0.019
         ISM grains
         '''
         if dust:
@@ -97,7 +97,7 @@ class newdopita(abundSet):
         '''
         Abundances from Dopita (2013)
             Solar Abundances from Grevasse 2010 - z= 0.013
-            includes smooth polynomial for N/O relationship
+            includes smooth polynomial for N/O, C/O relationship
             functional form for He(z)
             new depletion factors
             ISM grains
@@ -138,7 +138,7 @@ class UVbyler(abundSet):
         '''
         Abundances from Dopita (2013)
             Solar Abundances from Grevasse 2010 - z= 0.013
-            includes smooth polynomial for N/O relationship
+            New fit for N/O, C/O relationship
             functional form for He(z)
             new depletion factors
             ISM grains
@@ -171,12 +171,7 @@ class varyCO(abundSet):
     solar = 'GASS10'
     def __init__(self, logZ, dust=True, re_z=False):
         '''
-        Abundances from Dopita (2013)
-            Solar Abundances from Grevasse 2010 - z= 0.013
-            includes smooth polynomial for N/O relationship
-            functional form for He(z)
-            new depletion factors
-            ISM grains
+        arbitrarily vary C/O at fixed O.
         '''
         if dust:
             self.grains = 'no grains\ngrains ISM'
