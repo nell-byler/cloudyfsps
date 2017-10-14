@@ -20,5 +20,6 @@ cloudyFSPS uses Flexible Stellar Population Synthesis (FSPS) models as the ioniz
 ## [Installation and Usage](https://nell-byler.github.io/cloudyfsps/installation.html)
 For instructions on how to install and use cloudyFSPS.
 
-# [Using the pre-computed FSPS stellar SEDs in Cloudy](https://nell-byler.github.io/cloudyfsps/tables.html)
-As described in [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B), I have generated tables of FSPS stellar SEDs for anyone to use within Cloudy.
+# Using the pre-computed FSPS stellar SEDs in Cloudy
+
+As described in [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B), I have generated tables of FSPS stellar SEDs for anyone to use within Cloudy. Instructions for usage and downloads can be found [here](https://nell-byler.github.io/cloudyfsps/tables.html).
