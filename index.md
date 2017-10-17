@@ -2,13 +2,13 @@
 As described in [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B), I have generated tables of FSPS stellar SEDs for anyone to use within Cloudy. Instructions for usage and downloads can be found [here](https://nell-byler.github.io/cloudyfsps/tables.html).
 
 # Using the nebular model in FSPS and python-FSPS
-The model from [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B) is fully integrated within FSPS. Users can quickly generate galaxy spectra that include nebular line and continuum emission using the flag `add_neb_emission=True`. 
+The model from [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B) is fully integrated within [FSPS](https://github.com/cconroy20/fsps). Users can quickly generate galaxy spectra that include nebular line and continuum emission using the flag `add_neb_emission=True`, which automatically sets `add_neb_continuum=True`. You can modify the nebular parameters with `gas_logu` and `gas_logz`.
 
 ### [Nebular Model Specifics](https://nell-byler.github.io/cloudyfsps/aboutModel.html)
 Details of the nebular model, including the abundance perscriptions used and a list of emission lines included in the nebular model.  
 
 ### [Usage examples with python-FSPS](https://nell-byler.github.io/research/)
-For python users, I have provided some simple usage examples for generating mock emission line spectra.  
+For python users, I have provided some simple usage examples for generating mock emission line spectra using the python bindings for FSPS, [pythonFSPS](http://dfm.io/python-fsps/current/).  
 
 # About cloudyFSPS
 The pre-computed tables are run for specific stellar libraries, evolutionary tracks, IMF, etc. 
