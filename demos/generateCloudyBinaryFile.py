@@ -26,11 +26,6 @@ from cloudyfsps.ASCIItools import (writeASCII, compileASCII, checkCompiled, comp
 zsun = 0.0142 # this is solar metallicity for the MIST isochrones
 
 exec_write_ascii = True
-exec_write_input = True
-exec_run_cloudy = False
-exec_write_output = False
-exec_gen_FSPS_grid = False
-make_condor = True
 
 # Function to write the ascii file.
 # This is where you set the properties of the
