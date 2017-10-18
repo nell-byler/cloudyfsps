@@ -285,7 +285,20 @@ def load_abund(set_name):
                      S=-4.79,
                      Ar=-5.44,
                      Ca=-5.64,
-                     Fe=-4.33)
+                     Fe=-4.33,
+                     F=-7.52,
+                     Na=-5.69,
+                     Al=-5.53,
+                     P=-6.43,
+                     Cl=-6.73,
+                     K=-6.87,
+                     Ti=-6.96,
+                     Cr=-6.32,
+                     Mn=-6.47,
+                     Co=-7.08,
+                     Ni=-5.75,
+                     Cu=-7.73,
+                     Zn=-7.34)
     elif set_name == 'newdopita':
         adict = dict(He=-1.01,
                      C=-3.57,
@@ -301,7 +314,16 @@ def load_abund(set_name):
                      Ar=-5.60,
                      Ca=-5.66,
                      Fe=-4.50,
-                     Ni=-5.78)
+                     Ni=-5.78,
+                     F=-7.44,
+                     P=-6.59,
+                     K=-6.97,
+                     Cr=-6.36,
+                     Ti=-7.05,
+                     Mn=-6.57,
+                     Co=-7.01,
+                     Cu=-7.81,
+                     Zn=-7.44)
     elif set_name == 'UVbyler':
         adict = dict(He=-1.01,
                      C=-3.57,
@@ -317,7 +339,16 @@ def load_abund(set_name):
                      Ar=-5.60,
                      Ca=-5.66,
                      Fe=-4.50,
-                     Ni=-5.78)
+                     Ni=-5.78,
+                     F=-7.44,
+                     P=-6.59,
+                     K=-6.97,
+                     Cr=-6.36,
+                     Ti=-7.05,
+                     Mn=-6.57,
+                     Co=-7.01,
+                     Cu=-7.81,
+                     Zn=-7.44)
     elif set_name == 'gutkin':
         adict = dict(He=-1.01,
                      C=-3.53,
@@ -349,16 +380,29 @@ def load_abund(set_name):
 
 def load_depl(set_name):
     if set_name == 'dopita':
-        ddict = dict(C = -0.30,
-                     N = -0.22,
-                     O = -0.22,
-                     Ne = 0.0,
-                     Mg = -0.70,
-                     Si = -1.0,
-                     S = 0.0,
-                     Ar = 0.0,
-                     Ca = -2.52,
-                     Fe = -2.0)
+        ddict = dict(C=-0.30,
+                     N=-0.22,
+                     O=-0.22,
+                     Ne=0.0,
+                     Mg=-0.70,
+                     Si=-1.0,
+                     S=0.0,
+                     Ar=0.0,
+                     Ca=-2.52,
+                     Fe=-2.0,
+                     F=0.0,
+                     Na=0.0,
+                     Al=0.0,
+                     P=0.0,
+                     Cl=0.0,
+                     K=0.0,
+                     Ti=0.0,
+                     Cr=0.0,
+                     Mn=0.0,
+                     Co=0.0,
+                     Ni=0.0,
+                     Cu=0.0,
+                     Zn=0.0)
     elif set_name == 'newdopita':
         ddict = dict(He=0.00,
                      C=-0.30,
@@ -374,7 +418,16 @@ def load_depl(set_name):
                      Ar=0.00,
                      Ca=-2.52,
                      Fe=-1.31,
-                     Ni=-2.00)
+                     Ni=-2.00,
+                     F=0.0,
+                     P=0.0,
+                     K=0.0,
+                     Cr=0.0,
+                     Ti=0.0,
+                     Mn=0.0,
+                     Co=0.0,
+                     Cu=0.0,
+                     Zn=0.0)
     elif set_name == 'UVbyler':
         ddict = dict(He=0.00,
                      C=-0.30,
@@ -390,7 +443,16 @@ def load_depl(set_name):
                      Ar=0.00,
                      Ca=-2.52,
                      Fe=-1.31,
-                     Ni=-2.00)
+                     Ni=-2.00,
+                     F=0.0,
+                     P=0.0,
+                     K=0.0,
+                     Cr=0.0,
+                     Ti=0.0,
+                     Mn=0.0,
+                     Co=0.0,
+                     Cu=0.0,
+                     Zn=0.0)
     elif set_name == 'gutkin':
         ddict = dict(He=0.00,
                      Li=-0.8,
