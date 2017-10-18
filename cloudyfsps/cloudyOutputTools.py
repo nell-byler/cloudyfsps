@@ -32,9 +32,9 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     lsun = 3.839e33 # erg/s
     c = 2.9979e18 #ang/s
     
-    oldfile = "{}{}{}.lin".format(dir_, model_prefix, modnum)
-    newfile = "{}{}{}.lineflux".format(dir_, model_prefix, modnum)
-    print_file = "{}{}{}.out_lines".format(dir_, model_prefix, modnum)
+    oldfile = "{}{}{}.lin".format(dir_, model_prefix, str(modnum))
+    newfile = "{}{}{}.lineflux".format(dir_, model_prefix, str(modnum))
+    print_file = "{}{}{}.out_lines".format(dir_, model_prefix, str(modnum))
     # read cloudy output
     dat = np.genfromtxt(oldfile, skip_header=2, delimiter="\t",
                         dtype="S20,f8")
