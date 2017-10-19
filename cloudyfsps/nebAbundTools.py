@@ -155,8 +155,10 @@ class UVbyler(abundSet):
             return np.log10(0.0737 + (0.024*(10.0**logZ)))
         def calc_CNO(logZ):
             O = self.abund_0['O'] + logZ
-            C = np.log10((1.0*10.**O)*(10.**-1.1 + 10.**(2.96 + O)))
-            N = np.log10((1.0*10.**O)*(10.**-1.8 + 10.**(2.2 + O)))
+            #C = np.log10((1.0*10.**O)*(10.**-1.1 + 10.**(2.96 + O)))
+            C = np.log10((10.**O)*(10.**-0.7 + 10.**(4.8 + 1.45*O)))
+            #N = np.log10((1.0*10.**O)*(10.**-1.8 + 10.**(2.2 + O)))
+            N = np.log10((10.**O)*(10.**-1.5 + 10.**(2.5 + 1.2*O)))
             return C, N, O
         self.__setattr__('He', calc_He(self.logZ))
         C, N, O = calc_CNO(self.logZ)
