@@ -7,7 +7,7 @@ import numpy as np
 from .generalTools import sym_to_name
 from scipy.interpolate import InterpolatedUnivariateSpline as InterpUS
 
-def getNebAbunds(set_name, logZ, dust=True, re_z=False):
+def getNebAbunds(set_name, logZ, dust=True, re_z=False, **kwargs):
     '''
     neb_abund.get_abunds(set_name, logZ, dust=True, re_z=False)
     set_name must be 'dopita', 'newdopita', 'cl01' or 'yeh'
@@ -43,9 +43,9 @@ class abundSet(object):
         for key in self.abund_0.iterkeys():
             elm = names[key]
             abund = self.__getattribute__(key)
-            if hasattr(self, 're_z'):
-                if key != 'He':
-                    abund -= self.re_z
+            #if hasattr(self, 're_z'):
+            #    if key != 'He':
+            #        abund -= self.re_z
             outstr = 'element abundance {0} {1:.2f} log'.format(elm, abund)
             elem_strs.append(outstr)
         self.__setattr__('elem_strs', elem_strs)
@@ -148,7 +148,7 @@ class UVbyler(abundSet):
         else:
             self.grains = 'no grains'
         self.re_z=re_z
-        abundSet.__init__(self, 'newdopita', logZ)
+        abundSet.__init__(self, 'UVbyler', logZ)
         
     def calcSpecial(self):
         def calc_He(logZ):
@@ -158,7 +158,8 @@ class UVbyler(abundSet):
             #C = np.log10((1.0*10.**O)*(10.**-1.1 + 10.**(2.96 + O)))
             C = np.log10((10.**O)*(10.**-0.7 + 10.**(4.8 + 1.45*O)))
             #N = np.log10((1.0*10.**O)*(10.**-1.8 + 10.**(2.2 + O)))
-            N = np.log10((10.**O)*(10.**-1.5 + 10.**(2.5 + 1.2*O)))
+            #N = np.log10((10.**O)*(10.**-1.5 + 10.**(2.5 + 1.2*O)))
+            N  = -4.81 + logZ if logZ <= -0.3 else -4.51 + 2.0*logZ
             return C, N, O
         self.__setattr__('He', calc_He(self.logZ))
         C, N, O = calc_CNO(self.logZ)
@@ -171,7 +172,7 @@ class UVbyler(abundSet):
         return
 class varyCO(abundSet):
     solar = 'GASS10'
-    def __init__(self, logZ, dust=True, re_z=False):
+    def __init__(self, logZ, dust=True, re_z=0.0):
         '''
         arbitrarily vary C/O at fixed O.
         '''
@@ -180,24 +181,20 @@ class varyCO(abundSet):
         else:
             self.grains = 'no grains'
         self.re_z=re_z
-        abundSet.__init__(self, 'newdopita', logZ)
+        abundSet.__init__(self, 'UVbyler', logZ)
         
     def calcSpecial(self):
         def calc_He(logZ):
             return np.log10(0.0737 + (0.024*(10.0**logZ)))
-        def calc_CNO(logZ):
-            O = self.abund_0['O'] + logZ
-            C = np.log10((1.0*10.**O)*(10.**-1.1 + 10.**(2.96 + O)))
-            N = np.log10((1.0*10.**O)*(10.**-1.8 + 10.**(2.2 + O)))
-            O = self.abund_0['O']
-            return C, N, O
-        self.__setattr__('He', calc_He(self.logZ))
-        C, N, O = calc_CNO(self.logZ)
-        [self.__setattr__(key, val + self.depl[key])
-         for key, val in zip(['C', 'N', 'O'], [C, N, O])]
+        def calc_C(logZ):
+            C = self.abund_0['C'] + logZ
+            return C
+        self.__setattr__('He', calc_He(self.re_z))
+        C = calc_C(self.logZ)
+        self.__setattr__('C', C + self.depl['C'])
         return
     def calcFinal(self):
-        [self.__setattr__(key, val+self.logZ+self.depl[key])
+        [self.__setattr__(key, val + self.re_z + self.depl[key])
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
 
@@ -329,7 +326,7 @@ def load_abund(set_name):
     elif set_name == 'UVbyler':
         adict = dict(He=-1.01,
                      C=-3.57,
-                     N=-4.60,
+                     N=-4.17,
                      O=-3.31,
                      Ne=-4.07,
                      Na=-5.75,
