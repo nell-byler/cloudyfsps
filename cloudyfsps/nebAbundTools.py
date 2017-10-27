@@ -159,7 +159,8 @@ class UVbyler(abundSet):
             C = np.log10((10.**O)*(10.**-0.7 + 10.**(4.8 + 1.45*O)))
             #N = np.log10((1.0*10.**O)*(10.**-1.8 + 10.**(2.2 + O)))
             #N = np.log10((10.**O)*(10.**-1.5 + 10.**(2.5 + 1.2*O)))
-            N  = -4.81 + logZ if logZ <= -0.3 else -4.51 + 2.0*logZ
+            N = np.log10((1.0*10.**O)*(10.**-1.55 + 10.**(2.3 + 1.1*O)))
+            #N  = -4.81 + logZ if logZ <= -0.3 else -4.51 + 2.0*logZ
             return C, N, O
         self.__setattr__('He', calc_He(self.logZ))
         C, N, O = calc_CNO(self.logZ)
@@ -186,12 +187,17 @@ class varyCO(abundSet):
     def calcSpecial(self):
         def calc_He(logZ):
             return np.log10(0.0737 + (0.024*(10.0**logZ)))
-        def calc_C(logZ):
-            C = self.abund_0['C'] + logZ
-            return C
-        self.__setattr__('He', calc_He(self.re_z))
-        C = calc_C(self.logZ)
-        self.__setattr__('C', C + self.depl['C'])
+        def calc_CNO(logZ):
+            O = self.abund_0['O'] + logZ
+            C = np.log10((10.**O)*(10.**-0.7 + 10.**(4.8 + 1.45*O)))
+            N = np.log10((1.0*10.**O)*(10.**-1.55 + 10.**(2.3 + 1.1*O)))
+            #N  = -4.81 + logZ if logZ <= -0.3 else -4.51 + 2.0*logZ
+            return C, N, O
+        self.__setattr__('He', calc_He(self.logZ))
+        C, N, O = calc_CNO(self.logZ)
+        self.__setattr__('C', C + self.depl['C'] + self.re_z)
+        self.__setattr__('N', N + self.depl['N'])
+        self.__setattr__('O', O + self.depl['O'])
         return
     def calcFinal(self):
         [self.__setattr__(key, val + self.re_z + self.depl[key])
