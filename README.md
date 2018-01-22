@@ -1,7 +1,12 @@
 # cloudyfsps
 
-Python interface between FSPS and Cloudy.
+**Read the documentation:** [nell-byler.github.io/cloudyfsps](http://nell-byler.github.io/cloudyfsps/)
 
+If you use this code, follow the citation requirements [on the FSPS homepage](https://github.com/cconroy20/fsps) and reference these Python bindings:
+
+[![DOI](https://zenodo.org/badge/47210025.svg)](https://zenodo.org/badge/latestdoi/47210025)
+
+#### Python interface between FSPS and Cloudy:
 * Compile FSPS models for use as ionizing sources (Stellar SED grids) within Cloudy.
 
 * Generate Cloudy input files, single-parameter or grids of parameters.
