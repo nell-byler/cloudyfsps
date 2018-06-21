@@ -31,7 +31,7 @@ class abundSet(object):
         self.calcSpecial()
         self.calcFinal()
         self.inputStrings()
-        
+
     def calcSpecial(self):
         return
     def calcFinal(self):
@@ -67,7 +67,7 @@ class dopita(abundSet):
         else:
             self.re_z = 0.0
         abundSet.__init__(self, 'dopita', logZ)
-        
+
     def calcSpecial(self):
         '''
         piece-wise function for nitrogen abund (step-function)
@@ -80,7 +80,7 @@ class dopita(abundSet):
                 return -3.94 + (2.0*logZ)
         def calc_He(logZ):
             return np.log10(0.08096 + (0.02618*(10.0**logZ)))
-        
+
         self.__setattr__('He', calc_He(self.logZ))
         self.__setattr__('N', calc_N(self.logZ)+self.depl['N'])
         return
@@ -108,7 +108,7 @@ class newdopita(abundSet):
             self.grains = 'no grains'
         self.re_z=re_z
         abundSet.__init__(self, 'newdopita', logZ)
-        
+
     def calcSpecial(self):
         def calc_He(logZ):
             return np.log10(0.0737 + (0.024*(10.0**logZ)))
@@ -149,18 +149,20 @@ class UVbyler(abundSet):
             self.grains = 'no grains'
         self.re_z=re_z
         abundSet.__init__(self, 'UVbyler', logZ)
-        
+
     def calcSpecial(self):
         def calc_He(logZ):
             return np.log10(0.0737 + (0.024*(10.0**logZ)))
         def calc_CNO(logZ):
             O = self.abund_0['O'] + logZ
-            #C = np.log10((1.0*10.**O)*(10.**-1.1 + 10.**(2.96 + O)))
-            C = np.log10((10.**O)*(10.**-0.7 + 10.**(4.8 + 1.45*O)))
-            #N = np.log10((1.0*10.**O)*(10.**-1.8 + 10.**(2.2 + O)))
-            #N = np.log10((10.**O)*(10.**-1.5 + 10.**(2.5 + 1.2*O)))
-            N = np.log10((1.0*10.**O)*(10.**-1.55 + 10.**(2.3 + 1.1*O)))
-            #N  = -4.81 + logZ if logZ <= -0.3 else -4.51 + 2.0*logZ
+            logOH = O + 12.0
+            logCO = -0.8 + 0.14*(logOH - 8.0) +\
+                    (0.192*np.log(1. +np.exp((logOH - 8.0)/0.2)))
+            logNO = -1.5 + (0.1*np.log(1. + np.exp((logOH - 8.3)/0.1)))
+            #C = np.log10((10.**O)*(10.**-0.789 + 10.**(4.105 + 1.263*O)))
+            #N = np.log10((10.**O)*(10.**-1.579 + 10.**(3.579 + 1.526*O)))
+            C = logCO + O
+            N = logNO + O
             return C, N, O
         self.__setattr__('He', calc_He(self.logZ))
         C, N, O = calc_CNO(self.logZ)
@@ -171,6 +173,53 @@ class UVbyler(abundSet):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
+
+class IIZw(abundSet):
+    solar = 'GASS10'
+    def __init__(self, logZ, dust=True, re_z=False):
+        '''
+        Abundances from Dopita (2013)
+            Solar Abundances from Grevasse 2010 - z= 0.013
+            New fit for N/O, C/O relationship
+            functional form for He(z)
+            new depletion factors
+            ISM grains
+            log O/H + 12. = 8.09
+        '''
+        if dust:
+            self.grains = 'no grains\ngrains ISM'
+        else:
+            self.grains = 'no grains'
+        self.re_z=re_z
+        abundSet.__init__(self, 'UVbyler', logZ)
+
+    def calcSpecial(self):
+        def calc_He(logZ):
+            return np.log10(0.0737 + (0.024*(10.0**-0.6)))
+        def calc_CNO(logZ):
+            #O = self.abund_0['O'] + logZ
+            #logOH = O + 12.0
+            O = self.abund_0['O'] + -0.6
+            logOH = 8.09
+            #
+            logCO = -0.8 + 0.14*(logOH - 8.0) +\
+                    (0.192*np.log(1.+np.exp((logOH - 8.0)/0.2)))
+            logNO = -1.5 + (0.1*np.log(1. + np.exp((logOH - 8.3)/0.1)))
+            C = logCO + O + logZ
+            N = logNO + O
+            return C, N, O
+        self.__setattr__('He', calc_He(self.logZ))
+        C, N, O = calc_CNO(self.logZ)
+        [self.__setattr__(key, val)
+         for key, val in zip(['C', 'O'], [C, O])]
+        self.N = N + self.depl['N']
+        return
+    def calcFinal(self):
+        [self.__setattr__(key, val+self.depl[key])
+         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+        return
+
+
 class varyCO(abundSet):
     solar = 'GASS10'
     def __init__(self, logZ, dust=True, re_z=0.0):
@@ -183,7 +232,7 @@ class varyCO(abundSet):
             self.grains = 'no grains'
         self.re_z=re_z
         abundSet.__init__(self, 'UVbyler', logZ)
-        
+
     def calcSpecial(self):
         def calc_He(logZ):
             return np.log10(0.0737 + (0.024*(10.0**logZ)))
@@ -218,7 +267,7 @@ class gutkin(abundSet):
             self.grains = 'no grains'
         self.re_z=re_z
         abundSet.__init__(self, 'gutkin', logZ)
-        
+
     def calcSpecial(self):
         def calc_He(logZ):
             Z = (10.**logZ)*0.01524
@@ -252,7 +301,7 @@ class varyNO(abundSet):
             self.grains = 'no grains'
         self.re_z=re_z
         abundSet.__init__(self, 'dopita', logZ)
-        
+
     def calcSpecial(self):
         def calc_He(logZ):
             return -1.01
@@ -276,6 +325,7 @@ class varyNO(abundSet):
         [self.__setattr__(key, val)
          for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
         return
+
 
 
 def load_abund(set_name):

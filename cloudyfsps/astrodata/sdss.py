@@ -76,12 +76,12 @@ def plot_bpt(var_label, ax=None, color_code=False, line_ratio='NIIb', **kwargs):
         lab = kwargs.get('lab', 'SDSS')
     else:
         lab = '__nolegend__'
-    
+
     data = load_spec()
     lineindex_cln = 'lineindex_cln'
     il = np.where((data['lineindex_cln'] == 4) | (data['lineindex_cln'] == 5))
     xratio, yratio = get_line_ratio(data, line_ratio, **kwargs)
-    
+
     if ax is None:
         plt.figure()
         ax = plt.gca()
