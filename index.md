@@ -7,6 +7,9 @@ The model from [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B) i
 ### [Nebular Model Specifics](https://nell-byler.github.io/cloudyfsps/aboutModel.html)
 Details of the nebular model, including the abundance perscriptions used and a list of emission lines included in the nebular model.  
 
+#### [Extended Nebular Model Specifics (new!)](https://nell-byler.github.io/cloudyfsps/aboutUVModel.html)
+The default nebular model has been expanded to include more emission lines in the UV and IR. You can find model details here, including the abundance perscriptions and emission line lists.
+
 ### [Usage examples with python-FSPS](https://nell-byler.github.io/research/)
 For python users, I have provided some simple usage examples for generating mock emission line spectra using the python bindings for FSPS, [pythonFSPS](http://dfm.io/python-fsps/current/).  
 
