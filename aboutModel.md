@@ -3,7 +3,7 @@
 The nebular model integrated within FSPS is fully described in [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B). We include some of the model specifics here.
 
 ## Isochrone sets
-The nebular model is available for [MIST](http://waps.cfa.harvard.edu/MIST/) and Padova+Geneva evolutionary tracks.
+The nebular model is available for [MIST](http://waps.cfa.harvard.edu/MIST/),Padova+Geneva, and PARSEC evolutionary tracks.
 
 ## Abundances
 
