@@ -1,7 +1,12 @@
 [< back to main](http://nell-byler.github.io/cloudyfsps/)
 # Model Specifics
 The nebular model from [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B) has been expanded to include more UV and IR emission lines.
-We include some of the model specifics here, but full description can be found in [Byler+2018](https://arxiv.org/abs/1803.04425)
+We include some of the model specifics here, but a full description can be found in [Byler+2018](https://arxiv.org/abs/1803.04425).
+
+The emission line tables for FSPS can be downloaded [here](https://drive.google.com/open?id=14FY0Av6hdjYItPgTQCFmVc9qNjFZqcED). To use the extended grid in FSPS, you must copy the new emission line tables into  `$SPS_HOME/nebular/` and make the following changes to `$SPS_HOME/src/sps_vars.f90`:
+
+line 253: `nemline=382`  
+line 255:  `nebnz=12, nebnage=9, nebnip=7`  
 
 ## Isochrone sets
 The nebular model is available for [MIST](http://waps.cfa.harvard.edu/MIST/) evolutionary tracks.
