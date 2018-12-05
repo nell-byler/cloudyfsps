@@ -13,7 +13,7 @@ def getNebAbunds(set_name, logZ, dust=True, re_z=False, **kwargs):
     set_name must be 'dopita', 'newdopita', 'cl01' or 'yeh'
     '''
     allowed_names = ['dopita', 'newdopita', 'cl01', 'yeh',
-                     'varyNO', 'gutkin', 'UVbyler', 'varyCO']
+                     'varyNO', 'gutkin', 'UVbyler', 'varyCO', 'LIMS']
     if set_name in allowed_names:
         return eval('{}({}, dust={}, re_z={})'.format(set_name, logZ, dust, re_z))
     else:
@@ -167,6 +167,33 @@ class UVbyler(abundSet):
         C, N, O = calc_CNO(self.logZ)
         [self.__setattr__(key, val + self.depl[key])
          for key, val in zip(['C', 'N', 'O'], [C, N, O])]
+        return
+    def calcFinal(self):
+        [self.__setattr__(key, val+self.logZ+self.depl[key])
+         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+        return
+
+class LIMS(abundSet):
+    solar = 'GASS10'
+    def __init__(self, logZ, dust=True, re_z=False):
+        '''
+        Solar UVByler abundances modified:
+             Enhance alpha abundances +0.2 dex (O, Ne, Mg, Si, S, Ar, Ca)
+                  Zhu+2010, Conroy+2014, Choi+2014
+             Enhance C, N following PNe abundances (logNO ~ -0.5, logCO ~ 0)
+                  Henry+2018, but also Karakas 2010, Maciel 2017
+        '''
+        if dust:
+            self.grains = 'no grains\ngrains ISM'
+        else:
+            self.grains = 'no grains'
+        self.re_z=re_z
+        abundSet.__init__(self, 'LIMS', logZ)
+
+    def calcSpecial(self):
+        def calc_He(logZ):
+            return np.log10(0.0737 + (0.024*(10.0**logZ)))
+        self.__setattr__('He', calc_He(self.logZ))
         return
     def calcFinal(self):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
@@ -407,6 +434,31 @@ def load_abund(set_name):
                      Co=-7.01,
                      Cu=-7.81,
                      Zn=-7.44)
+    elif set_name == 'LIMS':
+        adict = dict(He=-1.01,
+                     C=-3.11,
+                     N=-3.61,
+                     O=-3.11,
+                     Ne=-3.87,
+                     Na=-5.75,
+                     Mg=-4.20,
+                     Al=-5.55,
+                     Si=-4.29,
+                     S=-4.66,
+                     Cl=-6.63,
+                     Ar=-5.40,
+                     Ca=-5.46,
+                     Fe=-4.50,
+                     Ni=-5.78,
+                     F=-7.44,
+                     P=-6.59,
+                     K=-6.97,
+                     Cr=-6.36,
+                     Ti=-7.05,
+                     Mn=-6.57,
+                     Co=-7.01,
+                     Cu=-7.81,
+                     Zn=-7.44)
     elif set_name == 'gutkin':
         adict = dict(He=-1.01,
                      C=-3.53,
@@ -487,6 +539,31 @@ def load_depl(set_name):
                      Cu=0.0,
                      Zn=0.0)
     elif set_name == 'UVbyler':
+        ddict = dict(He=0.00,
+                     C=-0.30,
+                     N=-0.05,
+                     O=-0.07,
+                     Ne=0.00,
+                     Na=-1.00,
+                     Mg=-1.08,
+                     Al=-1.39,
+                     Si=-0.81,
+                     S=0.00,
+                     Cl=-1.00,
+                     Ar=0.00,
+                     Ca=-2.52,
+                     Fe=-1.31,
+                     Ni=-2.00,
+                     F=0.0,
+                     P=0.0,
+                     K=0.0,
+                     Cr=0.0,
+                     Ti=0.0,
+                     Mn=0.0,
+                     Co=0.0,
+                     Cu=0.0,
+                     Zn=0.0)
+    elif set_name == 'LIMS':
         ddict = dict(He=0.00,
                      C=-0.30,
                      N=-0.05,
