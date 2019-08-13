@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from builtins import object
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
@@ -23,7 +24,7 @@ except KeyError:
     print('Cloudy data path not set. Assuming standard cloudy structure')
     CLOUDY_DATA_PATH = '/'.join(CLOUDY_EXE.split('/')[:-2])+'/data'
 
-class writeASCII:
+class writeASCII(object):
     '''
     Print FSPS data into ascii files readable by CLOUDY
     Calling sequence:
@@ -42,7 +43,7 @@ class writeASCII:
         self.file.close()
         
     def init_pars(self, **kwargs):
-        for key, value in kwargs.items():
+        for key, value in list(kwargs.items()):
             self.nom_dict[key] = value
         if self.nom_dict['peraa']:
             self.nom_dict['f_type'] = 'F_lambda'

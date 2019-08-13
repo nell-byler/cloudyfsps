@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from builtins import str
+from builtins import range
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 #__all__ = ["format_output"]

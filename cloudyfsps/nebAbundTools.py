@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from builtins import zip
+from builtins import object
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 
@@ -40,7 +42,7 @@ class abundSet(object):
         self.solarstr = 'abundances {} {}'.format(self.solar, self.grains)
         elem_strs = []
         names = sym_to_name()
-        for key in self.abund_0.iterkeys():
+        for key in self.abund_0.keys():
             elm = names[key]
             abund = self.__getattribute__(key)
             #if hasattr(self, 're_z'):
@@ -89,7 +91,7 @@ class dopita(abundSet):
         apply depletions and scale with logZ
         '''
         [self.__setattr__(key, val+self.logZ+self.depl[key])
-         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+         for key, val in self.abund_0.items() if not hasattr(self, key)]
         return
 class newdopita(abundSet):
     solar = 'GASS10'
@@ -130,7 +132,7 @@ class newdopita(abundSet):
         return
     def calcFinal(self):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
-         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+         for key, val in self.abund_0.items() if not hasattr(self, key)]
         return
 class UVbyler(abundSet):
     solar = 'GASS10'
@@ -170,7 +172,7 @@ class UVbyler(abundSet):
         return
     def calcFinal(self):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
-         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+         for key, val in self.abund_0.items() if not hasattr(self, key)]
         return
 
 class LIMS(abundSet):
@@ -197,7 +199,7 @@ class LIMS(abundSet):
         return
     def calcFinal(self):
         [self.__setattr__(key, val+self.logZ+self.depl[key])
-         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+         for key, val in self.abund_0.items() if not hasattr(self, key)]
         return
 
 class IIZw(abundSet):
@@ -242,7 +244,7 @@ class IIZw(abundSet):
         return
     def calcFinal(self):
         [self.__setattr__(key, val+self.depl[key])
-         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+         for key, val in self.abund_0.items() if not hasattr(self, key)]
         return
 
 
@@ -280,7 +282,7 @@ class varyCO(abundSet):
         return
     def calcFinal(self):
         [self.__setattr__(key, val + self.re_z + self.depl[key])
-         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+         for key, val in self.abund_0.items() if not hasattr(self, key)]
         return
 
 class gutkin(abundSet):
@@ -316,7 +318,7 @@ class gutkin(abundSet):
         return
     def calcFinal(self):
         [self.__setattr__(key, val)
-         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+         for key, val in self.abund_0.items() if not hasattr(self, key)]
         return
 
 class varyNO(abundSet):
@@ -353,7 +355,7 @@ class varyNO(abundSet):
         return
     def calcFinal(self):
         [self.__setattr__(key, val)
-         for key, val in self.abund_0.iteritems() if not hasattr(self, key)]
+         for key, val in self.abund_0.items() if not hasattr(self, key)]
         return
 
 

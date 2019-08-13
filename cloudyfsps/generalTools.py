@@ -141,7 +141,7 @@ def name_to_sym(val=None):
         try:
             return elem_keys[val.lower()]
         except KeyError:
-            print("key must be in ", elem_keys.keys())
+            print("key must be in ", list(elem_keys.keys()))
 
 def sym_to_name(val=None):
     elem_keys = dict(He="helium",
@@ -176,7 +176,7 @@ def sym_to_name(val=None):
         try:
             return elem_keys[val.title()]
         except KeyError:
-            print("element not in ", elem_keys.keys())
+            print("element not in ", list(elem_keys.keys()))
 
 def getEmis(use_vac=True):
     lfile = pkg_resources.resource_filename(__name__, "data/emlines.dat")

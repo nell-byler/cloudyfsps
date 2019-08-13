@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import zip
+from builtins import next
+from builtins import str
+from builtins import range
+from builtins import object
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
 __all__ = ["getColors", "nColors", "allmods"]
@@ -60,7 +65,7 @@ def sextract(text, par1=None, par2=None):
     if np.size(text) == 1:
         if type(par1) is int:
             str1 = text[par1::]
-        elif type(par1) is str or type(par1) is unicode:
+        elif type(par1) is str or type(par1) is str:
             str1 = text.split(par1)
             if len(str1) == 1:
                 return ''
@@ -70,7 +75,7 @@ def sextract(text, par1=None, par2=None):
             str1 = text
         if type(par2) is int:
             str2 = str1[0:par2]
-        elif type(par2) is str or type(par2) is unicode:
+        elif type(par2) is str or type(par2) is str:
             str2 = str1.split(par2)
             if len(str2) == 1:
                 return ''
@@ -139,7 +144,7 @@ class modObj(object):
     def add_lines(self, lines):
         line_info = np.genfromtxt(self.fl+'.lineflux')
         lam, flu = line_info[:,0], line_info[:,1]
-        for name, wav in lines.iteritems():
+        for name, wav in lines.items():
             matchind = np.argmin(np.abs(lam-wav))
             self.__setattr__(name, flu[matchind])
         return
@@ -169,7 +174,7 @@ class modObj(object):
                  'ArIII':7137.77}
         line_info = np.genfromtxt(self.fl+'.lineflux')
         lam, flu = line_info[:,0], line_info[:,1]
-        for name, wav in lines.iteritems():
+        for name, wav in lines.items():
             matchind = np.argmin(np.abs(lam-wav))
             self.__setattr__(name, flu[matchind])
         self.HaHb = self.Ha/self.Hb
@@ -327,7 +332,7 @@ class modObj(object):
                            cool_HminFB='Hfb')
             self.cool = self._dat[key]['Ctotergcm3s']
             self.Ctot = self._vol_integ(self.cool)
-            for att,keyname in attkeys.iteritems():
+            for att,keyname in attkeys.items():
                 vals = self._dat[key][keyname]
                 self.__setattr__(att, vals)
                 self.__setattr__('frac_'+att, self._vol_integ(vals)/self.Ctot)
@@ -359,13 +364,13 @@ class modObj(object):
         hf = {}
         [hf.__setitem__(lab,
                         np.array([outf[lab]
-                                  if lab in outf.keys()
+                                  if lab in list(outf.keys())
                                   else 0.0 for outf in outfs]))
          for lab in heat_labs]
         Htots = np.array([float(htot) for htot in htots])
         Htot = self._vol_integ(Htots)
         hr = {}
-        for key, arr in hf.iteritems():
+        for key, arr in hf.items():
             hr.__setitem__(key, np.sum(self._vol_integ(arr*Htots))/Htot)
         self.__setattr__('heatfracs', hr)
         return
@@ -721,7 +726,7 @@ class allmods(object):
               'val4':0.0,
               'const5':None,
               'val5':0.0}
-        for key, val in kwargs.iteritems():
+        for key, val in kwargs.items():
             pd[key] = val
         allvars = ['nH', 'logZ', 'logR', 'logU', 'age', 'efrac', 'fbhb']
         [allvars.remove(x) for x in [pd['const1'], pd['const2'], pd['const3'], pd['const4'], pd['const5']] if x is not None]
