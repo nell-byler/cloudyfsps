@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+from past.utils import old_div
 from builtins import range
 from __future__ import (division, print_function, absolute_import, unicode_literals)
 
@@ -44,7 +48,7 @@ def mist_ascii(fileout, **kwargs):
     sp = fsps.StellarPopulation(**sp_dict)
     # all ages and Zs
     ages = 10.**sp.log_age
-    logZs = np.log10(sp.zlegend/zsun)
+    logZs = np.log10(old_div(sp.zlegend,zsun))
     modpars = [(age, logZ) for age in ages for logZ in logZs]
     lam = sp.wavelengths
     all_fluxs = []

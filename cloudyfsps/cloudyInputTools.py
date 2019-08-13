@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+from __future__ import unicode_literals
 from builtins import zip
 from builtins import range
 from __future__ import (division, print_function, absolute_import,
@@ -43,7 +45,7 @@ def cloudyInput(dir_, model_name, **kwargs):
             "use_extended_lines":False,
             "geometry":"sphere"
             }
-    for key, value in kwargs.items():
+    for key, value in list(kwargs.items()):
         pars[key] = value
     # -----
     if pars["to_file"]:
@@ -250,7 +252,7 @@ def writeParamFiles(**kwargs):
                 "write_makefile":False,
                 "extras":"",
                 "extra_output":False}
-    for key, val in kwargs.items():
+    for key, val in list(kwargs.items()):
         nom_dict[key] = val
     pars = kwargs.get("pars", None)
     if pars is None:
