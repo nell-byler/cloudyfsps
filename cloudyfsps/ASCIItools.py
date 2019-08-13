@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import unicode_literals
-from builtins import object
 from __future__ import (division, print_function, absolute_import,
                         unicode_literals)
+from builtins import object
 
 __all__ = ["writeASCII", "compileASCII", "checkCompiled", "compiledExists"]
 
@@ -43,7 +41,7 @@ class writeASCII(object):
         self.write_header(modpars)
         self.write_body(lam, flu, modpars)
         self.file.close()
-        
+
     def init_pars(self, **kwargs):
         for key, value in list(kwargs.items()):
             self.nom_dict[key] = value
@@ -51,7 +49,7 @@ class writeASCII(object):
             self.nom_dict['f_type'] = 'F_lambda'
         else:
             self.nom_dict['f_type'] = 'F_nu'
-        
+
     def write_header(self, modpars):
         '''
         Header for cloudy ascii files
@@ -73,7 +71,7 @@ class writeASCII(object):
                 self.file.write("  " + "  ".join("{0:<8.2e}{1:>10.2e}".format(x[0], x[1]) for x in chunk) + "\n")
             else:
                 self.file.write("  " + "  ".join("{0:>4.2e}".format(x) for x in chunk) + "\n")
-    
+
     def write_data(self, array):
         '''
         write array with 5 items per line in format 1.0000e+00
@@ -84,7 +82,7 @@ class writeASCII(object):
         self.write_data(lam)
         flu[(flu < 0.0)] = 0.0
         [self.write_data(fl) for fl in flu]
-        
+
 def compileASCII(ascii_file, **kwargs):
     comp_file = CLOUDY_DATA_PATH+'/compile.in'
     f = open(comp_file, 'w')
@@ -97,7 +95,7 @@ def compileASCII(ascii_file, **kwargs):
 
 def checkCompiled(ascii_file, **kwargs):
     '''
-    checks to make sure ascii_file.mod exists and that 
+    checks to make sure ascii_file.mod exists and that
     the words "Cloudy exited OK' are in compile.out
     '''
     out_file = CLOUDY_DATA_PATH+'/compile.out'
@@ -108,7 +106,7 @@ def checkCompiled(ascii_file, **kwargs):
     check = np.all(['OK' in content[-1],
                     os.path.exists(comp_mod)])
     return check
-    
+
 def compiledExists(filename):
     if filename.split('.')[-1] == 'mod':
         return os.path.exists('/'.join([CLOUDY_DATA_PATH, filename]))

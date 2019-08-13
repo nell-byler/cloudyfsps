@@ -3,9 +3,9 @@
 
 from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 from builtins import object
-from __future__ import (division, print_function, absolute_import,
-                        unicode_literals)
 
 import numpy as np
 import pkg_resources
@@ -73,7 +73,7 @@ class writeFormattedOutput(object):
         f = open(self.line_out, "w")
         self.printLineLam(f, **kwargs)
         for n in self.mod_num:
-            self.printLineFlu(f, n.astype(int), more_info=more_info) 
+            self.printLineFlu(f, n.astype(int), more_info=more_info)
         f.close()
         print("lines: {0:.0f} models to file {1}".format(self.mod_num[-1], self.line_out))
         return
@@ -126,7 +126,7 @@ class writeFormattedOutput(object):
                         logR=self.logR[iind-1],
                         mod_num=iind,
                         efrac=self.efrac[iind-1])
-            self.printContFlu(f, pars) 
+            self.printContFlu(f, pars)
         f.close()
         print("cont: {0:.0f} models to file {1}".format(self.modpars['mod_num'][-1], self.cont_out))
         return
@@ -142,7 +142,7 @@ class writeFormattedOutput(object):
         # read lambda, diffuse cont
         mdata = np.genfromtxt(filename)
         lam = mdata[:,0]
-        flu = mdata[:,1]        
+        flu = mdata[:,1]
         y_str = " ".join(["{0:1.4}".format(y) for y in flu])
         f.write(y_str+"\n")
         return
@@ -217,7 +217,7 @@ class writeAltFormattedOutput(object):
         f = open(self.line_out, "w")
         self.printLineLam(f, **kwargs)
         for n in self.mod_num:
-            self.printLineFlu(f, n.astype(int), more_info=more_info) 
+            self.printLineFlu(f, n.astype(int), more_info=more_info)
         f.close()
         print("lines: {0:.0f} models to file {1}".format(self.mod_num[-1], self.line_out))
         return
@@ -271,7 +271,7 @@ class writeAltFormattedOutput(object):
                         logR=self.logR[iind-1],
                         mod_num=iind,
                         zmet=self.zmet[iind-1])
-            self.printContFlu(f, pars) 
+            self.printContFlu(f, pars)
         f.close()
         print("cont: {0:.0f} models to file {1}".format(self.modpars['mod_num'][-1], self.cont_out))
         return
@@ -287,7 +287,7 @@ class writeAltFormattedOutput(object):
         # read lambda, diffuse cont
         mdata = np.genfromtxt(filename)
         lam = mdata[:,0]
-        flu = mdata[:,1]        
+        flu = mdata[:,1]
         y_str = " ".join(["{0:1.4}".format(y) for y in flu])
         f.write(y_str+"\n")
         return

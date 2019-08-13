@@ -3,6 +3,7 @@
 
 from __future__ import division
 from __future__ import print_function
+from __future__ import absolute_import
 from __future__ import unicode_literals
 from past.utils import old_div
 from builtins import zip
@@ -10,8 +11,6 @@ from builtins import next
 from builtins import str
 from builtins import range
 from builtins import object
-from __future__ import (division, print_function, absolute_import,
-                        unicode_literals)
 __all__ = ["getColors", "nColors", "allmods"]
 import numpy as np
 import matplotlib.pyplot as plt
@@ -105,7 +104,7 @@ class modObj(object):
         '''
         this needs to be called from other class or given
         a line from a ".pars" file
-        [0]modnum; [1]logZ; [2]age; [3]logU; [4]logR; [5]logQ  
+        [0]modnum; [1]logZ; [2]age; [3]logU; [4]logR; [5]logQ
         '''
         self.modnum = int(parline[0])
         self.logZ = parline[1]
@@ -122,7 +121,7 @@ class modObj(object):
             self.fbhb = parline[8]
         except IndexError:
             self.fbhb = 0.0
-        
+
         self.logq = np.log10(old_div((10.0**self.logQ),(np.pi*4.0*self.nH*(10.0**self.logR)**2.0)))
         self.fl = '{}{}{}'.format(dir_, prefix, self.modnum)
         self.load_lines(use_doublet=use_doublet)
@@ -244,13 +243,13 @@ class modObj(object):
                                  names=names, **kwargs)
         except IOError:
             return None
-        
+
     def _init_rad(self):
         '''
         self._init_rad()
         attributes:
             n_zones
-            zones 
+            zones
             depth
             thickness (cm)
             radius_all (cm)
@@ -397,14 +396,14 @@ class modObj(object):
             self.n_ions[key] = n_ions
             self.ion_arr[key] = ion_arr
         return
-    
+
     @property
     def dvff(self):
         try:
             return self.dv_all*self.ff_all
         except:
             return None
-    
+
     def _quiet_div(self, a, b):
         if a is None or b is None:
             to_return = None
@@ -430,14 +429,14 @@ class modObj(object):
             return (a*self.dvff)
     def _vol_mean(self, a, b=1.):
         return self._quiet_div(self._vol_integ(a*b), self._vol_integ(b))
-    
+
     @property
     def T0(self):
         try:
             return self._vol_mean(self.Te, self.nenH)
         except:
             return None
-    
+
     @property
     def Tpiem(self):
        try:
@@ -468,7 +467,7 @@ class modObj(object):
             return None
     def get_cumVol_emis(self, ref):
         if self._i_emis(ref) is not None:
-            return 
+            return
         else:
             return None
     def get_emis_vol(self, ref):
@@ -627,7 +626,7 @@ class allmods(object):
                 self.add_arrs('DGR', 'Av_ex', 'Av_pt')
             if read_rad:
                 self.add_arrs('Te')
-        
+
     def load_mods(self, dir_, prefix, **kwargs):
         mods = []
         for par in self.modpars:
@@ -740,7 +739,7 @@ class allmods(object):
             x_name, y_name = gridnames[0], gridnames[1]
         grid_x = self.__getattribute__(x_name+'_vals')
         grid_y = self.__getattribute__(y_name+'_vals')
-        
+
         cut_z = kwargs.get('cut_z', None)
         if cut_z is not None:
             logZmin= cut_z[0]
@@ -749,7 +748,7 @@ class allmods(object):
                 grid_x = grid_x[(grid_x >= logZmin) & (grid_x <= logZmax)]
             if y_name == 'logZ':
                 grid_y = grid_y[(grid_y >= logZmin) & (grid_y <= logZmax)]
-        
+
         use_mods = [mod for mod in self.mods
                     if (mod.__getattribute__(pd['const1']) == pd['val1'])
                     & (mod.__getattribute__(pd['const2']) == pd['val2'])
@@ -760,7 +759,7 @@ class allmods(object):
                         & (mod.__getattribute__(pd['const2']) == pd['val2'])
                         & (mod.__getattribute__(pd['const3']) == pd['val3'])
                         & (mod.__getattribute__(pd['const4']) == pd['val4'])]
-        
+
         gshape = (len(grid_y), len(grid_x))
         X, Y = np.meshgrid(grid_x, grid_y, indexing='xy')
         Zx = np.zeros(gshape)
@@ -792,7 +791,7 @@ class allmods(object):
             ax.plot(Zx[:,i], Zy[:,i], color=color, lw=lw, alpha=alpha,
                     label='__nolegend__')
         col_labs = [(Zx[0, i], Zy[0, i], r'${0:.1f}$'.format(float(np.unique(X[:,i])))) for i in range(gshape[1])]
-        
+
         var_label = kwargs.get('var_label', '__nolegend__')
         if var_label:
             for lab in col_labs:

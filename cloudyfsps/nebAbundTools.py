@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import absolute_import
 from past.utils import old_div
 from builtins import zip
 from builtins import object
-from __future__ import (division, print_function, absolute_import,
-                        unicode_literals)
 
 import numpy as np
 from .generalTools import sym_to_name

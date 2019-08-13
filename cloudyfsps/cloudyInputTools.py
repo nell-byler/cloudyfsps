@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
 from builtins import zip
 from builtins import range
-from __future__ import (division, print_function, absolute_import,
-                        unicode_literals)
 import os
 import numpy as np
 import subprocess
@@ -291,5 +291,3 @@ def writeParamFiles(**kwargs):
     #--------------------------------------------
     if nom_dict["run_cloudy"]:
         runMake(dir_=nom_dict["dir_"], n_proc=4, model_name=nom_dict["model_prefix"])
-    
-

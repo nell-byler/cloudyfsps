@@ -3,11 +3,10 @@
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import absolute_import
 from past.utils import old_div
 from builtins import str
 from builtins import range
-from __future__ import (division, print_function, absolute_import,
-                        unicode_literals)
 #__all__ = ["format_output"]
 
 import numpy as np
@@ -33,11 +32,11 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     logZ, age, logU, logR, logQ, nH = modpars[0:6]
     if logZ > 0.2:
         print("WARNING WARNING WARNING")
-    
+
     dist_fact = 4.0*np.pi*(10.0**logR)**2.0 # cm**2
     lsun = 3.839e33 # erg/s
     c = 2.9979e18 #ang/s
-    
+
     oldfile = "{}{}{}.lin".format(dir_, model_prefix, str(modnum))
     newfile = "{}{}{}.lineflux".format(dir_, model_prefix, str(modnum))
     print_file = "{}{}{}.out_lines".format(dir_, model_prefix, str(modnum))
