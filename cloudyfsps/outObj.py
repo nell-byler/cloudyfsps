@@ -500,7 +500,7 @@ class modObj(object):
                 self.out['###Last'] = line
             elif 'Hi-Con' in line:
                 for i in range(7):
-                    self.out['SED' + str(i+1)] = file_.next()
+                    self.out['SED' + str(i+1)] = next(file_)
             elif line[0:15] == ' IONIZE PARMET:':
                 self.out['INZ'] = line
             elif 'H :' in line:
@@ -567,7 +567,7 @@ class modObj(object):
         self.gasC = float(sextract(self.out['gascomp'], 'C :', 8))
         self.gasN = float(sextract(self.out['gascomp'], 'N :', 8))
         self.gasO = float(sextract(self.out['gascomp'], 'O :', 8))
-        if self.out.has_key('dust'):
+        if 'dust' in self.out:
             self.DGR = float(sextract(self.out['dust'], '(by mass):',',' ))
             self.Av_ex = float(sextract(self.out['dust'], 'AV(ext):', '(pnt)'))
             self.Av_pt = float(sextract(self.out['dust'], ' (pnt):'))
