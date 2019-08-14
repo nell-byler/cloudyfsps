@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import unicode_literals
-from past.utils import old_div
 from builtins import zip
 from builtins import next
 from builtins import str
@@ -122,7 +121,7 @@ class modObj(object):
         except IndexError:
             self.fbhb = 0.0
 
-        self.logq = np.log10(old_div((10.0**self.logQ),(np.pi*4.0*self.nH*(10.0**self.logR)**2.0)))
+        self.logq = np.log10((10.0**self.logQ)/(np.pi*4.0*self.nH*(10.0**self.logR)**2.0))
         self.fl = '{}{}{}'.format(dir_, prefix, self.modnum)
         self.load_lines(use_doublet=use_doublet)
         if read_out:
@@ -180,13 +179,13 @@ class modObj(object):
         for name, wav in list(lines.items()):
             matchind = np.argmin(np.abs(lam-wav))
             self.__setattr__(name, flu[matchind])
-        self.HaHb = old_div(self.Ha,self.Hb)
+        self.HaHb = self.Ha/self.Hb
         def logify(a,b):
-            return np.log10(old_div(a,b))
+            return np.log10(a/b)
         def logHa(x):
-            return np.log10(old_div(x,self.Ha))
+            return np.log10(x/self.Ha)
         def logHb(x):
-            return np.log10(old_div(x,self.Hb))
+            return np.log10(x/self.Hb)
         self.log_NII_Ha = logHa(self.NIIa+self.NIIb)
         self.log_SII_Ha = logHa(self.SIIa+self.SIIb)
         self.log_OIII_Hb = logHb(self.OIIIa+self.OIIIb)
@@ -217,11 +216,11 @@ class modObj(object):
             self.nebflu *= self.dist_fact
             self.attflu *= self.dist_fact
             self.incflu *= self.dist_fact
-            self.spec_Q = calcQ(self.lam, old_div(self.incflu*c,self.lam), f_nu=True)
+            self.spec_Q = calcQ(self.lam, self.incflu*c/self.lam, f_nu=True)
         elif output_units: # Lsun/Hz
-            self.nebflu *= old_div(self.dist_fact, lsun * self.lam / c)
-            self.attflu *= old_div(self.dist_fact, lsun * self.lam / c)
-            self.incflu *= old_div(self.dist_fact, lsun * self.lam / c)
+            self.nebflu *= self.dist_fact/lsun * self.lam / c
+            self.attflu *= self.dist_fact/lsun * self.lam / c
+            self.incflu *= self.dist_fact/lsun * self.lam / c
             self.spec_Q = calcQ(self.lam, self.incflu*lsun, f_nu=True)
         return
     def get_fsps_spec(self, **kwargs):
@@ -266,13 +265,13 @@ class modObj(object):
             self.depth = self._dat['rad']['depth']
             self.thickness = self.depth[-1]
             self.radius_all = self._dat['rad']['radius']
-            self.rad_pc = old_div(self.radius_all,pc_to_cm)
+            self.rad_pc = self.radius_all/pc_to_cm
             self.dr_all = self._dat['rad']['dr']
             self.dv_all = 4.*np.pi*self.radius_all**2*self.dr_all
             self.r_in = self.radius_all[0] - self.dr_all[0]/2.
             self.r_out = self.radius_all[-1] + self.dr_all[0]/2.
             if self.Phi0 == 0.0:
-                self.Phiarr = old_div(self.Qarr, (4.*np.pi*self.r_in**2.))
+                self.Phiarr = self.Qarr/(4.*np.pi*self.r_in**2.)
                 self.Phi0 = self.Phiarr.sum()
         return
     def _init_emis(self):
@@ -281,8 +280,8 @@ class modObj(object):
         self._dat['emis'] = self._read_f('.emis')
         if self._dat['emis'] is not None:
             emis = self._dat['emis']
-            self.depth = old_div(emis['depth'],pc_to_cm)
-            self.frac_depth = old_div(self.depth,(self.rad_pc[-1]-self.rad_pc[0]))
+            self.depth = emis['depth']/pc_to_cm
+            self.frac_depth = self.depth/(self.rad_pc[-1]-self.rad_pc[0])
             self.emis_labels = np.asarray(emis.dtype.names[1::])
             self.n_emis = np.size(self.emis_labels)
             self.emis_full = np.zeros((self.n_emis, np.size(emis)))
@@ -338,10 +337,10 @@ class modObj(object):
             for att,keyname in list(attkeys.items()):
                 vals = self._dat[key][keyname]
                 self.__setattr__(att, vals)
-                self.__setattr__('frac_'+att, old_div(self._vol_integ(vals),self.Ctot))
+                self.__setattr__('frac_'+att, self._vol_integ(vals)/self.Ctot)
             CE_names = self._dat[key].dtype.names[5:33]
             self.cool_CE = np.sum([self._vol_integ(self._dat[key][elname]) for elname in CE_names])
-            self.frac_cool_CE = np.sum([old_div(self._vol_integ(self._dat[key][elname]),self.Ctot) for elname in CE_names])
+            self.frac_cool_CE = np.sum([self._vol_integ(self._dat[key][elname])/self.Ctot for elname in CE_names])
             self.frac_cool_FF_FB = self.Cool_HFFc+self.Cool_HFBc
         return
     def _init_heat(self):
@@ -374,7 +373,7 @@ class modObj(object):
         Htot = self._vol_integ(Htots)
         hr = {}
         for key, arr in list(hf.items()):
-            hr.__setitem__(key, old_div(np.sum(self._vol_integ(arr*Htots)),Htot))
+            hr.__setitem__(key, np.sum(self._vol_integ(arr*Htots))/Htot)
         self.__setattr__('heatfracs', hr)
         return
     def _init_ele(self, key):
@@ -409,7 +408,7 @@ class modObj(object):
             to_return = None
         else:
             np.seterr(all="ignore")
-            to_return = old_div(a,b)
+            to_return = a/b
             np.seterr(all=None)
         return to_return
     def _vol_cum(self, a):
@@ -440,7 +439,7 @@ class modObj(object):
     @property
     def Tpiem(self):
        try:
-           return old_div(self._vol_mean((self.Te - self.T0)**2., self.nenH), self.T0**2)
+           return self._vol_mean((self.Te - self.T0)**2./self.nenH, self.T0**2)
        except:
            return None
     def _i_emis(self, ref):
@@ -479,7 +478,7 @@ class modObj(object):
         '''
         emiss dV / tot emiss
         '''
-        return old_div(self._dV(self.get_emis(ref)),self.get_emis_vol(ref))
+        return self._dV(self.get_emis(ref))/self.get_emis_vol(ref)
     def get_emis_rad(self, ref):
         '''
         return integration of the emissivity on the radius
@@ -923,7 +922,7 @@ def calc_dim(X,Y,Z):
     extent = [np.min(X), np.max(X), np.min(Y), np.max(Y)]
     dx = (extent[1] - extent[0]) / float(Z.shape[1])
     dy = (extent[3] - extent[2]) / float(Z.shape[0])
-    return extent, old_div(dx,dy)
+    return extent, dx/dy
 
 def add_dopita(**kwargs):
     dopita.plot_bpt(**kwargs)

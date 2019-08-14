@@ -4,7 +4,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import absolute_import
-from past.utils import old_div
 from builtins import str
 from builtins import range
 #__all__ = ["format_output"]
@@ -91,12 +90,12 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     # interpolate
     lamfile = pkg_resources.resource_filename(__name__, "data/FSPSlam.dat")
     fsps_lam = np.genfromtxt(lamfile)
-    nu = old_div(c,fsps_lam)
+    nu = c/fsps_lam
     atten_y = interp1d(ang_v, atten_in, fill_value=0.0, bounds_error=False)(fsps_lam)
     diffuse_y = interp1d(ang_v, diffuse_in, fill_value=0.0, bounds_error=False)(fsps_lam)
     ##
     # diffuse continuum
-    diffuse_out = old_div(diffuse_y, nu * dist_fact / (10.**logQ) / lsun)
+    diffuse_out = (diffuse_y) / nu * dist_fact / (10.**logQ) / lsun
     ##
     inidata = np.genfromtxt(incontfl, skip_header=1)
     incid_0 = inidata[:,1]

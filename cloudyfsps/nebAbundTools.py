@@ -4,7 +4,6 @@ from __future__ import division
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import absolute_import
-from past.utils import old_div
 from builtins import zip
 from builtins import object
 
@@ -308,7 +307,7 @@ class gutkin(abundSet):
             Z = (10.**logZ)*0.01524
             Y = 0.2485 + 1.7756*Z
             X = 1. - Y - Z
-            return np.log10(old_div(Y,X/4.))
+            return np.log10(Y/X/4.)
         def calc_CNO(logZ):
             O = self.abund_0['O'] + logZ
             N = np.log10((0.41 * 10.**O)*(10.**-1.6 + 10.**(2.33 + O)))
