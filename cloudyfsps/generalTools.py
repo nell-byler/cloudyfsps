@@ -180,15 +180,15 @@ def sym_to_name(val=None):
 
 def getEmis(use_vac=True):
     lfile = pkg_resources.resource_filename(__name__, "data/emlines.dat")
-    dat = np.genfromtxt(lfile, delimiter='\t', dtype=None)
-    names = np.array([d[0].replace(' ','') for d in dat], dtype='|S12')
+    dat = np.genfromtxt(lfile, delimiter='\t', dtype=('U12',float,float))
+    names = np.array([d[0].replace(' ','') for d in dat])
     vacwavs = np.array([d[1] for d in dat])
     airwavs = np.array([d[2] for d in dat])
     if use_vac:
         return (names, vacwavs)
     else:
         return (names, airwavs)
- 
+
 def air_to_vac(inpt, no_uv_conv=True):
     '''
     from morton 1991
