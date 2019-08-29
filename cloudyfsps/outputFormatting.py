@@ -170,7 +170,23 @@ class writeFormattedOutput(object):
 
 
 #------------------------------------------------
-
+def zmet_to_nuZ(zmet):
+    '''
+    zmet = 1,2,3,4,5,6,7,8
+        ...corresponding to...
+    m1.00, m1.02, m1.04, m1.06, p0.00, p0.02, p0.04, p0.06
+    '''
+    zmets = np.array([1,2,3,4,5,6,7,8])
+    zs = np.array([-1.00, -1.02, -1.04, -1.06, 0.00, 0.02, 0.04, 0.06])
+    if type(zmet) is float:
+        ii, = np.where(zmets == zmet)[0]
+        out_val = zs[ii]
+    else:
+        out_val = np.zeros_like(zmet, dtype='float')
+        for i in range(len(zmet)):
+            ii, = np.where(zmets == zmet[i])[0]
+            out_val[i] = zs[ii]
+    return out_val
 
 class writeAltFormattedOutput(object):
     #sp = fsps.StellarPopulation()
@@ -203,8 +219,13 @@ class writeAltFormattedOutput(object):
         data = np.genfromtxt(self.file_pr+".pars", unpack=True)
         ddata = {}
         for i,key in enumerate(name_keys):
-            ddata[key] = data[i]
-            self.__setattr__(key, data[i])
+            if key == 'zmet':
+                temp_arr = zmet_to_nuZ(data[i])
+                ddata[key] = temp_arr
+                self.__setattr__(key, temp_arr)
+            else:
+                ddata[key] = data[i]
+                self.__setattr__(key, data[i])
         self.__setattr__("modpars", ddata)
         self.NZ = len(np.unique(self.zmet))
         self.NA = len(np.unique(self.Age))
