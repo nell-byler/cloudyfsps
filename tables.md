@@ -5,7 +5,7 @@
 
 I have generated Flexible Stellar Population Synthesis stellar SEDs for anyone to use within Cloudy.
 The SPS parameters used to generate the ascii files and the resultant nebular model are described in [Byler+2017](http://adsabs.harvard.edu/abs/2017ApJ...840...44B). 
-The ascii files for the MIST, Padova+Geneva, and PARSEC models are available for download [here](https://drive.google.com/open?id=0B2_CMSJX44olb2lqVFJ3bzhRWTA).
+The ascii files for the MIST, Padova+Geneva, and PARSEC models are available for download [here](https://drive.google.com/drive/folders/0B2_CMSJX44olb2lqVFJ3bzhRWTA?resourcekey=0-ZJJ4SBu3Ddn_IJfO8QOHGw&usp=sharing).
 
 ### Compiling FSPS models
 These ascii files can be compiled just like any other stellar SED grid in Cloudy:
