@@ -3,8 +3,8 @@
 
 from __future__ import print_function
 from __future__ import unicode_literals
-from builtins import range
 from __future__ import (division, print_function, absolute_import, unicode_literals)
+from builtins import range
 
 import sys
 import numpy as np

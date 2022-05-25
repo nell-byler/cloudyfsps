@@ -50,7 +50,7 @@ def cloudyInput(dir_, model_name, **kwargs):
     # -----
     if pars["to_file"]:
         file_name = dir_+model_name+".in"
-        f = file(file_name, "w")
+        f = open(file_name, "w")
     def this_print(s, eol=True):
         if s is None:
             print('"None" parameter not printed')
@@ -72,7 +72,7 @@ def cloudyInput(dir_, model_name, **kwargs):
     this_print('title {0}'.format(model_name.split('/')[-1]))
     this_print('////////////////////////////////////')
     this_print('set punch prefix "{0}"'.format(model_name))
-    this_print('set line precision 6')
+    this_print('print line precision 6')
     ####
     if pars['par1'] == "age":
         pars['par1val'] = pars['age']
@@ -139,25 +139,29 @@ save last element iron ".ele_Fe"
 save last hydrogen Lya ".H_lya"
 save last hydrogen ionization ".H_ion"
 save last lines emissivity ".emis"
-H  1 6562.85A
+H  1 6562.81A
 H  1 4861.36A
 H  1 4340.49A
+H  1 3970.09A
+H  1 3889.07A
+H  1 3835.40A
+H  1 3797.92A
 He 1 3888.63A
 He 1 4471.47A
 He 1 5875.61A
 He 2 1640.00A
 O  1 6300.00A
 O  1 6363.00A
-O II 3729.00A
-O II 3726.00A
+O  2 3728.81A
+O  2 3726.03A
 O  3 5007.00A
-TOTL 4363.00A
-O  3 4959.00A
+Blnd 4363.00A
+O  3 4958.91A
 O  3 51.8000m
-N  2 6584.00A
+N  2 6583.45A
 N  2 6548.00A
-S II 6731.00A
-S II 6716.00A
+S  2 6730.82A
+S  2 6716.44A
 S  3 9069.00A
 S  3 9532.00A
 S  3 18.6700m
