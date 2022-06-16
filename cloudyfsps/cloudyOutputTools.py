@@ -8,6 +8,7 @@ from builtins import str as newstr
 from builtins import range
 #__all__ = ["format_output"]
 
+import os
 import numpy as np
 import subprocess
 import pkg_resources
@@ -36,9 +37,14 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     lsun = 3.839e33 # erg/s
     c = 2.9979e18 #ang/s
 
-    oldfile = "{}{}{}.lin".format(dir_, model_prefix, str(modnum))
-    newfile = "{}{}{}.lineflux".format(dir_, model_prefix, str(modnum))
-    print_file = "{}{}{}.out_lines".format(dir_, model_prefix, str(modnum))
+    # define name of output files, including `dir_`.
+    root_name = f"{model_prefix}{modnum}"
+    oldfile = f"{root_name}.lin"
+    newfile = f"{root_name}.lineflux"
+    print_file = f"{root_name}.out_lines"
+    oldfile, newfile, print_file = [
+        os.path.join(dir_, _filename_) for _filename_ in (
+            oldfile, newfile, print_file)]
     # read cloudy output
     dat = np.genfromtxt(oldfile, skip_header=2, delimiter="\t",
                         dtype="S20,f8")
@@ -73,12 +79,17 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
     ########
     ### continuum
     ########
-    outcontfl = "{}{}{}.outwcont".format(dir_, model_prefix, modnum)
-    incontfl = "{}{}{}.inicont".format(dir_, model_prefix, modnum)
-    print_file2 = "{}{}{}.contflux".format(dir_, model_prefix, modnum)
-    print_file = "{}{}{}.out_cont".format(dir_, model_prefix, modnum)
+    # define name of output files, including `dir_`.
+    outcontfl   = f"{root_name}.outwcont"
+    incontfl    = f"{root_name}.inicont"
+    print_file2 = f"{root_name}.contflux"
+    print_file  = f"{root_name}.out_cont"
+    print_file3 = f"{root_name}.out_cont2"
+    outcontfl, incontfl, print_file2, print_file, print_file3 = [
+        os.path.join(dir_, _filename_) for _filename_ in (
+            outcontfl, incontfl, print_file2, print_file, print_file3)]
     # lam, atten_inc, diff_cont, diff_line, sum
-    cont_data = np.genfromtxt(outcontfl, skip_header=1)
+    cont_data = np.loadtxt(outcontfl, usecols=(0, 1, 2))
     # cont is nu L_nu / (4 pi R**2): Hz * (erg/s/Hz) * (1/cm**2)
     # [erg / s / cm^2 ] -> [ erg / s / Hz ]
     atten_0, diffuse_0  = cont_data[:,1], cont_data[:,2]
@@ -117,13 +128,29 @@ def formatCloudyOutput(dir_, model_prefix, modnum, modpars, use_extended_lines=F
         f.write(printstring)
     f.close()
     print("The diffuse continuum was printed to file {}".format(print_file))
+
+    cont_data = np.loadtxt(outcontfl, usecols=np.arange(9))
+    wave = cont_data[:, 0]
+    trans_cont = cont_data[:, 4] - cont_data[:, 8]
+    output_cont = interp1d(wave, trans_cont, fill_value=0.0, bounds_error=False)(fsps_lam)
+    np.savetxt(print_file3,
+         np.column_stack([fsps_lam, output_cont]), fmt=('%10.4f', '%.6e'),
+         header='wavelength[AA] L[erg_(s_Hz)]')
+    output_cont *= c/fsps_lam**2
+    input_cont = cont_data[:, 1]
+    input_cont = interp1d(wave, input_cont, fill_value=0.0, bounds_error=False)(fsps_lam)
+    input_cont *= c/fsps_lam**2
+    np.savetxt(print_file3+'.check',
+         np.column_stack([fsps_lam, input_cont, output_cont]),
+         fmt=('%10.4f', '%.6e', '%.6e'),
+         header='wavelength[AA] L_in[erg_(s_AA)] L_out[erg_(s_AA)]')
     return
 
 def formatAllOutput(dir_, mod_prefix, use_extended_lines=False, write_line_lum=False):
     '''
     for formatting output after running a batch of cloudy jobs
     '''
-    data = np.genfromtxt(dir_+mod_prefix+".pars")
+    data = np.genfromtxt(os.path.join(dir_, f"{mod_prefix}.pars"))
     def get_pars(modnum):
         return data[np.int(modnum)-1, 1:]
     for modnum in data[:,0]:

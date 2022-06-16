@@ -1,0 +1,1 @@
+sed -i.bak 's/\/home\/franz\/software\/sciapp\/py39\/lib\/python3.9\/site-packages\/cloudyfsps\/data\///g' *.in

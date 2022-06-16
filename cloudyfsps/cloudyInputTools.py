@@ -73,6 +73,7 @@ def cloudyInput(dir_, model_name, **kwargs):
     this_print('////////////////////////////////////')
     this_print('set punch prefix "{0}"'.format(model_name))
     this_print('print line precision 6')
+    this_print('print line vacuum')
     ####
     if pars['par1'] == "age":
         pars['par1val'] = pars['age']
@@ -116,6 +117,7 @@ def cloudyInput(dir_, model_name, **kwargs):
     this_print('stop efrac {0:.2f}'.format(pars['efrac']))
     this_print('save last linelist ".lin" "{}" absolute column'.format(linefile))
     this_print('save last outward continuum ".outwcont" units Angstrom no title')
+    this_print('save last diffuse continuum ".diffcont" units Angstrom no title')
     this_print('save last incident continuum ".inicont" units Angstrom no title')
     if len(pars["extras"]) > 0:
         this_print(pars["extras"])
@@ -266,7 +268,7 @@ def writeParamFiles(**kwargs):
         pars = [(Z, a, U, R, calcForLogQ(logU=U, Rinner=10.0**R, nh=n), n, efrac) for Z in nom_dict["logZs"] for a in nom_dict["ages"] for U in nom_dict["logUs"] for R in nom_dict["r_inners"] for n in nom_dict["nhs"] for efrac in nom_dict["efracs"]]
     # Z, a, U, R, Q, n, efrac
     print("{} models".format(len(pars)))
-    full_model_names = ["{}{}".format(nom_dict["model_prefix"], n+1)
+    full_model_names = [f'{nom_dict["model_prefix"]}{n+1:04d}'
                         for n in range(len(pars))]
     printParFile(nom_dict["dir_"], nom_dict["model_prefix"], pars)
     #--------------------------------------------

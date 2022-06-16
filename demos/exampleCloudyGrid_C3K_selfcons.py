@@ -11,10 +11,14 @@ import numpy as np
 import fsps
 import itertools
 from cloudyfsps.ASCIItools import compiledExists
-from cloudyfsps.cloudyInputTools import writeParamFiles
+from cloudyfsps.cloudyInputTools import writeParamFiles, cloudyInput
 from cloudyfsps.generalTools import calcForLogQ
 from cloudyfsps.cloudyOutputTools import formatAllOutput
 from cloudyfsps.outputFormatting import writeFormattedOutput
+
+from astropy.constants import h as h_planck
+h_planck = h_planck.to('erg s').value
+L_sun = 3.83900000e+33 # erg/s
 
 # This code snippet goes through how to create a grid
 # of Cloudy models.
@@ -58,11 +62,17 @@ mod_prefix = 'ZAU'
 # GRID PARAMETERS FOR CLOUDY RUN
 #--------------
 # ages between 1 and 7 Myr
-ages = np.linspace(1., 7., 7)*1.e6
-# ionization parameters between -4 and -1
-logUs = np.linspace(-4., -1., 7)
+with open('../../c17.03/data/FSPS_MIST_C3K_SSP.ascii') as fsps_file:
+    c3k_data = fsps_file.readlines()
+cage_met_grid = np.array([float(y) for x in c3k_data[11:332] for y in x.split()])
+cage = np.array(sorted(list(set(cage_met_grid[ ::2]))))
+cmet = np.array(sorted(list(set(cage_met_grid[1::2]))))
+
+ages = cage
+# ionization parameters are irrelevant: use SSP spectrum.
+logUs = np.array([np.nan,])
 # stellar metallicities
-logZs =  np.array([-1.0, -0.5, 0.0])
+logZs =  cmet
 # gas phase metallicities
 gas_logZs = np.linspace(-2.0, 0.0, 5)
 
@@ -73,21 +83,66 @@ efrac = -1.0 # calculation is stopped when H is 10^efrac % neutral
 set_name='dopita' # abundances from Dopita+2001
 dust=False # don't include dust in nebula
 extra_output=True # include lots of outputs
-#-----------------------------------------------------------------
+#--------------------------------------------------------np.linspace(1., 7., 7)*1.e6---------
+
+def calcForLogQ_from_SSP(age, met):
+
+    age_ind = np.argmin(np.abs(cage-age))
+    met_ind = np.argmin(np.abs(cmet-met))
+    index   = np.ravel_multi_index((age_ind, met_ind), cage.shape+cmet.shape)
+    cwave = np.array([
+        float(y) for x in c3k_data[332:9808] for y in x.split()])
+    dcwave = np.diff(cwave)
+    dcwave = np.hstack([dcwave, dcwave[-1]]) # Delta lambda.
+    cspec = np.array([
+        float(y) for x in c3k_data[9808+47380//5*index:9808+47380//5*(index+1)] for y in x.split()])
+
+    # Minimum and maximum wavelength of ionizing radiation.
+    lambda_max = 911.26705058 # AA
+    lambda_min =   0.00012391 # AA
+    ionising_range = (cwave<lambda_max) & (cwave>lambda_min)
+    logQ = np.sum( (cspec*dcwave/cwave)[ionising_range] ) * L_sun / h_planck
+    print(logQ)
+
+    return np.log10(logQ)
+
+
 
 # iterate through all of the above parameters
 # calcForLogQ just calculates Q = U*4*pi*Ri^2*nH
 
-pars = np.array([(Z, a, U, R, calcForLogQ(logU=U, Rinner=10.0**R, nh=n), n, efrac, gasZ)
+pars = np.array([(Z, a, U, R, calcForLogQ_from_SSP(a, Z), n, efrac)
                  for Z in logZs
                  for a in ages
                  for U in logUs 
                  for R in Rinners
-                 for n in nhs
-                 for gasZ in gas_logZs])
+                 for n in nhs])
+#                 for gasZ in gas_logZs])
 
 if exec_write_input:
+    for i,par in enumerate(pars):
+        name = f"{mod_prefix}{i+1:04d}"
+        cloudyInput(
+            mod_dir, name,
+            logZ=par[0],
+            age=par[1],
+            logU=par[2],
+            r_inner=par[3],
+            logQ=par[4],
+            dens=par[5],
+            efrac=par[6],
+            set_name=set_name,
+            use_Q=True,
+            dust=dust,
+            re_z=False,
+            cloudy_mod=compiled_ascii,
+            verbose=False,
+            geometry="sphere",
+            extras="",
+            extra_output=extra_output)
+
     print('Writing input files...')
+    """
     writeParamFiles(dir_=mod_dir,
                     model_prefix=mod_prefix,
                     cloudy_mod=compiled_ascii,
@@ -95,6 +150,7 @@ if exec_write_input:
                     ages=ages,
                     logZs=logZs,
                     logUs=logUs,
+                    logQs=
                     r_inners=Rinners,
                     nhs=nhs,
                     use_Q=True,
@@ -106,6 +162,7 @@ if exec_write_input:
                     set_name=set_name,
                     dust=dust, 
                     extra_output=extra_output)
+    """
     print('Wrote {} param files'.format(len(pars)))
 else:
     print('Skipping input writing.')
